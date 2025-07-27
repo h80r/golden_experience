@@ -1,0 +1,28 @@
+{
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        // Group 1: Nest config files under pubspec.yaml
+        "pubspec.yaml": ".env, .gitignore, analysis_options.yaml, flutter_launcher_icons.yaml",
+        // Group 2: Nest documentation files under README.md
+        "README.md": "CHANGELOG.md, PROJECT_PROPOSAL.md, ROADMAP.md"
+    },
+    "files.exclude": {
+        ".dart_tool": true,
+        "build": true,
+        "macos": true,
+        ".metadata": true,
+        ".flutter-plugins-dependencies": true,
+        "firebase.json": true,
+        "pubspec.lock": true,
+        "lib/firebase_options.dart": true,
+        "android/.gradle": true,
+        "android/.kotlin": true,
+        "android/.gitignore": true,
+        "android/app/google-services.json": true,
+        "android/gradle": true,
+        "android/gradle.properties": true,
+        "android/gradlew": true,
+        "android/gradlew.bat": true,
+        "android/local.properties": true,
+    }
+}
