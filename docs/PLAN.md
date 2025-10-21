@@ -61,10 +61,10 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 1 / 21 (5%)
+**Concluídas:** 2 / 21 (10%)
 
 ### Por Fase
-- **Fase 1 - Fundação:** 1 / 4 (25%)
+- **Fase 1 - Fundação:** 2 / 4 (50%)
 - **Fase 2 - Registro de Gastos:** 0 / 4 (0%)
 - **Fase 3 - Dashboard Reativo:** 0 / 4 (0%)
 - **Fase 4 - Funcionalidades de Suporte:** 0 / 5 (0%)
@@ -80,7 +80,7 @@ main (develop)
 
 **Objetivo:** Estabelecer a base técnica do projeto com arquitetura limpa, configuração do banco de dados e estrutura de navegação.
 
-**Status:** 0 / 4 tarefas concluídas
+**Status:** 2 / 4 tarefas concluídas
 
 ---
 
@@ -109,7 +109,7 @@ Inicializar o projeto Flutter, configurar Riverpod, Isar e estabelecer a estrutu
 
 ---
 
-### [ ] F1-T2: Modelagem e Configuração do Banco de Dados
+### [x] F1-T2: Modelagem e Configuração do Banco de Dados
 
 **Branch:** `chore/database-models`
    
@@ -153,10 +153,10 @@ Implementar todas as entidades do domínio como coleções do Isar com suas resp
    - lastRecurringCheck (DateTime)
 
 **Definition of Done:**
-- [ ] Todas as 5 entidades modeladas com anotações Isar
-- [ ] Schema do Isar gerado com sucesso (`build_runner`)
-- [ ] Instância do Isar pode ser aberta e fechada
-- [ ] Testes unitários para os modelos criados
+- [x] Todas as 5 entidades modeladas com anotações Isar
+- [x] Schema do Isar gerado com sucesso (`build_runner`)
+- [x] Instância do Isar pode ser aberta e fechada
+- [x] Testes unitários para os modelos criados
 - [ ] Merge realizado para `develop`
 
 ---
