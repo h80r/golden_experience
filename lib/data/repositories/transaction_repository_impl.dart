@@ -1,27 +1,26 @@
-import 'package:isar/isar.dart';
+import 'package:drift/drift.dart';
 import '../../domain/repositories/i_transaction_repository.dart';
 import '../datasources/local_database.dart';
-import '../models/transaction_model.dart';
 
-/// Implementation of ITransactionRepository using Isar database
+/// Implementation of ITransactionRepository using Drift database
 class TransactionRepositoryImpl implements ITransactionRepository {
-  final Isar _isar = LocalDatabase.instance;
+  final LocalDatabase _db = LocalDatabase.instance;
 
   @override
-  Future<int> create(TransactionModel transaction) async {
-    return await _isar.writeTxn(() async {
-      return await _isar.transactionModels.put(transaction);
-    });
+  Future<int> create(Insertable<TransactionModel> transaction) async {
+    return await _db.into(_db.transactions).insert(transaction);
   }
 
   @override
   Future<TransactionModel?> getById(int id) async {
-    return await _isar.transactionModels.get(id);
+    return await (_db.select(_db.transactions)
+          ..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
   }
 
   @override
   Future<List<TransactionModel>> getAll() async {
-    return await _isar.transactionModels.where().findAll();
+    return await _db.select(_db.transactions).get();
   }
 
   @override
@@ -29,20 +28,16 @@ class TransactionRepositoryImpl implements ITransactionRepository {
     final startDate = DateTime(year, month, 1);
     final endDate = DateTime(year, month + 1, 1).subtract(Duration(seconds: 1));
 
-    return await _isar.transactionModels
-        .where()
-        .filter()
-        .dateBetween(startDate, endDate, includeLower: true, includeUpper: true)
-        .findAll();
+    return await (_db.select(_db.transactions)
+          ..where((t) => t.date.isBetweenValues(startDate, endDate)))
+        .get();
   }
 
   @override
-  Future<bool> update(TransactionModel transaction) async {
+  Future<bool> update(Insertable<TransactionModel> transaction) async {
     try {
-      await _isar.writeTxn(() async {
-        await _isar.transactionModels.put(transaction);
-      });
-      return true;
+      final result = await _db.update(_db.transactions).replace(transaction);
+      return result;
     } catch (e) {
       return false;
     }
@@ -51,9 +46,10 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   @override
   Future<bool> delete(int id) async {
     try {
-      return await _isar.writeTxn(() async {
-        return await _isar.transactionModels.delete(id);
-      });
+      final result = await (_db.delete(_db.transactions)
+            ..where((t) => t.id.equals(id)))
+          .go();
+      return result > 0;
     } catch (e) {
       return false;
     }
@@ -61,7 +57,7 @@ class TransactionRepositoryImpl implements ITransactionRepository {
 
   @override
   Stream<List<TransactionModel>> watchAll() {
-    return _isar.transactionModels.where().watch(fireImmediately: true);
+    return _db.select(_db.transactions).watch();
   }
 
   @override
@@ -70,10 +66,8 @@ class TransactionRepositoryImpl implements ITransactionRepository {
     final startDate = DateTime(now.year, now.month, 1);
     final endDate = DateTime(now.year, now.month + 1, 1).subtract(Duration(seconds: 1));
 
-    return _isar.transactionModels
-        .where()
-        .filter()
-        .dateBetween(startDate, endDate, includeLower: true, includeUpper: true)
-        .watch(fireImmediately: true);
+    return (_db.select(_db.transactions)
+          ..where((t) => t.date.isBetweenValues(startDate, endDate)))
+        .watch();
   }
 }

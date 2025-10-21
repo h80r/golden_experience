@@ -1,7 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/data/datasources/local_database.dart';
-import 'package:golden_experience/data/models/category_model.dart';
+import 'package:golden_experience/data/database/categories_table.dart';
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:golden_experience/data/repositories/category_repository_impl.dart';
 import 'package:golden_experience/domain/repositories/i_category_repository.dart';
 
@@ -21,19 +22,19 @@ void main() {
   });
 
   tearDownAll(() async {
-    await LocalDatabase.close();
+    await LocalDatabase.closeDatabase();
   });
 
   group('CategoryRepositoryImpl', () {
     test('should create a new category', () async {
-      final category = CategoryModel(name: 'Test Category');
+      final category = CategoryModelCompanion.insert(name: 'Test Category');
 
       final id = await repository.create(category);
       expect(id, greaterThan(0));
     });
 
     test('should retrieve a category by id', () async {
-      final category = CategoryModel(name: 'Get Category');
+      final category = CategoryModelCompanion.insert(name: 'Get Category');
 
       final id = await repository.create(category);
       final retrieved = await repository.getById(id);
@@ -53,13 +54,13 @@ void main() {
     });
 
     test('should update a category', () async {
-      final category = CategoryModel(name: 'Update Category');
+      final category = CategoryModelCompanion.insert(name: 'Update Category');
 
       final id = await repository.create(category);
       final retrieved = await repository.getById(id);
 
-      retrieved!.name = 'Updated Category';
-      final success = await repository.update(retrieved);
+      final updatedCategory = retrieved!.copyWith(name: 'Updated Category');
+      final success = await repository.update(updatedCategory);
 
       expect(success, isTrue);
 
@@ -68,7 +69,7 @@ void main() {
     });
 
     test('should delete a category', () async {
-      final category = CategoryModel(name: 'Delete Category');
+      final category = CategoryModelCompanion.insert(name: 'Delete Category');
 
       final id = await repository.create(category);
       final success = await repository.delete(id);

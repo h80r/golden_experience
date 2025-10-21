@@ -1,87 +1,74 @@
-import 'package:isar/isar.dart';
+import 'package:drift/drift.dart';
 import '../../domain/repositories/i_app_settings_repository.dart';
 import '../datasources/local_database.dart';
-import '../models/app_settings_model.dart';
 
-/// Implementation of IAppSettingsRepository using Isar database
-/// Maintains a singleton settings instance with id=1
+/// Implementation of IAppSettingsRepository using Drift database
 class AppSettingsRepositoryImpl implements IAppSettingsRepository {
-  final Isar _isar = LocalDatabase.instance;
+  final LocalDatabase _db = LocalDatabase.instance;
 
-  /// Default values for first-time initialization
-  static const double _defaultMonthlySalary = 0.0;
-  static const double _defaultReserveBalance = 0.0;
-  static const double _defaultMaxReserveUsagePercentage = 50.0;
+  static const int _settingsId = 1;
 
   @override
   Future<AppSettingsModel?> get() async {
-    return await _isar.appSettingsModels.get(1);
+    return await (_db.select(_db.appSettings)
+          ..where((s) => s.id.equals(_settingsId)))
+        .getSingleOrNull();
   }
 
   @override
-  Future<void> save(AppSettingsModel settings) async {
-    await _isar.writeTxn(() async {
-      // Ensure id is always 1
-      settings.id = 1;
-      await _isar.appSettingsModels.put(settings);
-    });
+  Future<void> save(Insertable<AppSettingsModel> settings) async {
+    await _db.into(_db.appSettings).insertOnConflictUpdate(settings);
   }
 
   @override
   Future<void> updateMonthlySalary(double salary) async {
-    final settings = await get();
-    if (settings != null) {
-      settings.monthlySalary = salary;
-      await save(settings);
-    }
+    await (_db.update(_db.appSettings)
+          ..where((s) => s.id.equals(_settingsId)))
+        .write(AppSettingsModelCompanion(monthlySalary: Value(salary)));
   }
 
   @override
   Future<void> updateReserveBalance(double balance) async {
-    final settings = await get();
-    if (settings != null) {
-      settings.reserveBalance = balance;
-      await save(settings);
-    }
+    await (_db.update(_db.appSettings)
+          ..where((s) => s.id.equals(_settingsId)))
+        .write(AppSettingsModelCompanion(reserveBalance: Value(balance)));
   }
 
   @override
   Future<void> updateMaxReserveUsagePercentage(double percentage) async {
-    final settings = await get();
-    if (settings != null) {
-      settings.maxReserveUsagePercentage = percentage;
-      await save(settings);
-    }
+    await (_db.update(_db.appSettings)
+          ..where((s) => s.id.equals(_settingsId)))
+        .write(AppSettingsModelCompanion(
+            maxReserveUsagePercentage: Value(percentage)));
   }
 
   @override
   Future<void> updateLastRecurringCheck(DateTime date) async {
-    final settings = await get();
-    if (settings != null) {
-      settings.lastRecurringCheck = date;
-      await save(settings);
-    }
+    await (_db.update(_db.appSettings)
+          ..where((s) => s.id.equals(_settingsId)))
+        .write(AppSettingsModelCompanion(lastRecurringCheck: Value(date)));
   }
 
   @override
   Future<void> initializeDefaults() async {
     final existing = await get();
+    if (existing != null) return;
 
-    // Only initialize if settings don't exist
-    if (existing == null) {
-      final defaultSettings = AppSettingsModel(
-        id: 1,
-        monthlySalary: _defaultMonthlySalary,
-        reserveBalance: _defaultReserveBalance,
-        maxReserveUsagePercentage: _defaultMaxReserveUsagePercentage,
-        lastRecurringCheck: DateTime.now(),
-      );
-      await save(defaultSettings);
-    }
+    final defaultSettings = AppSettingsModelCompanion.insert(
+      id: Value(_settingsId),
+      monthlySalary: 0.0,
+      reserveBalance: 0.0,
+      maxReserveUsagePercentage: 0.0,
+      lastRecurringCheck: DateTime.now(),
+    );
+
+    await _db.into(_db.appSettings).insert(defaultSettings);
   }
 
   @override
   Stream<AppSettingsModel?> watch() {
-    return _isar.appSettingsModels.watchObject(1, fireImmediately: true);
+    return (_db.select(_db.appSettings)
+          ..where((s) => s.id.equals(_settingsId)))
+        .watchSingleOrNull();
   }
 }

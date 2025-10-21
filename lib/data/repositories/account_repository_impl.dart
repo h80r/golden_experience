@@ -1,37 +1,32 @@
-import 'package:isar/isar.dart';
+import 'package:drift/drift.dart';
 import '../../domain/repositories/i_account_repository.dart';
 import '../datasources/local_database.dart';
-import '../models/account_model.dart';
-import '../models/transaction_model.dart';
 
-/// Implementation of IAccountRepository using Isar database
+/// Implementation of IAccountRepository using Drift database
 class AccountRepositoryImpl implements IAccountRepository {
-  final Isar _isar = LocalDatabase.instance;
+  final LocalDatabase _db = LocalDatabase.instance;
 
   @override
-  Future<int> create(AccountModel account) async {
-    return await _isar.writeTxn(() async {
-      return await _isar.accountModels.put(account);
-    });
+  Future<int> create(Insertable<AccountModel> account) async {
+    return await _db.into(_db.accounts).insert(account);
   }
 
   @override
   Future<AccountModel?> getById(int id) async {
-    return await _isar.accountModels.get(id);
+    return await (_db.select(_db.accounts)..where((a) => a.id.equals(id)))
+        .getSingleOrNull();
   }
 
   @override
   Future<List<AccountModel>> getAll() async {
-    return await _isar.accountModels.where().findAll();
+    return await _db.select(_db.accounts).get();
   }
 
   @override
-  Future<bool> update(AccountModel account) async {
+  Future<bool> update(Insertable<AccountModel> account) async {
     try {
-      await _isar.writeTxn(() async {
-        await _isar.accountModels.put(account);
-      });
-      return true;
+      final result = await _db.update(_db.accounts).replace(account);
+      return result;
     } catch (e) {
       return false;
     }
@@ -43,8 +38,8 @@ class AccountRepositoryImpl implements IAccountRepository {
       final account = await getById(accountId);
       if (account == null) return false;
 
-      account.initialBalance = newBalance;
-      return await update(account);
+      final updated = account.copyWith(initialBalance: newBalance);
+      return await update(updated);
     } catch (e) {
       return false;
     }
@@ -56,8 +51,8 @@ class AccountRepositoryImpl implements IAccountRepository {
       final account = await getById(accountId);
       if (account == null) return false;
 
-      account.creditLimit = newLimit;
-      return await update(account);
+      final updated = account.copyWith(creditLimit: newLimit);
+      return await update(updated);
     } catch (e) {
       return false;
     }
@@ -66,9 +61,9 @@ class AccountRepositoryImpl implements IAccountRepository {
   @override
   Future<bool> delete(int id) async {
     try {
-      return await _isar.writeTxn(() async {
-        return await _isar.accountModels.delete(id);
-      });
+      final result =
+          await (_db.delete(_db.accounts)..where((a) => a.id.equals(id))).go();
+      return result > 0;
     } catch (e) {
       return false;
     }
@@ -76,16 +71,16 @@ class AccountRepositoryImpl implements IAccountRepository {
 
   @override
   Future<bool> hasTransactions(int accountId) async {
-    final count = await _isar.transactionModels
-        .where()
-        .filter()
-        .accountIdEqualTo(accountId)
-        .count();
-    return count > 0;
+    final transactions = await (_db.select(_db.transactions)
+          ..where((t) => t.accountId.equals(accountId))
+          ..limit(1))
+        .get();
+
+    return transactions.isNotEmpty;
   }
 
   @override
   Stream<List<AccountModel>> watchAll() {
-    return _isar.accountModels.where().watch(fireImmediately: true);
+    return _db.select(_db.accounts).watch();
   }
 }

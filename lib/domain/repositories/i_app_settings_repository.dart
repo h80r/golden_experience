@@ -1,4 +1,5 @@
-import '../../../data/models/app_settings_model.dart';
+import 'package:drift/drift.dart';
+import '../../data/datasources/local_database.dart';
 
 /// Interface for AppSettings repository operations
 /// Manages application-wide settings (singleton pattern with id=1)
@@ -9,7 +10,7 @@ abstract class IAppSettingsRepository {
 
   /// Creates or updates app settings
   /// Always uses id=1 to maintain singleton pattern
-  Future<void> save(AppSettingsModel settings);
+  Future<void> save(Insertable<AppSettingsModel> settings);
 
   /// Updates only the monthly salary
   Future<void> updateMonthlySalary(double salary);

@@ -1,7 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/data/datasources/local_database.dart';
-import 'package:golden_experience/data/models/recurring_expense_model.dart';
+import 'package:golden_experience/data/database/recurring_expenses_table.dart';
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:golden_experience/data/repositories/recurring_expense_repository_impl.dart';
 import 'package:golden_experience/domain/repositories/i_recurring_expense_repository.dart';
 
@@ -21,12 +22,12 @@ void main() {
   });
 
   tearDownAll(() async {
-    await LocalDatabase.close();
+    await LocalDatabase.closeDatabase();
   });
 
   group('RecurringExpenseRepositoryImpl', () {
     test('should create a new recurring expense', () async {
-      final expense = RecurringExpenseModel(
+      final expense = RecurringExpenseModelCompanion.insert(
         value: 500.0,
         description: 'Rent',
         chargeDay: 5,
@@ -39,7 +40,7 @@ void main() {
     });
 
     test('should retrieve a recurring expense by id', () async {
-      final expense = RecurringExpenseModel(
+      final expense = RecurringExpenseModelCompanion.insert(
         value: 100.0,
         description: 'Internet',
         chargeDay: 10,
@@ -67,7 +68,7 @@ void main() {
     });
 
     test('should retrieve recurring expenses by charge day', () async {
-      final expense = RecurringExpenseModel(
+      final expense = RecurringExpenseModelCompanion.insert(
         value: 200.0,
         description: 'Electricity',
         chargeDay: 15,
@@ -86,7 +87,7 @@ void main() {
     });
 
     test('should update a recurring expense', () async {
-      final expense = RecurringExpenseModel(
+      final expense = RecurringExpenseModelCompanion.insert(
         value: 300.0,
         description: 'Water',
         chargeDay: 20,
@@ -97,8 +98,8 @@ void main() {
       final id = await repository.create(expense);
       final retrieved = await repository.getById(id);
 
-      retrieved!.value = 350.0;
-      final success = await repository.update(retrieved);
+      final updatedExpense = retrieved!.copyWith(value: 350.0);
+      final success = await repository.update(updatedExpense);
 
       expect(success, isTrue);
 
@@ -107,7 +108,7 @@ void main() {
     });
 
     test('should delete a recurring expense', () async {
-      final expense = RecurringExpenseModel(
+      final expense = RecurringExpenseModelCompanion.insert(
         value: 150.0,
         description: 'Gas',
         chargeDay: 25,

@@ -1,9 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/data/datasources/local_database.dart';
-import 'package:golden_experience/data/models/account_model.dart';
+import 'package:golden_experience/data/database/accounts_table.dart';
 import 'package:golden_experience/data/repositories/account_repository_impl.dart';
 import 'package:golden_experience/domain/repositories/i_account_repository.dart';
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 
 void main() {
   late IAccountRepository repository;
@@ -21,12 +22,12 @@ void main() {
   });
 
   tearDownAll(() async {
-    await LocalDatabase.close();
+    await LocalDatabase.closeDatabase();
   });
 
   group('AccountRepositoryImpl', () {
     test('should create a new account', () async {
-      final account = AccountModel(
+      final account = AccountModelCompanion.insert(
         name: 'Test Account',
         type: AccountType.debit,
         initialBalance: 1000.0,
@@ -38,7 +39,7 @@ void main() {
     });
 
     test('should retrieve an account by id', () async {
-      final account = AccountModel(
+      final account = AccountModelCompanion.insert(
         name: 'Get by ID Account',
         type: AccountType.credit,
         initialBalance: 0.0,
@@ -64,7 +65,7 @@ void main() {
     });
 
     test('should update an account', () async {
-      final account = AccountModel(
+      final account = AccountModelCompanion.insert(
         name: 'Update Account',
         type: AccountType.debit,
         initialBalance: 500.0,
@@ -74,17 +75,17 @@ void main() {
       final id = await repository.create(account);
       final retrieved = await repository.getById(id);
 
-      retrieved!.name = 'Updated Account';
-      final success = await repository.update(retrieved);
+      final updatedAccount = retrieved!.copyWith(name: 'Updated Account');
+      final success = await repository.update(updatedAccount);
 
       expect(success, isTrue);
 
-      final updated = await repository.getById(id);
-      expect(updated!.name, equals('Updated Account'));
+      final result = await repository.getById(id);
+      expect(result!.name, equals('Updated Account'));
     });
 
     test('should update account balance', () async {
-      final account = AccountModel(
+      final account = AccountModelCompanion.insert(
         name: 'Balance Account',
         type: AccountType.debit,
         initialBalance: 1000.0,
@@ -101,7 +102,7 @@ void main() {
     });
 
     test('should update credit limit', () async {
-      final account = AccountModel(
+      final account = AccountModelCompanion.insert(
         name: 'Credit Account',
         type: AccountType.credit,
         initialBalance: 0.0,
@@ -118,7 +119,7 @@ void main() {
     });
 
     test('should delete an account', () async {
-      final account = AccountModel(
+      final account = AccountModelCompanion.insert(
         name: 'Delete Account',
         type: AccountType.debit,
         initialBalance: 100.0,

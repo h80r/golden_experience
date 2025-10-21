@@ -1,7 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/data/datasources/local_database.dart';
-import 'package:golden_experience/data/models/app_settings_model.dart';
+import 'package:golden_experience/data/database/app_settings_table.dart';
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:golden_experience/data/repositories/app_settings_repository_impl.dart';
 import 'package:golden_experience/domain/repositories/i_app_settings_repository.dart';
 
@@ -21,7 +22,7 @@ void main() {
   });
 
   tearDownAll(() async {
-    await LocalDatabase.close();
+    await LocalDatabase.closeDatabase();
   });
 
   group('AppSettingsRepositoryImpl', () {
@@ -37,8 +38,8 @@ void main() {
     });
 
     test('should save settings', () async {
-      final newSettings = AppSettingsModel(
-        id: 1,
+      final newSettings = AppSettingsModelCompanion.insert(
+        id: const Value(1),
         monthlySalary: 5000.0,
         reserveBalance: 2000.0,
         maxReserveUsagePercentage: 60.0,
@@ -104,8 +105,8 @@ void main() {
     });
 
     test('should always maintain id as 1', () async {
-      final settings = AppSettingsModel(
-        id: 999, // Try to set different id
+      final settings = AppSettingsModelCompanion.insert(
+        id: const Value(999), // Try to set different id
         monthlySalary: 1000.0,
         reserveBalance: 500.0,
         maxReserveUsagePercentage: 50.0,

@@ -1,45 +1,41 @@
-import 'package:isar/isar.dart';
+import 'package:drift/drift.dart';
 import '../../domain/repositories/i_recurring_expense_repository.dart';
 import '../datasources/local_database.dart';
-import '../models/recurring_expense_model.dart';
 
-/// Implementation of IRecurringExpenseRepository using Isar database
+/// Implementation of IRecurringExpenseRepository using Drift database
 class RecurringExpenseRepositoryImpl implements IRecurringExpenseRepository {
-  final Isar _isar = LocalDatabase.instance;
+  final LocalDatabase _db = LocalDatabase.instance;
 
   @override
-  Future<int> create(RecurringExpenseModel recurringExpense) async {
-    return await _isar.writeTxn(() async {
-      return await _isar.recurringExpenseModels.put(recurringExpense);
-    });
+  Future<int> create(Insertable<RecurringExpenseModel> recurringExpense) async {
+    return await _db.into(_db.recurringExpenses).insert(recurringExpense);
   }
 
   @override
   Future<RecurringExpenseModel?> getById(int id) async {
-    return await _isar.recurringExpenseModels.get(id);
+    return await (_db.select(_db.recurringExpenses)
+          ..where((r) => r.id.equals(id)))
+        .getSingleOrNull();
   }
 
   @override
   Future<List<RecurringExpenseModel>> getAll() async {
-    return await _isar.recurringExpenseModels.where().findAll();
+    return await _db.select(_db.recurringExpenses).get();
   }
 
   @override
   Future<List<RecurringExpenseModel>> getByChargeDay(int day) async {
-    return await _isar.recurringExpenseModels
-        .where()
-        .filter()
-        .chargeDayEqualTo(day)
-        .findAll();
+    return await (_db.select(_db.recurringExpenses)
+          ..where((r) => r.chargeDay.equals(day)))
+        .get();
   }
 
   @override
-  Future<bool> update(RecurringExpenseModel recurringExpense) async {
+  Future<bool> update(Insertable<RecurringExpenseModel> recurringExpense) async {
     try {
-      await _isar.writeTxn(() async {
-        await _isar.recurringExpenseModels.put(recurringExpense);
-      });
-      return true;
+      final result =
+          await _db.update(_db.recurringExpenses).replace(recurringExpense);
+      return result;
     } catch (e) {
       return false;
     }
@@ -48,9 +44,10 @@ class RecurringExpenseRepositoryImpl implements IRecurringExpenseRepository {
   @override
   Future<bool> delete(int id) async {
     try {
-      return await _isar.writeTxn(() async {
-        return await _isar.recurringExpenseModels.delete(id);
-      });
+      final result = await (_db.delete(_db.recurringExpenses)
+            ..where((r) => r.id.equals(id)))
+          .go();
+      return result > 0;
     } catch (e) {
       return false;
     }
@@ -58,6 +55,6 @@ class RecurringExpenseRepositoryImpl implements IRecurringExpenseRepository {
 
   @override
   Stream<List<RecurringExpenseModel>> watchAll() {
-    return _isar.recurringExpenseModels.where().watch(fireImmediately: true);
+    return _db.select(_db.recurringExpenses).watch();
   }
 }

@@ -1,11 +1,12 @@
-import '../../../data/models/account_model.dart';
+import 'package:drift/drift.dart';
+import '../../data/datasources/local_database.dart';
 
 /// Interface for Account repository operations
 /// Defines CRUD operations and account management
 abstract class IAccountRepository {
   /// Creates a new account
   /// Returns the ID of the created account
-  Future<int> create(AccountModel account);
+  Future<int> create(Insertable<AccountModel> account);
 
   /// Retrieves an account by its ID
   /// Returns null if not found
@@ -16,7 +17,7 @@ abstract class IAccountRepository {
 
   /// Updates an existing account
   /// Returns true if successful, false otherwise
-  Future<bool> update(AccountModel account);
+  Future<bool> update(Insertable<AccountModel> account);
 
   /// Updates the balance of a debit account
   /// Returns true if successful, false otherwise

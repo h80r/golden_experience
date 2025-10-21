@@ -1,11 +1,12 @@
-import '../../../data/models/recurring_expense_model.dart';
+import 'package:drift/drift.dart';
+import '../../data/datasources/local_database.dart';
 
 /// Interface for RecurringExpense repository operations
 /// Defines CRUD operations and queries for recurring expenses
 abstract class IRecurringExpenseRepository {
   /// Creates a new recurring expense
   /// Returns the ID of the created recurring expense
-  Future<int> create(RecurringExpenseModel recurringExpense);
+  Future<int> create(Insertable<RecurringExpenseModel> recurringExpense);
 
   /// Retrieves a recurring expense by its ID
   /// Returns null if not found
@@ -20,7 +21,7 @@ abstract class IRecurringExpenseRepository {
 
   /// Updates an existing recurring expense
   /// Returns true if successful, false otherwise
-  Future<bool> update(RecurringExpenseModel recurringExpense);
+  Future<bool> update(Insertable<RecurringExpenseModel> recurringExpense);
 
   /// Deletes a recurring expense by its ID
   /// Returns true if successful, false otherwise

@@ -1,48 +1,32 @@
-import 'package:isar/isar.dart';
+import 'package:drift/drift.dart';
 import '../../domain/repositories/i_category_repository.dart';
 import '../datasources/local_database.dart';
-import '../models/category_model.dart';
 
-/// Implementation of ICategoryRepository using Isar database
+/// Implementation of ICategoryRepository using Drift database
 class CategoryRepositoryImpl implements ICategoryRepository {
-  final Isar _isar = LocalDatabase.instance;
-
-  /// Default categories to seed on first launch
-  static const List<String> _defaultCategories = [
-    'Alimentação',
-    'Transporte',
-    'Moradia',
-    'Saúde',
-    'Educação',
-    'Lazer',
-    'Vestuário',
-    'Outros',
-  ];
+  final LocalDatabase _db = LocalDatabase.instance;
 
   @override
-  Future<int> create(CategoryModel category) async {
-    return await _isar.writeTxn(() async {
-      return await _isar.categoryModels.put(category);
-    });
+  Future<int> create(Insertable<CategoryModel> category) async {
+    return await _db.into(_db.categories).insert(category);
   }
 
   @override
   Future<CategoryModel?> getById(int id) async {
-    return await _isar.categoryModels.get(id);
+    return await (_db.select(_db.categories)..where((c) => c.id.equals(id)))
+        .getSingleOrNull();
   }
 
   @override
   Future<List<CategoryModel>> getAll() async {
-    return await _isar.categoryModels.where().findAll();
+    return await _db.select(_db.categories).get();
   }
 
   @override
-  Future<bool> update(CategoryModel category) async {
+  Future<bool> update(Insertable<CategoryModel> category) async {
     try {
-      await _isar.writeTxn(() async {
-        await _isar.categoryModels.put(category);
-      });
-      return true;
+      final result = await _db.update(_db.categories).replace(category);
+      return result;
     } catch (e) {
       return false;
     }
@@ -51,9 +35,10 @@ class CategoryRepositoryImpl implements ICategoryRepository {
   @override
   Future<bool> delete(int id) async {
     try {
-      return await _isar.writeTxn(() async {
-        return await _isar.categoryModels.delete(id);
-      });
+      final result =
+          await (_db.delete(_db.categories)..where((c) => c.id.equals(id)))
+              .go();
+      return result > 0;
     } catch (e) {
       return false;
     }
@@ -62,20 +47,25 @@ class CategoryRepositoryImpl implements ICategoryRepository {
   @override
   Future<void> seedDefaultCategories() async {
     final existingCategories = await getAll();
+    if (existingCategories.isNotEmpty) return;
 
-    // Only seed if no categories exist
-    if (existingCategories.isEmpty) {
-      await _isar.writeTxn(() async {
-        for (final categoryName in _defaultCategories) {
-          final category = CategoryModel(name: categoryName);
-          await _isar.categoryModels.put(category);
-        }
-      });
+    final defaultCategories = [
+      CategoryModelCompanion.insert(name: 'Alimentação'),
+      CategoryModelCompanion.insert(name: 'Transporte'),
+      CategoryModelCompanion.insert(name: 'Moradia'),
+      CategoryModelCompanion.insert(name: 'Saúde'),
+      CategoryModelCompanion.insert(name: 'Lazer'),
+      CategoryModelCompanion.insert(name: 'Educação'),
+      CategoryModelCompanion.insert(name: 'Outros'),
+    ];
+
+    for (final category in defaultCategories) {
+      await _db.into(_db.categories).insert(category);
     }
   }
 
   @override
   Stream<List<CategoryModel>> watchAll() {
-    return _isar.categoryModels.where().watch(fireImmediately: true);
+    return _db.select(_db.categories).watch();
   }
 }

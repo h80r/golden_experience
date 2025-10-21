@@ -1,9 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/data/datasources/local_database.dart';
-import 'package:golden_experience/data/models/transaction_model.dart';
+import 'package:golden_experience/data/database/transactions_table.dart';
 import 'package:golden_experience/data/repositories/transaction_repository_impl.dart';
 import 'package:golden_experience/domain/repositories/i_transaction_repository.dart';
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 
 void main() {
   late ITransactionRepository repository;
@@ -25,12 +26,12 @@ void main() {
 
   tearDownAll(() async {
     // Clean up database
-    await LocalDatabase.close();
+    await LocalDatabase.closeDatabase();
   });
 
   group('TransactionRepositoryImpl', () {
     test('should create a new transaction', () async {
-      final transaction = TransactionModel(
+      final transaction = TransactionModelCompanion.insert(
         value: 100.0,
         description: 'Test transaction',
         date: DateTime.now(),
@@ -43,7 +44,7 @@ void main() {
     });
 
     test('should retrieve a transaction by id', () async {
-      final transaction = TransactionModel(
+      final transaction = TransactionModelCompanion.insert(
         value: 50.0,
         description: 'Get by ID test',
         date: DateTime.now(),
@@ -71,7 +72,7 @@ void main() {
 
     test('should retrieve transactions by month', () async {
       final now = DateTime.now();
-      final transaction = TransactionModel(
+      final transaction = TransactionModelCompanion.insert(
         value: 75.0,
         description: 'Monthly test',
         date: now,
@@ -91,7 +92,7 @@ void main() {
     });
 
     test('should update a transaction', () async {
-      final transaction = TransactionModel(
+      final transaction = TransactionModelCompanion.insert(
         value: 100.0,
         description: 'Update test',
         date: DateTime.now(),
@@ -102,17 +103,17 @@ void main() {
       final id = await repository.create(transaction);
       final retrieved = await repository.getById(id);
 
-      retrieved!.value = 150.0;
-      final success = await repository.update(retrieved);
+      final updatedTransaction = retrieved!.copyWith(value: 150.0);
+      final success = await repository.update(updatedTransaction);
 
       expect(success, isTrue);
 
-      final updated = await repository.getById(id);
-      expect(updated!.value, equals(150.0));
+      final result = await repository.getById(id);
+      expect(result!.value, equals(150.0));
     });
 
     test('should delete a transaction', () async {
-      final transaction = TransactionModel(
+      final transaction = TransactionModelCompanion.insert(
         value: 200.0,
         description: 'Delete test',
         date: DateTime.now(),

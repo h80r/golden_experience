@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.9.2
+  sdk: '>=3.0.0 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -37,14 +37,15 @@ dependencies:
 
   # State Management
   flutter_riverpod: ^3.0.3
-  riverpod_annotation: ^3.0.0
+  riverpod_annotation: ^3.0.3
+  freezed_annotation: ^3.1.0
 
   # Database
-  isar: ^3.1.0
-  isar_flutter_libs: ^3.1.0
+  drift: ^2.23.0
+  sqlite3_flutter_libs: ^0.5.24
 
   # Utilities
-  path_provider: ^2.1.4
+  path_provider: ^2.1.5
 
   # Typography
   google_fonts: ^6.3.2
@@ -59,14 +60,14 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  build_runner: ^2.7.1
+  
+  # State Management
+  freezed: ^3.1.0
+  riverpod_generator: ^3.0.3
 
-  # Code Generation
-  build_runner: ^2.4.13
-  isar_generator: ^3.1.0
-
-# Dependency overrides to resolve conflicts between isar_generator and riverpod
-dependency_overrides:
-  analyzer: 5.13.0
+  # Database Code Generation
+  drift_dev: ^2.23.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

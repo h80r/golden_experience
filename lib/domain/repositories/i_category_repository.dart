@@ -1,11 +1,12 @@
-import '../../../data/models/category_model.dart';
+import 'package:drift/drift.dart';
+import '../../data/datasources/local_database.dart';
 
 /// Interface for Category repository operations
 /// Defines CRUD operations and category management
 abstract class ICategoryRepository {
   /// Creates a new category
   /// Returns the ID of the created category
-  Future<int> create(CategoryModel category);
+  Future<int> create(Insertable<CategoryModel> category);
 
   /// Retrieves a category by its ID
   /// Returns null if not found
@@ -16,7 +17,7 @@ abstract class ICategoryRepository {
 
   /// Updates an existing category
   /// Returns true if successful, false otherwise
-  Future<bool> update(CategoryModel category);
+  Future<bool> update(Insertable<CategoryModel> category);
 
   /// Deletes a category by its ID
   /// Returns true if successful, false otherwise

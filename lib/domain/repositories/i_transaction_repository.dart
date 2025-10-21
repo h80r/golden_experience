@@ -1,11 +1,12 @@
-import '../../../data/models/transaction_model.dart';
+import 'package:drift/drift.dart';
+import '../../data/datasources/local_database.dart';
 
 /// Interface for Transaction repository operations
 /// Defines CRUD operations and queries for Transaction entities
 abstract class ITransactionRepository {
   /// Creates a new transaction
   /// Returns the ID of the created transaction
-  Future<int> create(TransactionModel transaction);
+  Future<int> create(Insertable<TransactionModel> transaction);
 
   /// Retrieves a transaction by its ID
   /// Returns null if not found
@@ -20,7 +21,7 @@ abstract class ITransactionRepository {
 
   /// Updates an existing transaction
   /// Returns true if successful, false otherwise
-  Future<bool> update(TransactionModel transaction);
+  Future<bool> update(Insertable<TransactionModel> transaction);
 
   /// Deletes a transaction by its ID
   /// Returns true if successful, false otherwise
