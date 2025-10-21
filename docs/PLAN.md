@@ -61,10 +61,10 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 2 / 21 (10%)
+**Concluídas:** 3 / 21 (14%)
 
 ### Por Fase
-- **Fase 1 - Fundação:** 2 / 4 (50%)
+- **Fase 1 - Fundação:** 3 / 4 (75%)
 - **Fase 2 - Registro de Gastos:** 0 / 4 (0%)
 - **Fase 3 - Dashboard Reativo:** 0 / 4 (0%)
 - **Fase 4 - Funcionalidades de Suporte:** 0 / 5 (0%)
@@ -161,7 +161,7 @@ Implementar todas as entidades do domínio como coleções do Isar com suas resp
 
 ---
 
-### [ ] F1-T3: Implementação dos Repositórios
+### [x] F1-T3: Implementação dos Repositórios
 
 **Branch:** `feature/repositories`
 
@@ -191,10 +191,10 @@ Criar as interfaces dos repositórios na camada de domínio e suas implementaç�
    - Inicialização com valores padrão
 
 **Definition of Done:**
-- [ ] Interfaces criadas na camada `domain/repositories/`
-- [ ] Implementações criadas na camada `data/repositories/`
-- [ ] Providers do Riverpod configurados
-- [ ] Testes unitários para todos os repositórios
+- [x] Interfaces criadas na camada `domain/repositories/`
+- [x] Implementações criadas na camada `data/repositories/`
+- [x] Providers do Riverpod configurados
+- [x] Testes unitários para todos os repositórios
 - [ ] Merge realizado para `develop`
 
 ---

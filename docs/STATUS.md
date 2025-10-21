@@ -4,8 +4,8 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F1-T3
-- **current_task_title**: Implementação dos Repositórios
+- **current_task_id**: F1-T4
+- **current_task_title**: Navegação e Shell do Aplicativo
 - **current_task_status**: PENDING
 
 ## Step Tracking (Only for complex tasks)
