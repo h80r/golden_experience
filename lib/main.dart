@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'presentation/screens/main_screen.dart';
 
 void main() {
   runApp(
@@ -20,11 +21,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const Scaffold(
-        body: Center(
-          child: Text('Previsor Financeiro - Setup Completo'),
-        ),
-      ),
+      home: const MainScreen(),
     );
   }
 }

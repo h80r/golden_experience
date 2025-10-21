@@ -61,10 +61,10 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 3 / 21 (14%)
+**Concluídas:** 4 / 21 (19%)
 
 ### Por Fase
-- **Fase 1 - Fundação:** 3 / 4 (75%)
+- **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 0 / 4 (0%)
 - **Fase 3 - Dashboard Reativo:** 0 / 4 (0%)
 - **Fase 4 - Funcionalidades de Suporte:** 0 / 5 (0%)
@@ -80,7 +80,7 @@ main (develop)
 
 **Objetivo:** Estabelecer a base técnica do projeto com arquitetura limpa, configuração do banco de dados e estrutura de navegação.
 
-**Status:** 2 / 4 tarefas concluídas
+**Status:** 4 / 4 tarefas concluídas
 
 ---
 
@@ -199,7 +199,7 @@ Criar as interfaces dos repositórios na camada de domínio e suas implementaç�
 
 ---
 
-### [ ] F1-T4: Navegação e Shell do Aplicativo
+### [x] F1-T4: Navegação e Shell do Aplicativo
 
 **Branch:** `feature/navigation-shell`
 
@@ -216,11 +216,11 @@ MaterialApp
 ```
 
 **Definition of Done:**
-- [ ] `MainScreen` com `BottomNavigationBar` implementado
-- [ ] 3 telas criadas (Dashboard, Recorrências, Contas)
-- [ ] Navegação entre abas funcional
-- [ ] App inicia na aba "Início"
-- [ ] Testes de widget para navegação básica
+- [x] `MainScreen` com `BottomNavigationBar` implementado
+- [x] 3 telas criadas (Dashboard, Recorrências, Contas)
+- [x] Navegação entre abas funcional
+- [x] App inicia na aba "Início"
+- [x] Testes de widget para navegação básica
 - [ ] Merge realizado para `develop`
 
 ---
