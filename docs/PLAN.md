@@ -61,11 +61,11 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 5 / 21 (24%)
+**Concluídas:** 6 / 21 (29%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
-- **Fase 2 - Registro de Gastos:** 1 / 4 (25%)
+- **Fase 2 - Registro de Gastos:** 2 / 4 (50%)
 - **Fase 3 - Dashboard Reativo:** 0 / 4 (0%)
 - **Fase 4 - Funcionalidades de Suporte:** 0 / 5 (0%)
 
@@ -229,7 +229,7 @@ MaterialApp
 
 **Objetivo:** Implementar o fluxo core do produto - o registro rápido de gastos com interface de calculadora e bottom sheet de detalhes.
 
-**Status:** 0 / 4 tarefas concluídas
+**Status:** 2 / 4 tarefas concluídas
 
 ---
 
@@ -264,16 +264,16 @@ Construir os widgets para a calculadora (overlay) e para o bottom sheet de detal
    - `CustomDropdown`
 
 **Definition of Done:**
-- [ ] Widgets criados seguindo o design
-- [ ] Componentes reutilizáveis implementados
-- [ ] Interações de UI funcionam isoladamente
-- [ ] Testes de widget para componentes
-- [ ] Aplicação do design system (cores, tipografia, espaçamento)
-- [ ] Merge realizado para `develop`
+- [x] Widgets criados seguindo o design
+- [x] Componentes reutilizáveis implementados
+- [x] Interações de UI funcionam isoladamente
+- [x] Testes de widget para componentes
+- [x] Aplicação do design system (cores, tipografia, espaçamento)
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F2-T2: Lógica de Estado para o Registro
+### [x] F2-T2: Lógica de Estado para o Registro
 
 **Branch:** `feature/expense-state`
 
@@ -301,16 +301,16 @@ class ExpenseFormState {
 - Reset do formulário
 
 **Definition of Done:**
-- [ ] `ExpenseFormNotifier` implementado
-- [ ] Provider configurado
-- [ ] Validações implementadas
-- [ ] Testes unitários para o notifier
-- [ ] Estados de erro tratados
-- [ ] Merge realizado para `develop`
+- [x] `ExpenseFormNotifier` implementado
+- [x] Provider configurado
+- [x] Validações implementadas
+- [x] Testes unitários para o notifier
+- [x] Estados de erro tratados
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F2-T3: Use Case - Adicionar Transação
+### [x] F2-T3: Use Case - Adicionar Transação
 
 **Branch:** `feature/add-transaction-usecase`
 
@@ -325,11 +325,11 @@ Criar o Use Case na camada de domínio responsável por orquestrar a lógica de 
 5. Retornar sucesso/erro
 
 **Definition of Done:**
-- [ ] `AddTransactionUseCase` implementado em `domain/usecases/`
-- [ ] Lógica de atualização de saldo/limite correta
-- [ ] Tratamento de erros implementado
-- [ ] Testes unitários cobrindo todos os cenários
-- [ ] Provider do use case configurado
+- [x] `AddTransactionUseCase` implementado em `domain/usecases/`
+- [x] Lógica de atualização de saldo/limite correta
+- [x] Tratamento de erros implementado
+- [x] Testes unitários cobrindo todos os cenários
+- [x] Provider do use case configurado
 - [ ] Merge realizado para `develop`
 
 ---

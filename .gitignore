@@ -47,3 +47,11 @@ app.*.map.json
 # Generated files
 *.g.dart
 *.freezed.dart
+
+# Platform-generated files
+linux/flutter/generated_*
+macos/Flutter/Generated*
+windows/flutter/generated_*
+
+# Database files
+*.db
