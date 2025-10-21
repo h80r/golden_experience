@@ -61,11 +61,11 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 4 / 21 (19%)
+**Concluídas:** 5 / 21 (24%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
-- **Fase 2 - Registro de Gastos:** 0 / 4 (0%)
+- **Fase 2 - Registro de Gastos:** 1 / 4 (25%)
 - **Fase 3 - Dashboard Reativo:** 0 / 4 (0%)
 - **Fase 4 - Funcionalidades de Suporte:** 0 / 5 (0%)
 
@@ -233,7 +233,7 @@ MaterialApp
 
 ---
 
-### [ ] F2-T1: UI da Calculadora e Bottom Sheet
+### [x] F2-T1: UI da Calculadora e Bottom Sheet
 
 **Branch:** `feature/calculator-ui`
 

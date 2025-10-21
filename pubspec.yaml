@@ -46,6 +46,9 @@ dependencies:
   # Utilities
   path_provider: ^2.1.4
 
+  # Typography
+  google_fonts: ^6.3.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
