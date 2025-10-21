@@ -61,10 +61,10 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 0 / 21 (0%)
+**Concluídas:** 1 / 21 (5%)
 
 ### Por Fase
-- **Fase 1 - Fundação:** 0 / 4 (0%)
+- **Fase 1 - Fundação:** 1 / 4 (25%)
 - **Fase 2 - Registro de Gastos:** 0 / 4 (0%)
 - **Fase 3 - Dashboard Reativo:** 0 / 4 (0%)
 - **Fase 4 - Funcionalidades de Suporte:** 0 / 5 (0%)
@@ -84,7 +84,7 @@ main (develop)
 
 ---
 
-### [ ] F1-T1: Configuração do Projeto e Arquitetura
+### [x] F1-T1: Configuração do Projeto e Arquitetura
 
 **Branch:** `chore/project-setup`
 
@@ -112,7 +112,7 @@ Inicializar o projeto Flutter, configurar Riverpod, Isar e estabelecer a estrutu
 ### [ ] F1-T2: Modelagem e Configuração do Banco de Dados
 
 **Branch:** `chore/database-models`
-
+   
 **Descrição:**
 Implementar todas as entidades do domínio como coleções do Isar com suas respectivas anotações e configurações.
 
@@ -153,11 +153,11 @@ Implementar todas as entidades do domínio como coleções do Isar com suas resp
    - lastRecurringCheck (DateTime)
 
 **Definition of Done:**
-- [x] Todas as 5 entidades modeladas com anotações Isar
-- [x] Schema do Isar gerado com sucesso (`build_runner`)
-- [x] Instância do Isar pode ser aberta e fechada
-- [x] Testes unitários para os modelos criados
-- [x] Merge realizado para `develop`
+- [ ] Todas as 5 entidades modeladas com anotações Isar
+- [ ] Schema do Isar gerado com sucesso (`build_runner`)
+- [ ] Instância do Isar pode ser aberta e fechada
+- [ ] Testes unitários para os modelos criados
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -191,11 +191,11 @@ Criar as interfaces dos repositórios na camada de domínio e suas implementaç�
    - Inicialização com valores padrão
 
 **Definition of Done:**
-- [x] Interfaces criadas na camada `domain/repositories/`
-- [x] Implementações criadas na camada `data/repositories/`
-- [x] Providers do Riverpod configurados
-- [x] Testes unitários para todos os repositórios
-- [x] Merge realizado para `develop`
+- [ ] Interfaces criadas na camada `domain/repositories/`
+- [ ] Implementações criadas na camada `data/repositories/`
+- [ ] Providers do Riverpod configurados
+- [ ] Testes unitários para todos os repositórios
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -216,12 +216,12 @@ MaterialApp
 ```
 
 **Definition of Done:**
-- [x] `MainScreen` com `BottomNavigationBar` implementado
-- [x] 3 telas criadas (Dashboard, Recorrências, Contas)
-- [x] Navegação entre abas funcional
-- [x] App inicia na aba "Início"
-- [x] Testes de widget para navegação básica
-- [x] Merge realizado para `develop`
+- [ ] `MainScreen` com `BottomNavigationBar` implementado
+- [ ] 3 telas criadas (Dashboard, Recorrências, Contas)
+- [ ] Navegação entre abas funcional
+- [ ] App inicia na aba "Início"
+- [ ] Testes de widget para navegação básica
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -264,12 +264,12 @@ Construir os widgets para a calculadora (overlay) e para o bottom sheet de detal
    - `CustomDropdown`
 
 **Definition of Done:**
-- [x] Widgets criados seguindo o design
-- [x] Componentes reutilizáveis implementados
-- [x] Interações de UI funcionam isoladamente
-- [x] Testes de widget para componentes
-- [x] Aplicação do design system (cores, tipografia, espaçamento)
-- [x] Merge realizado para `develop`
+- [ ] Widgets criados seguindo o design
+- [ ] Componentes reutilizáveis implementados
+- [ ] Interações de UI funcionam isoladamente
+- [ ] Testes de widget para componentes
+- [ ] Aplicação do design system (cores, tipografia, espaçamento)
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -301,12 +301,12 @@ class ExpenseFormState {
 - Reset do formulário
 
 **Definition of Done:**
-- [x] `ExpenseFormNotifier` implementado
-- [x] Provider configurado
-- [x] Validações implementadas
-- [x] Testes unitários para o notifier
-- [x] Estados de erro tratados
-- [x] Merge realizado para `develop`
+- [ ] `ExpenseFormNotifier` implementado
+- [ ] Provider configurado
+- [ ] Validações implementadas
+- [ ] Testes unitários para o notifier
+- [ ] Estados de erro tratados
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -325,12 +325,12 @@ Criar o Use Case na camada de domínio responsável por orquestrar a lógica de 
 5. Retornar sucesso/erro
 
 **Definition of Done:**
-- [x] `AddTransactionUseCase` implementado em `domain/usecases/`
-- [x] Lógica de atualização de saldo/limite correta
-- [x] Tratamento de erros implementado
-- [x] Testes unitários cobrindo todos os cenários
-- [x] Provider do use case configurado
-- [x] Merge realizado para `develop`
+- [ ] `AddTransactionUseCase` implementado em `domain/usecases/`
+- [ ] Lógica de atualização de saldo/limite correta
+- [ ] Tratamento de erros implementado
+- [ ] Testes unitários cobrindo todos os cenários
+- [ ] Provider do use case configurado
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -347,14 +347,14 @@ FAB (+) → CalculatorOverlay → ExpenseDetailsBottomSheet → ExpenseFormNotif
 ```
 
 **Definition of Done:**
-- [x] FAB no Dashboard abre a calculadora
-- [x] Calculadora confirma valor e abre bottom sheet
-- [x] Bottom sheet salva e chama o use case
-- [x] Transação é persistida no Isar
-- [x] Saldo/limite da conta é atualizado
-- [x] Fluxo fecha e retorna ao Dashboard
-- [x] Teste de integração E2E para o fluxo completo
-- [x] Merge realizado para `develop`
+- [ ] FAB no Dashboard abre a calculadora
+- [ ] Calculadora confirma valor e abre bottom sheet
+- [ ] Bottom sheet salva e chama o use case
+- [ ] Transação é persistida no Isar
+- [ ] Saldo/limite da conta é atualizado
+- [ ] Fluxo fecha e retorna ao Dashboard
+- [ ] Teste de integração E2E para o fluxo completo
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -393,12 +393,12 @@ class DashboardData {
 ```
 
 **Definition of Done:**
-- [x] `GetDashboardDataUseCase` implementado
-- [x] Todos os cálculos corretos conforme PRD
-- [x] Testes unitários cobrindo múltiplos cenários
-- [x] Casos extremos tratados (reserva negativa, etc.)
-- [x] Provider configurado
-- [x] Merge realizado para `develop`
+- [ ] `GetDashboardDataUseCase` implementado
+- [ ] Todos os cálculos corretos conforme PRD
+- [ ] Testes unitários cobrindo múltiplos cenários
+- [ ] Casos extremos tratados (reserva negativa, etc.)
+- [ ] Provider configurado
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -423,12 +423,12 @@ Implementar a lógica que processa despesas recorrentes na inicialização do ap
 - Múltiplos dias sem abrir o app
 
 **Definition of Done:**
-- [x] `ProcessRecurringExpensesUseCase` implementado
-- [x] Lógica de múltiplos dias funcional
-- [x] Meses com diferentes durações tratados
-- [x] Testes unitários com casos extremos
-- [x] Execução na inicialização configurada
-- [x] Merge realizado para `develop`
+- [ ] `ProcessRecurringExpensesUseCase` implementado
+- [ ] Lógica de múltiplos dias funcional
+- [ ] Meses com diferentes durações tratados
+- [ ] Testes unitários com casos extremos
+- [ ] Execução na inicialização configurada
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -460,12 +460,12 @@ Construir a interface completa do Dashboard seguindo o design conceitual, prepar
    - Botão "+" para adicionar gasto
 
 **Definition of Done:**
-- [x] Layout fiel ao design conceitual
-- [x] Responsividade para diferentes tamanhos de tela
-- [x] Design system aplicado (cores, tipografia)
-- [x] Componentes criados e organizados
-- [x] Testes de widget para os componentes
-- [x] Merge realizado para `develop`
+- [ ] Layout fiel ao design conceitual
+- [ ] Responsividade para diferentes tamanhos de tela
+- [ ] Design system aplicado (cores, tipografia)
+- [ ] Componentes criados e organizados
+- [ ] Testes de widget para os componentes
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -488,13 +488,13 @@ Dashboard UI (atualiza automaticamente)
 ```
 
 **Definition of Done:**
-- [x] `StreamProvider` configurado para o dashboard
-- [x] Dashboard consome o provider reativamente
-- [x] Adicionar novo gasto atualiza Dashboard instantaneamente
-- [x] Todas as mudanças refletidas em tempo real
-- [x] Estados de loading e erro tratados
-- [x] Teste de integração para reatividade
-- [x] Merge realizado para `develop`
+- [ ] `StreamProvider` configurado para o dashboard
+- [ ] Dashboard consome o provider reativamente
+- [ ] Adicionar novo gasto atualiza Dashboard instantaneamente
+- [ ] Todas as mudanças refletidas em tempo real
+- [ ] Estados de loading e erro tratados
+- [ ] Teste de integração para reatividade
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -521,12 +521,12 @@ Implementar a tela de Contas com funcionalidades completas de criar, visualizar,
 - Exibir saldo atual (débito) ou limite disponível (crédito)
 
 **Definition of Done:**
-- [x] Tela de listagem de contas implementada
-- [x] Formulário de criação/edição implementado
-- [x] Validações de campos implementadas
-- [x] Lógica de remoção com verificação
-- [x] Testes de widget para a tela
-- [x] Merge realizado para `develop`
+- [ ] Tela de listagem de contas implementada
+- [ ] Formulário de criação/edição implementado
+- [ ] Validações de campos implementadas
+- [ ] Lógica de remoção com verificação
+- [ ] Testes de widget para a tela
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -545,12 +545,12 @@ Implementar a tela de Recorrências permitindo gerenciar despesas fixas mensais.
 - Indicador visual do próximo dia de cobrança
 
 **Definition of Done:**
-- [x] Tela de listagem implementada
-- [x] Formulário de criação/edição implementado
-- [x] Validações (dia de cobrança entre 1-31)
-- [x] Lógica de remoção implementada
-- [x] Testes de widget para a tela
-- [x] Merge realizado para `develop`
+- [ ] Tela de listagem implementada
+- [ ] Formulário de criação/edição implementado
+- [ ] Validações (dia de cobrança entre 1-31)
+- [ ] Lógica de remoção implementada
+- [ ] Testes de widget para a tela
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -567,13 +567,13 @@ Implementar a tela onde o usuário define os valores base para os cálculos do a
 3. **Percentual Máximo de Gasto da Reserva** (0-100%)
 
 **Definition of Done:**
-- [x] Tela de configurações acessível pelo ícone no Dashboard
-- [x] Formulário com os 3 campos implementado
-- [x] Validações de valores implementadas
-- [x] Dados salvos em `AppSettings`
-- [x] Mudanças refletem imediatamente no Dashboard
-- [x] Testes de widget para a tela
-- [x] Merge realizado para `develop`
+- [ ] Tela de configurações acessível pelo ícone no Dashboard
+- [ ] Formulário com os 3 campos implementado
+- [ ] Validações de valores implementadas
+- [ ] Dados salvos em `AppSettings`
+- [ ] Mudanças refletem imediatamente no Dashboard
+- [ ] Testes de widget para a tela
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -598,14 +598,14 @@ Implementar funcionalidade de exportar todos os dados para JSON e importar de vo
    - Feedback visual de sucesso/erro
 
 **Definition of Done:**
-- [x] Botão "Exportar Backup" nas configurações
-- [x] Botão "Importar Backup" nas configurações
-- [x] Exportação gera JSON válido
-- [x] Importação valida e restaura dados
-- [x] Diálogos de confirmação implementados
-- [x] Tratamento de erros robusto
-- [x] Testes para lógica de import/export
-- [x] Merge realizado para `develop`
+- [ ] Botão "Exportar Backup" nas configurações
+- [ ] Botão "Importar Backup" nas configurações
+- [ ] Exportação gera JSON válido
+- [ ] Importação valida e restaura dados
+- [ ] Diálogos de confirmação implementados
+- [ ] Tratamento de erros robusto
+- [ ] Testes para lógica de import/export
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -628,11 +628,11 @@ Criar workflow no GitHub Actions para automatizar testes, análise de código e 
    - (Futuro) Deploy para Firebase App Distribution
 
 **Definition of Done:**
-- [x] Arquivo `.github/workflows/ci.yml` criado
-- [x] Workflow roda automaticamente
-- [x] Builds de sucesso/falha visíveis no GitHub
-- [x] Documentação no README sobre o CI/CD
-- [x] Merge realizado para `develop`
+- [ ] Arquivo `.github/workflows/ci.yml` criado
+- [ ] Workflow roda automaticamente
+- [ ] Builds de sucesso/falha visíveis no GitHub
+- [ ] Documentação no README sobre o CI/CD
+- [ ] Merge realizado para `develop`
 
 ---
 
@@ -640,8 +640,6 @@ Criar workflow no GitHub Actions para automatizar testes, análise de código e 
 
 ### Boas Práticas Durante o Desenvolvimento
 
-1. **Commits Atômicos:** Cada commit deve representar uma unidade lógica de trabalho
-2. **Mensagens Descritivas:** Usar convenção Conventional Commits quando possível
 3. **Testes Primeiro:** Escrever testes antes ou junto com a implementação
 4. **Code Review Solo:** Revisar o próprio código antes do merge
 5. **Documentação:** Comentar código complexo e manter este PLAN.md atualizado
@@ -651,7 +649,7 @@ Criar workflow no GitHub Actions para automatizar testes, análise de código e 
 Sempre que concluir uma tarefa:
 1. Mudar o checkbox de `[ ]` para `[x]`
 2. Atualizar os contadores de progresso
-3. Fazer commit da mudança com mensagem: `docs: update PLAN.md - complete [TASK_ID]`
+3. Pedir ao usuário que faça commit da mudança
 
 ### Ordem Sugerida
 
