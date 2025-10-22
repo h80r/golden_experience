@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'data/datasources/local_database.dart';
 import 'domain/usecases/providers/usecase_providers.dart';
 import 'presentation/screens/main_screen.dart';
+import 'presentation/theme/app_theme.dart';
 
 void main() async {
   // Initialize the database before running the app
@@ -52,10 +53,8 @@ class _MyAppState extends ConsumerState<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Previsor Financeiro',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.darkTheme(),
+      themeMode: ThemeMode.dark,
       home: const MainScreen(),
     );
   }
