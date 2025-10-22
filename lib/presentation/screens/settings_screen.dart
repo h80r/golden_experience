@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/buttons/primary_button.dart';
 import '../widgets/buttons/secondary_button.dart';
 import '../widgets/inputs/custom_text_field.dart';
 import '../state/app_settings_form_notifier.dart';
+import '../state/backup_notifier.dart';
 import '../../data/providers/repository_providers.dart';
 
 /// SettingsScreen - Configuration screen for app-wide financial settings
@@ -133,9 +136,132 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _exportBackup() async {
+    final backupNotifier = ref.read(backupProvider.notifier);
+    backupNotifier.setLoading(true);
+
+    try {
+      final backupRepository = ref.read(backupRepositoryProvider);
+      final jsonData = await backupRepository.exportToJson();
+      final backupPath = await backupRepository.getDefaultBackupPath();
+
+      // Write the JSON to file
+      final file = File(backupPath);
+      await file.writeAsString(jsonData);
+
+      if (!mounted) return;
+
+      backupNotifier.setSuccess('Backup exportado com sucesso!\n$backupPath');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Backup exportado com sucesso!'),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      backupNotifier.setError('Erro ao exportar: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao exportar: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      backupNotifier.setLoading(false);
+    }
+  }
+
+  Future<void> _importBackup() async {
+    final backupNotifier = ref.read(backupProvider.notifier);
+
+    try {
+      // Pick a file
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result == null || result.files.isEmpty) {
+        return; // User cancelled
+      }
+
+      final filePath = result.files.first.path;
+      if (filePath == null) {
+        throw Exception('Caminho do arquivo não encontrado');
+      }
+
+      backupNotifier.setLoading(true);
+
+      // Read file content
+      final file = File(filePath);
+      final jsonData = await file.readAsString();
+
+      // Show confirmation dialog
+      if (!mounted) return;
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Confirmar Importação'),
+          content: const Text(
+            'Isso substituirá todos os dados atuais pelo backup. Deseja continuar?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Importar'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed != true) {
+        backupNotifier.setLoading(false);
+        return;
+      }
+
+      // Import data
+      final backupRepository = ref.read(backupRepositoryProvider);
+      await backupRepository.importFromJson(jsonData);
+
+      if (!mounted) return;
+
+      backupNotifier.setSuccess('Backup importado com sucesso!');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Backup importado com sucesso!'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      backupNotifier.setError('Erro ao importar: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao importar: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      backupNotifier.setLoading(false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final formState = ref.watch(appSettingsFormProvider);
+    final backupState = ref.watch(backupProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -226,6 +352,116 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Divider
+            Divider(
+              color: AppColors.border,
+              thickness: 1,
+              height: AppSpacing.xl,
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Backup Section Header
+            Text(
+              'Backup e Restauração',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            Text(
+              'Exporte seus dados para um arquivo ou importe dados de um backup anterior.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Backup buttons
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: backupState.isLoading ? null : _exportBackup,
+                    icon: const Icon(Icons.cloud_download),
+                    label: backupState.isLoading
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text('Exportar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.md,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: backupState.isLoading ? null : _importBackup,
+                    icon: const Icon(Icons.cloud_upload),
+                    label: const Text('Importar'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.md,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Backup status messages
+            if (backupState.successMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.md),
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.successWithOpacity,
+                    borderRadius: BorderRadius.circular(8.0),
+                    border: Border.all(color: AppColors.success),
+                  ),
+                  child: Text(
+                    backupState.successMessage!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.success,
+                        ),
+                  ),
+                ),
+              ),
+            if (backupState.errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.md),
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.errorWithOpacity,
+                    borderRadius: BorderRadius.circular(8.0),
+                    border: Border.all(color: AppColors.error),
+                  ),
+                  child: Text(
+                    backupState.errorMessage!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.error,
+                        ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

@@ -61,13 +61,13 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 13 / 21 (62%)
+**Concluídas:** 14 / 21 (67%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 4 / 4 (100%)
 - **Fase 3 - Dashboard Reativo:** 4 / 4 (100%)
-- **Fase 4 - Funcionalidades de Suporte:** 3 / 5 (60%)
+- **Fase 4 - Funcionalidades de Suporte:** 4 / 5 (80%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -573,11 +573,11 @@ Implementar a tela onde o usuário define os valores base para os cálculos do a
 - [x] Dados salvos em `AppSettings`
 - [x] Mudanças refletem imediatamente no Dashboard
 - [x] Testes de widget para a tela (12 testes implementados e passando)
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F4-T4: Backup e Restauração
+### [x] F4-T4: Backup e Restauração
 
 **Branch:** `feature/backup-restore`
 
@@ -598,13 +598,13 @@ Implementar funcionalidade de exportar todos os dados para JSON e importar de vo
    - Feedback visual de sucesso/erro
 
 **Definition of Done:**
-- [ ] Botão "Exportar Backup" nas configurações
-- [ ] Botão "Importar Backup" nas configurações
-- [ ] Exportação gera JSON válido
-- [ ] Importação valida e restaura dados
-- [ ] Diálogos de confirmação implementados
-- [ ] Tratamento de erros robusto
-- [ ] Testes para lógica de import/export
+- [x] Botão "Exportar Backup" nas configurações
+- [x] Botão "Importar Backup" nas configurações
+- [x] Exportação gera JSON válido
+- [x] Importação valida e restaura dados
+- [x] Diálogos de confirmação implementados
+- [x] Tratamento de erros robusto
+- [x] Testes para lógica de import/export
 - [ ] Merge realizado para `develop`
 
 ---
