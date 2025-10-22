@@ -494,7 +494,7 @@ Dashboard UI (atualiza automaticamente)
 - [x] Todas as mudanças refletidas em tempo real
 - [x] Estados de loading e erro tratados
 - [x] Teste de integração para reatividade
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
@@ -605,33 +605,6 @@ Implementar funcionalidade de exportar todos os dados para JSON e importar de vo
 - [ ] Diálogos de confirmação implementados
 - [ ] Tratamento de erros robusto
 - [ ] Testes para lógica de import/export
-- [ ] Merge realizado para `develop`
-
----
-
-### [ ] F4-T5: Configuração de CI/CD
-
-**Branch:** `chore/ci-cd`
-
-**Descrição:**
-Criar workflow no GitHub Actions para automatizar testes, análise de código e builds.
-
-**Pipeline:**
-1. **On Pull Request / Push to develop:**
-   - Rodar `flutter analyze`
-   - Rodar `flutter test`
-   - Gerar relatório de cobertura
-
-2. **On Merge to main:**
-   - Build de release (Android APK/Bundle)
-   - Gerar changelog automático
-   - (Futuro) Deploy para Firebase App Distribution
-
-**Definition of Done:**
-- [ ] Arquivo `.github/workflows/ci.yml` criado
-- [ ] Workflow roda automaticamente
-- [ ] Builds de sucesso/falha visíveis no GitHub
-- [ ] Documentação no README sobre o CI/CD
 - [ ] Merge realizado para `develop`
 
 ---

@@ -1,3 +1,4 @@
+import 'dart:async';
 import '../models/dashboard_data.dart';
 import '../repositories/i_app_settings_repository.dart';
 import '../repositories/i_transaction_repository.dart';
@@ -94,6 +95,32 @@ class GetDashboardDataUseCase {
       );
     } catch (e) {
       throw Exception('Error fetching dashboard data: ${e.toString()}');
+    }
+  }
+
+  /// Executes the use case reactively, returning a stream of dashboard data
+  ///
+  /// This method combines streams from both repositories and recalculates
+  /// the dashboard data whenever any of the underlying data changes.
+  /// This enables real-time UI updates without manual refresh.
+  ///
+  /// Returns a Stream of DashboardData that emits new values whenever
+  /// transactions or app settings change
+  Stream<DashboardData> executeReactive() async* {
+    try {
+      final transactionStream = _transactionRepository.watchCurrentMonth();
+
+      // Emit new DashboardData whenever transaction stream changes
+      await for (final _ in transactionStream) {
+        try {
+          final data = await execute();
+          yield data;
+        } catch (e) {
+          yield* Stream.error(e);
+        }
+      }
+    } catch (e) {
+      yield* Stream.error(e);
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/dashboard_data.dart';
 import '../../../data/providers/repository_providers.dart';
 import '../add_transaction_usecase.dart';
 import '../get_dashboard_data_usecase.dart';
@@ -70,4 +71,25 @@ final processRecurringExpensesUseCaseProvider =
     transactionRepository: ref.read(transactionRepositoryProvider),
     accountRepository: ref.read(accountRepositoryProvider),
   );
+});
+
+/// Provider for reactive dashboard data
+///
+/// This StreamProvider watches for changes in transactions and app settings,
+/// automatically recalculating and emitting new DashboardData whenever
+/// the underlying data changes.
+///
+/// Usage:
+/// ```dart
+/// final dashboardDataAsync = ref.watch(dashboardDataStreamProvider);
+/// dashboardDataAsync.when(
+///   data: (dashboardData) => Text('Remaining: ${dashboardData.remainingBudget}'),
+///   loading: () => CircularProgressIndicator(),
+///   error: (error, stack) => Text('Error: $error'),
+/// );
+/// ```
+final dashboardDataStreamProvider =
+    StreamProvider.autoDispose<DashboardData>((ref) {
+  final useCase = ref.watch(getDashboardDataUseCaseProvider);
+  return useCase.executeReactive();
 });

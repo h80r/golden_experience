@@ -130,6 +130,9 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the reactive dashboard data stream
+    final dashboardDataAsync = ref.watch(dashboardDataStreamProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Início'),
@@ -144,29 +147,83 @@ class DashboardScreen extends ConsumerWidget {
         ],
       ),
       backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Main card - Remaining budget
-            MainCard(
-              remainingBudget: 1250.50,
-              reserveUsagePercentage: 35.0,
-              isLoading: false,
-            ),
-            const SizedBox(height: AppSpacing.xl),
+      body: dashboardDataAsync.when(
+        data: (dashboardData) => SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Main card - Remaining budget
+              MainCard(
+                remainingBudget: dashboardData.remainingBudget,
+                reserveUsagePercentage: dashboardData.reserveUsagePercentage,
+                isLoading: false,
+              ),
+              const SizedBox(height: AppSpacing.xl),
 
-            // Secondary card - Financial details
-            SecondaryCard(
-              monthlySalary: 5000.00,
-              totalSpent: 1234.50,
-              partialResult: 3765.50,
-              finalReserve: 2500.00,
-              isLoading: false,
+              // Secondary card - Financial details
+              SecondaryCard(
+                monthlySalary: dashboardData.monthlySalary,
+                totalSpent: dashboardData.totalSpent,
+                partialResult: dashboardData.partialResult,
+                finalReserve: dashboardData.finalReserve,
+                isLoading: false,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+            ],
+          ),
+        ),
+        loading: () => SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Main card - Loading state
+              MainCard(
+                remainingBudget: 0.0,
+                reserveUsagePercentage: 0.0,
+                isLoading: true,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Secondary card - Loading state
+              SecondaryCard(
+                monthlySalary: 0.0,
+                totalSpent: 0.0,
+                partialResult: 0.0,
+                finalReserve: 0.0,
+                isLoading: true,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+            ],
+          ),
+        ),
+        error: (error, stackTrace) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  color: AppColors.error,
+                  size: 48.0,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Erro ao carregar dados',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  error.toString(),
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.xl),
-          ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
