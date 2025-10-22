@@ -61,12 +61,12 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 9 / 21 (43%)
+**Concluídas:** 10 / 21 (48%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 4 / 4 (100%)
-- **Fase 3 - Dashboard Reativo:** 2 / 4 (50%)
+- **Fase 3 - Dashboard Reativo:** 3 / 4 (75%)
 - **Fase 4 - Funcionalidades de Suporte:** 0 / 5 (0%)
 
 ### Legenda de Status
