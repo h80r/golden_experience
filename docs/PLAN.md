@@ -60,14 +60,15 @@ main (develop)
 
 ## 📊 Progresso Geral
 
-**Total de Tarefas:** 21
-**Concluídas:** 14 / 21 (67%)
+**Total de Tarefas:** 26
+**Concluídas:** 14 / 26 (54%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 4 / 4 (100%)
 - **Fase 3 - Dashboard Reativo:** 4 / 4 (100%)
 - **Fase 4 - Funcionalidades de Suporte:** 4 / 5 (80%)
+- **Fase 5 - Primeira Iteração:** 0 / 5 (0%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -609,6 +610,251 @@ Implementar funcionalidade de exportar todos os dados para JSON e importar de vo
 
 ---
 
+## 🔧 Fase 5: Primeira Iteração - Correções e Melhorias
+
+**Objetivo:** Corrigir bugs identificados no uso inicial e implementar melhorias de UX baseadas em feedback real.
+
+**Status:** 0 / 5 tarefas concluídas
+
+---
+
+### [ ] F5-T1: Correção - Persistência de Configurações
+
+**Branch:** `fix/settings-persistence`
+
+**Descrição:**
+Investigar e corrigir o problema que impede o salvamento das configurações do aplicativo. Os dados inseridos na tela de configurações não estão sendo persistidos no banco de dados.
+
+**Investigação Necessária:**
+1. Verificar se o método `save()` do repositório está sendo chamado
+2. Verificar se os dados estão sendo passados corretamente do formulário
+3. Checar se há erros silenciosos no processo de salvamento
+4. Validar se o Isar está escrevendo os dados corretamente
+5. Confirmar se o singleton de `AppSettings` (id = 1) está sendo atualizado
+
+**Correções Esperadas:**
+- Garantir que o botão "Salvar" nas configurações persiste os dados
+- Adicionar feedback visual de sucesso/erro ao salvar
+- Verificar se mudanças refletem imediatamente no Dashboard
+
+**Definition of Done:**
+- [ ] Causa raiz do problema identificada
+- [ ] Salvamento de configurações funcionando corretamente
+- [ ] Dados persistem após fechar e reabrir o app
+- [ ] Mudanças refletem instantaneamente no Dashboard
+- [ ] Feedback visual de sucesso implementado
+- [ ] Testes de integração para persistência adicionados
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F5-T2: Correção - Bug no Modal de Detalhes da Transação
+
+**Branch:** `fix/transaction-modal-reload`
+
+**Descrição:**
+Corrigir o bug que causa recarregamento completo do `ExpenseDetailsBottomSheet` quando o usuário clica para inserir detalhes nos campos de texto, impedindo o cadastro da transação.
+
+**Problema Atual:**
+- Ao tocar em um campo de texto (descrição, notas, etc.), o modal inteiro recarrega
+- O teclado aparece e desaparece
+- O foco é perdido
+- O usuário não consegue completar o cadastro
+
+**Possíveis Causas:**
+1. Rebuild desnecessário causado por setState() na widget pai
+2. Problema com o gerenciamento de estado do ExpenseFormNotifier
+3. Conflito entre FocusNode e rebuilds
+4. Bottom sheet sendo recriado a cada interação
+
+**Correções a Implementar:**
+- Isolar o estado do bottom sheet para evitar rebuilds externos
+- Usar `const` constructors onde possível
+- Implementar shouldRebuild corretamente nos providers
+- Garantir que apenas os widgets afetados sejam reconstruídos
+
+**Definition of Done:**
+- [ ] Bug identificado e causa raiz documentada
+- [ ] Bottom sheet não recarrega ao interagir com campos
+- [ ] Foco nos campos de texto mantido corretamente
+- [ ] Fluxo completo de criação de transação funcional
+- [ ] Teclado aparece e desaparece normalmente
+- [ ] Teste de integração E2E passando
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F5-T3: Refatoração - Substituir Calculadora por Input Field
+
+**Branch:** `refactor/simple-value-input`
+
+**Descrição:**
+Remover a interface de calculadora overlay e substituir por um campo de input numérico simples diretamente no bottom sheet de detalhes. A experiência com a calculadora em popup se mostrou ruim e pouco prática.
+
+**Mudanças Arquiteturais:**
+```
+ANTES:
+FAB (+) → CalculatorOverlay → ExpenseDetailsBottomSheet → Salvar
+
+DEPOIS:
+FAB (+) → ExpenseDetailsBottomSheet (com campo de valor) → Salvar
+```
+
+**Componentes a Remover:**
+- `calculator/calculator_overlay.dart`
+- Lógica de estado da calculadora
+- Navegação intermediária para a calculadora
+
+**Componentes a Criar/Modificar:**
+- Adicionar campo de input numérico no topo do `ExpenseDetailsBottomSheet`
+- Implementar formatação automática de moeda (R$ X.XXX,XX)
+- Adicionar validação de valor obrigatório
+- Ajustar layout do bottom sheet para acomodar o novo campo
+
+**Formatação de Moeda:**
+- Usar `intl` package para formatação brasileira
+- Permitir input com vírgula decimal
+- Formatar automaticamente com separadores de milhar
+
+**Definition of Done:**
+- [ ] CalculatorOverlay removido do código
+- [ ] Campo de valor numérico implementado no bottom sheet
+- [ ] Formatação de moeda funcionando corretamente
+- [ ] Validação de valor obrigatório implementada
+- [ ] FAB abre diretamente o bottom sheet
+- [ ] Fluxo de criação de transação mais rápido e intuitivo
+- [ ] Testes de widget atualizados
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F5-T4: Ajuste - Tipo de Conta (Débito E Crédito)
+
+**Branch:** `feature/account-dual-type`
+
+**Descrição:**
+Modificar o modelo de `Account` para permitir que uma conta seja simultaneamente débito E crédito, em vez de forçar a escolha de apenas um tipo. Isso reflete melhor a realidade das contas bancárias modernas.
+
+**Modelo Atual (INCORRETO):**
+```dart
+enum AccountType { debit, credit }
+
+class Account {
+  AccountType type; // Apenas um tipo permitido
+}
+```
+
+**Modelo Novo (CORRETO):**
+```dart
+class Account {
+  bool isDebit;    // Pode ser true
+  bool isCredit;   // Pode ser true simultaneamente
+  double balance;       // Para operações de débito
+  double creditLimit;   // Para operações de crédito
+  double creditUsed;    // Quanto do limite foi usado
+}
+```
+
+**Mudanças Necessárias:**
+
+1. **Modelo de Dados (Isar):**
+   - Remover campo `type` (enum)
+   - Adicionar campos `isDebit` e `isCredit` (bool)
+   - Adicionar campo `creditUsed` (double)
+   - Atualizar schema do Isar
+
+2. **Formulário de Conta:**
+   - Substituir radio buttons por checkboxes
+   - Permitir seleção de "Débito", "Crédito" ou ambos
+   - Mostrar campo `balance` se isDebit = true
+   - Mostrar campo `creditLimit` se isCredit = true
+
+3. **Lógica de Transações:**
+   - Ao criar transação em conta débito: atualizar `balance`
+   - Ao criar transação em conta crédito: atualizar `creditUsed`
+   - Se conta é ambos: permitir escolher qual usar na transação
+
+4. **UI de Listagem:**
+   - Exibir badges indicando tipo(s) da conta
+   - Mostrar saldo e/ou limite disponível conforme tipo
+
+**Migração de Dados:**
+- Criar script de migração para contas existentes
+- Contas "debit" → `isDebit = true, isCredit = false`
+- Contas "credit" → `isDebit = false, isCredit = true`
+
+**Definition of Done:**
+- [ ] Modelo Account atualizado com campos booleanos
+- [ ] Schema do Isar regenerado
+- [ ] Formulário de conta com seleção múltipla implementado
+- [ ] Lógica de transações atualizada
+- [ ] UI de listagem mostrando tipos corretamente
+- [ ] Migração de dados existentes implementada
+- [ ] Todos os testes atualizados e passando
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F5-T5: Melhoria - Slider para Percentual Máximo da Reserva
+
+**Branch:** `feature/reserve-percentage-slider`
+
+**Descrição:**
+Substituir o campo de texto para "Percentual Máximo de Gasto da Reserva" por um componente Slider, proporcionando uma experiência mais intuitiva e visual para ajustar esse valor.
+
+**Problema Atual:**
+- TextField numérico não é intuitivo para percentuais
+- Usuário pode inserir valores inválidos (> 100%, negativos)
+- Falta feedback visual da escolha
+
+**Solução: Slider Widget**
+
+**Especificações do Slider:**
+- **Range:** 0% a 100%
+- **Divisões:** 100 (incrementos de 1%)
+- **Labels:** Mostrar percentual atual acima/ao lado do slider
+- **Valor inicial:** Carregar do AppSettings atual
+- **Cores:** Usar AppColors do design system
+  - Track ativo: primaryColor
+  - Track inativo: cinza claro
+  - Thumb: primaryColor com sombra
+
+**Layout Sugerido:**
+```
+┌─────────────────────────────────────┐
+│ Percentual Máximo da Reserva        │
+│                                     │
+│            45%                      │  ← Valor atual em destaque
+│  ●─────────────────○               │  ← Slider
+│  0%               100%              │  ← Labels min/max
+│                                     │
+│ Quanto da sua reserva você pode     │  ← Texto auxiliar
+│ usar no mês, se necessário.         │
+└─────────────────────────────────────┘
+```
+
+**Componente a Criar:**
+```dart
+class ReservePercentageSlider extends StatelessWidget {
+  final double value;
+  final ValueChanged<double> onChanged;
+
+  // Widget com Slider + Label + Texto auxiliar
+}
+```
+
+**Definition of Done:**
+- [ ] TextField do percentual removido
+- [ ] Slider widget implementado
+- [ ] Design system aplicado (cores, tipografia)
+- [ ] Valor exibido claramente acima do slider
+- [ ] Texto auxiliar explicativo adicionado
+- [ ] Salvamento do valor funcionando
+- [ ] Testes de widget para o slider
+- [ ] Merge realizado para `develop`
+
+---
+
 ## 📝 Notas Importantes
 
 ### Boas Práticas Durante o Desenvolvimento
@@ -632,6 +878,8 @@ As fases devem ser seguidas sequencialmente, mas dentro de cada fase há alguma 
 
 ## 🎊 Conclusão
 
-Este plano mapeia todas as **21 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
+Este plano mapeia todas as **26 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
+
+A **Fase 5** representa a primeira iteração de melhorias baseada em uso real, demonstrando a importância de testar o aplicativo e iterar sobre o design inicial.
 
 **Bom desenvolvimento! 🚀**

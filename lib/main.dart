@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'data/datasources/local_database.dart';
+import 'data/repositories/app_settings_repository_impl.dart';
 import 'domain/usecases/providers/usecase_providers.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/theme/app_theme.dart';
 
 void main() async {
+  // Ensure Flutter bindings are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
   // Initialize the database before running the app
   await LocalDatabase.initialize();
+
+  // Initialize default settings if they don't exist
+  final appSettingsRepository = AppSettingsRepositoryImpl();
+  await appSettingsRepository.initializeDefaults();
 
   runApp(
     const ProviderScope(

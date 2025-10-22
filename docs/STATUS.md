@@ -4,22 +4,19 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F4-T4
-- **current_task_title**: Backup e Restauração
+- **current_task_id**: F5-T1
+- **current_task_title**: Correção - Persistência de Configurações
 - **current_task_status**: COMPLETED
 
 ## Step Tracking (Only for complex tasks)
 
 - **completed_steps**:
-  - [F4-T4.1] Created IBackupRepository interface in domain layer with exportToJson(), importFromJson(), and getDefaultBackupPath() methods
-  - [F4-T4.2] Implemented BackupRepositoryImpl with JSON export functionality capturing all 5 database tables
-  - [F4-T4.3] Implemented backup import with validation, data clearing, and proper Drift companion classes usage
-  - [F4-T4.4] Added file_picker and share_plus dependencies for file operations
-  - [F4-T4.5] Created BackupState and BackupNotifier for managing backup operation state with Riverpod
-  - [F4-T4.6] Added backup repository provider to dependency injection setup
-  - [F4-T4.7] Extended SettingsScreen with backup/restore UI section including Export/Import buttons
-  - [F4-T4.8] Implemented _exportBackup() method with file handling and user feedback
-  - [F4-T4.9] Implemented _importBackup() method with file picker, confirmation dialog, and error handling
-  - [F4-T4.10] Verified code compiles successfully with flutter analyze (no errors)
+  - [F5-T1.1] Investigated settings persistence issue by examining SettingsScreen, AppSettingsRepositoryImpl, and database initialization
+  - [F5-T1.2] Identified root cause: initializeDefaults() was never called in main.dart, causing update operations to fail silently when no record with id=1 exists
+  - [F5-T1.3] Fixed persistence by adding initializeDefaults() call in main.dart after database initialization
+  - [F5-T1.4] Added WidgetsFlutterBinding.ensureInitialized() to main.dart to ensure proper Flutter initialization
+  - [F5-T1.5] Verified visual feedback already exists in SettingsScreen (SnackBars for success/error at lines 116-136)
+  - [F5-T1.6] Ran flutter analyze to confirm no new errors introduced
+  - [F5-T1.7] Ran settings screen tests - all 12 tests pass
 
-- **next_atomic_step**: TASK COMPLETED - Ready for merge
+- **next_atomic_step**: TASK COMPLETED - Ready for testing and merge
