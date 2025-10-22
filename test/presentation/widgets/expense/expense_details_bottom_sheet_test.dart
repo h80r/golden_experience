@@ -10,8 +10,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1', 'Conta 2'],
-              categories: ['Alimentação', 'Transporte'],
+              accounts: {1: 'Conta 1', 2: 'Conta 2'},
+              categories: {1: 'Alimentação', 2: 'Transporte'},
               onSave: ({
                 required value,
                 required description,
@@ -36,8 +36,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1'],
-              categories: ['Alimentação'],
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação'},
               onSave: ({
                 required value,
                 required description,
@@ -62,8 +62,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1'],
-              categories: ['Alimentação'],
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação'},
               onSave: ({
                 required value,
                 required description,
@@ -88,8 +88,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1'],
-              categories: ['Alimentação'],
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação'},
               onSave: ({
                 required value,
                 required description,
@@ -114,8 +114,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1', 'Conta 2'],
-              categories: ['Alimentação'],
+              accounts: {1: 'Conta 1', 2: 'Conta 2'},
+              categories: {1: 'Alimentação'},
               onSave: ({
                 required value,
                 required description,
@@ -140,8 +140,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1'],
-              categories: ['Alimentação', 'Transporte'],
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação', 2: 'Transporte'},
               onSave: ({
                 required value,
                 required description,
@@ -166,8 +166,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1'],
-              categories: ['Alimentação'],
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação'},
               onSave: ({
                 required value,
                 required description,
@@ -193,8 +193,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1'],
-              categories: ['Alimentação'],
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação'},
               onSave: ({
                 required value,
                 required description,
@@ -219,8 +219,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1'],
-              categories: ['Alimentação'],
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação'},
               onSave: ({
                 required value,
                 required description,
@@ -249,8 +249,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1'],
-              categories: ['Alimentação'],
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação'},
               onSave: ({
                 required value,
                 required description,
@@ -281,8 +281,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1'],
-              categories: ['Alimentação'],
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação'},
               onSave: ({
                 required value,
                 required description,
@@ -316,8 +316,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1'],
-              categories: ['Alimentação'],
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação'},
               onSave: ({
                 required value,
                 required description,
@@ -361,8 +361,8 @@ void main() {
           home: Scaffold(
             body: ExpenseDetailsBottomSheet(
               initialValue: 50.0,
-              accounts: ['Conta 1'],
-              categories: ['Alimentação'],
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação'},
               onSave: ({
                 required value,
                 required description,

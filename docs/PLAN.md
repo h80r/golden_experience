@@ -330,7 +330,7 @@ Criar o Use Case na camada de domínio responsável por orquestrar a lógica de 
 - [x] Tratamento de erros implementado
 - [x] Testes unitários cobrindo todos os cenários
 - [x] Provider do use case configurado
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 

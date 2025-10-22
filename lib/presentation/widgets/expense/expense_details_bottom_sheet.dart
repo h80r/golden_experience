@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
@@ -10,24 +11,24 @@ import '../buttons/secondary_button.dart';
 /// Expense details bottom sheet for entering transaction information
 class ExpenseDetailsBottomSheet extends StatefulWidget {
   final double initialValue;
-  final List<String> accounts;
-  final List<String> categories;
-  final void Function({
+  final Map<int, String>? accounts;
+  final Map<int, String>? categories;
+  final FutureOr<void> Function({
     required double value,
     required String description,
     required String? notes,
-    required String accountId,
+    required int accountId,
     required String transactionType,
-    required String categoryId,
+    required int categoryId,
     required DateTime date,
-  }) onSave;
+  })? onSave;
   final VoidCallback onCancel;
 
   const ExpenseDetailsBottomSheet({
     required this.initialValue,
-    required this.accounts,
-    required this.categories,
-    required this.onSave,
+    this.accounts,
+    this.categories,
+    this.onSave,
     required this.onCancel,
     super.key,
   });
@@ -40,8 +41,8 @@ class ExpenseDetailsBottomSheet extends StatefulWidget {
 class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
   late TextEditingController _descriptionController;
   late TextEditingController _notesController;
-  String? _selectedAccount;
-  String? _selectedCategory;
+  int? _selectedAccountId;
+  int? _selectedCategoryId;
   String _transactionType = 'debit';
   DateTime _selectedDate = DateTime.now();
 
@@ -50,11 +51,11 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
     super.initState();
     _descriptionController = TextEditingController();
     _notesController = TextEditingController();
-    if (widget.accounts.isNotEmpty) {
-      _selectedAccount = widget.accounts.first;
+    if (widget.accounts != null && widget.accounts!.isNotEmpty) {
+      _selectedAccountId = widget.accounts!.keys.first;
     }
-    if (widget.categories.isNotEmpty) {
-      _selectedCategory = widget.categories.first;
+    if (widget.categories != null && widget.categories!.isNotEmpty) {
+      _selectedCategoryId = widget.categories!.keys.first;
     }
   }
 
@@ -81,8 +82,8 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
 
   bool _isFormValid() {
     return _descriptionController.text.isNotEmpty &&
-        _selectedAccount != null &&
-        _selectedCategory != null;
+        _selectedAccountId != null &&
+        _selectedCategoryId != null;
   }
 
   void _handleSave() {
@@ -95,13 +96,13 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
       return;
     }
 
-    widget.onSave(
+    widget.onSave?.call(
       value: widget.initialValue,
       description: _descriptionController.text,
       notes: _notesController.text.isEmpty ? null : _notesController.text,
-      accountId: _selectedAccount!,
+      accountId: _selectedAccountId!,
       transactionType: _transactionType,
-      categoryId: _selectedCategory!,
+      categoryId: _selectedCategoryId!,
       date: _selectedDate,
     );
   }
@@ -202,21 +203,22 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                       const SizedBox(height: AppSpacing.lg),
 
                       // Account Selector
-                      CustomDropdown<String>(
+                      CustomDropdown<int>(
                         label: 'Conta',
-                        value: _selectedAccount,
+                        value: _selectedAccountId,
                         prefixIcon: Icons.account_balance_wallet,
-                        items: widget.accounts
+                        items: (widget.accounts ?? {})
+                            .entries
                             .map(
-                              (account) => DropdownMenuItem(
-                                value: account,
-                                child: Text(account),
+                              (entry) => DropdownMenuItem(
+                                value: entry.key,
+                                child: Text(entry.value),
                               ),
                             )
                             .toList(),
                         onChanged: (value) {
                           setState(() {
-                            _selectedAccount = value;
+                            _selectedAccountId = value;
                           });
                         },
                       ),
@@ -299,21 +301,22 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                       const SizedBox(height: AppSpacing.lg),
 
                       // Category Selector
-                      CustomDropdown<String>(
+                      CustomDropdown<int>(
                         label: 'Categoria',
-                        value: _selectedCategory,
+                        value: _selectedCategoryId,
                         prefixIcon: Icons.category,
-                        items: widget.categories
+                        items: (widget.categories ?? {})
+                            .entries
                             .map(
-                              (category) => DropdownMenuItem(
-                                value: category,
-                                child: Text(category),
+                              (entry) => DropdownMenuItem(
+                                value: entry.key,
+                                child: Text(entry.value),
                               ),
                             )
                             .toList(),
                         onChanged: (value) {
                           setState(() {
-                            _selectedCategory = value;
+                            _selectedCategoryId = value;
                           });
                         },
                       ),
