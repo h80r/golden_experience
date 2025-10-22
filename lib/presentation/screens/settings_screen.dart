@@ -7,6 +7,7 @@ import '../theme/app_spacing.dart';
 import '../widgets/buttons/primary_button.dart';
 import '../widgets/buttons/secondary_button.dart';
 import '../widgets/inputs/custom_text_field.dart';
+import '../widgets/inputs/reserve_percentage_slider.dart';
 import '../state/app_settings_form_notifier.dart';
 import '../state/backup_notifier.dart';
 import '../../data/providers/repository_providers.dart';
@@ -22,14 +23,12 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _monthlySalaryController;
   late TextEditingController _reserveBalanceController;
-  late TextEditingController _maxReservePercentageController;
 
   @override
   void initState() {
     super.initState();
     _monthlySalaryController = TextEditingController();
     _reserveBalanceController = TextEditingController();
-    _maxReservePercentageController = TextEditingController();
 
     // Load existing settings
     _loadSettings();
@@ -39,7 +38,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void dispose() {
     _monthlySalaryController.dispose();
     _reserveBalanceController.dispose();
-    _maxReservePercentageController.dispose();
     super.dispose();
   }
 
@@ -50,8 +48,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (settings != null && mounted) {
       _monthlySalaryController.text = settings.monthlySalary.toString();
       _reserveBalanceController.text = settings.reserveBalance.toString();
-      _maxReservePercentageController.text =
-          settings.maxReserveUsagePercentage.toString();
 
       ref.read(appSettingsFormProvider.notifier).setFromExisting(
             monthlySalary: settings.monthlySalary,
@@ -75,12 +71,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         );
   }
 
-  void _onMaxReservePercentageChanged(String value) {
-    final percentage = double.tryParse(value) ?? 0.0;
+  void _onMaxReservePercentageChanged(double value) {
     ref.read(appSettingsFormProvider.notifier)
-        .updateMaxReserveUsagePercentage(
-          percentage.isNaN ? 0.0 : percentage,
-        );
+        .updateMaxReserveUsagePercentage(value);
   }
 
   Future<void> _saveSettings() async {
@@ -300,17 +293,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               onChanged: _onReserveBalanceChanged,
               prefixIcon: Icons.savings,
             ),
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.xl),
 
-            // Percentual Máximo de Gasto da Reserva
-            CustomTextField(
-              label: 'Percentual Máximo de Gasto da Reserva (%)',
-              hint: 'Digite o percentual (0-100)',
-              controller: _maxReservePercentageController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
+            // Percentual Máximo de Gasto da Reserva (Slider)
+            ReservePercentageSlider(
+              value: formState.maxReserveUsagePercentage,
               onChanged: _onMaxReservePercentageChanged,
-              prefixIcon: Icons.percent,
             ),
             const SizedBox(height: AppSpacing.xl),
 

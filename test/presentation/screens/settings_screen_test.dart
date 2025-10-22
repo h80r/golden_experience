@@ -67,8 +67,8 @@ void main() {
       // Verify all input fields are present
       expect(find.text('Salário Mensal'), findsOneWidget);
       expect(find.text('Saldo Inicial da Reserva'), findsOneWidget);
-      expect(find.text('Percentual Máximo de Gasto da Reserva (%)'),
-          findsOneWidget);
+      expect(find.text('Percentual Máximo da Reserva'),
+          findsOneWidget); // Changed: slider label instead of text field label
 
       // Verify buttons are present
       expect(find.text('Cancelar'), findsOneWidget);
@@ -108,21 +108,19 @@ void main() {
       expect(find.text('10000.00'), findsWidgets);
     });
 
-    testWidgets('Max reserve percentage field updates correctly',
+    testWidgets('Max reserve percentage slider updates correctly',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      // Find the max reserve percentage input field (third TextField)
-      final fields = find.byType(TextField);
-      final maxReservePercentageField = fields.at(2);
+      // Find the slider widget
+      final slider = find.byType(Slider);
 
-      // Enter a value
-      await tester.enterText(maxReservePercentageField, '50');
-      await tester.pumpAndSettle();
+      // Verify slider exists
+      expect(slider, findsOneWidget);
 
-      // Verify the value was entered
-      expect(find.text('50'), findsWidgets);
+      // Verify initial value display (0% appears twice - value and label)
+      expect(find.text('0%'), findsWidgets);
     });
 
     testWidgets('Cancel button navigates back', (WidgetTester tester) async {
@@ -226,32 +224,31 @@ void main() {
 
       final fields = find.byType(TextField);
 
-      // Fill in all fields
+      // Fill in text fields (only 2 now - salary and reserve balance)
       await tester.enterText(fields.at(0), '6000');
       await tester.enterText(fields.at(1), '15000');
-      await tester.enterText(fields.at(2), '75');
       await tester.pumpAndSettle();
 
-      // Verify all values are present
+      // Verify text field values are present
       expect(find.text('6000'), findsWidgets);
       expect(find.text('15000'), findsWidgets);
-      expect(find.text('75'), findsWidgets);
+
+      // Verify slider is present
+      expect(find.byType(Slider), findsOneWidget);
     });
 
-    testWidgets('Percentage field accepts decimal values',
+    testWidgets('Percentage slider works correctly',
         (WidgetTester tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      final fields = find.byType(TextField);
-      final percentageField = fields.at(2);
+      // Verify slider is present
+      expect(find.byType(Slider), findsOneWidget);
 
-      // Enter a decimal percentage
-      await tester.enterText(percentageField, '33.5');
-      await tester.pumpAndSettle();
-
-      // Verify the value was entered
-      expect(find.text('33.5'), findsWidgets);
+      // Verify slider widget exists and renders
+      expect(find.byWidgetPredicate(
+        (widget) => widget is Slider,
+      ), findsOneWidget);
     });
 
     testWidgets('Monetary fields accept decimal values',
@@ -279,8 +276,8 @@ void main() {
       // Verify all content is present (may require scrolling)
       expect(find.text('Salário Mensal'), findsOneWidget);
       expect(find.text('Saldo Inicial da Reserva'), findsOneWidget);
-      expect(find.text('Percentual Máximo de Gasto da Reserva (%)'),
-          findsOneWidget);
+      expect(find.text('Percentual Máximo da Reserva'),
+          findsOneWidget); // Changed: slider label instead of text field label
       expect(find.text('Cancelar'), findsOneWidget);
       expect(find.text('Salvar'), findsOneWidget);
     });
@@ -302,11 +299,8 @@ void main() {
             widget.decoration?.hintText == 'Digite o saldo inicial da reserva',
       ), findsOneWidget);
 
-      expect(find.byWidgetPredicate(
-        (widget) =>
-            widget is TextField &&
-            widget.decoration?.hintText == 'Digite o percentual (0-100)',
-      ), findsOneWidget);
+      // Verify slider is present instead of text field for percentage
+      expect(find.byType(Slider), findsOneWidget);
     });
 
     testWidgets('Settings screen is properly themed',

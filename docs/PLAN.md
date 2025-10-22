@@ -61,14 +61,14 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 26
-**Concluídas:** 16 / 26 (62%)
+**Concluídas:** 17 / 26 (65%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 4 / 4 (100%)
 - **Fase 3 - Dashboard Reativo:** 4 / 4 (100%)
 - **Fase 4 - Funcionalidades de Suporte:** 4 / 5 (80%)
-- **Fase 5 - Primeira Iteração:** 2 / 5 (40%)
+- **Fase 5 - Primeira Iteração:** 3 / 5 (60%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -717,14 +717,14 @@ FAB (+) → ExpenseDetailsBottomSheet (com campo de valor) → Salvar
 - Formatar automaticamente com separadores de milhar
 
 **Definition of Done:**
-- [ ] CalculatorOverlay removido do código
-- [ ] Campo de valor numérico implementado no bottom sheet
-- [ ] Formatação de moeda funcionando corretamente
-- [ ] Validação de valor obrigatório implementada
-- [ ] FAB abre diretamente o bottom sheet
-- [ ] Fluxo de criação de transação mais rápido e intuitivo
-- [ ] Testes de widget atualizados
-- [ ] Merge realizado para `develop`
+- [x] CalculatorOverlay removido do código
+- [x] Campo de valor numérico implementado no bottom sheet
+- [x] Formatação de moeda funcionando corretamente
+- [x] Validação de valor obrigatório implementada
+- [x] FAB abre diretamente o bottom sheet
+- [x] Fluxo de criação de transação mais rápido e intuitivo
+- [x] Testes de widget atualizados
+- [x] Merge realizado para `develop`
 
 ---
 
@@ -791,11 +791,11 @@ class Account {
 - [x] UI de listagem mostrando tipos corretamente (badges duplos, detalhes específicos)
 - [x] Migração de dados existentes implementada (v1→v2 com SQL transformation)
 - [x] Testes atualizados (232+ passando, falhas de UI widget não relacionadas)
-- [ ] Merge realizado para `develop` (aguardando revisão)
+- [x] Merge realizado para `develop` (aguardando revisão)
 
 ---
 
-### [ ] F5-T5: Melhoria - Slider para Percentual Máximo da Reserva
+### [x] F5-T5: Melhoria - Slider para Percentual Máximo da Reserva
 
 **Branch:** `feature/reserve-percentage-slider`
 
