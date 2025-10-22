@@ -19,6 +19,7 @@ class CustomTextField extends StatefulWidget {
   final IconData? suffixIcon;
   final VoidCallback? onSuffixIconPressed;
   final bool isEnabled;
+  final FocusNode? focusNode;
 
   const CustomTextField({
     required this.label,
@@ -35,6 +36,7 @@ class CustomTextField extends StatefulWidget {
     this.suffixIcon,
     this.onSuffixIconPressed,
     this.isEnabled = true,
+    this.focusNode,
     super.key,
   });
 
@@ -49,7 +51,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
+    // Use the provided focusNode or create a new one
+    _focusNode = widget.focusNode ?? FocusNode();
     _isFocused = false;
     _focusNode.addListener(_handleFocusChange);
   }
@@ -57,7 +60,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
   @override
   void dispose() {
     _focusNode.removeListener(_handleFocusChange);
-    _focusNode.dispose();
+    // Only dispose if we created the focusNode (not provided from parent)
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    }
     super.dispose();
   }
 

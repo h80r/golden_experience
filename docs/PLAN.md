@@ -61,14 +61,14 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 26
-**Concluídas:** 14 / 26 (54%)
+**Concluídas:** 15 / 26 (58%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 4 / 4 (100%)
 - **Fase 3 - Dashboard Reativo:** 4 / 4 (100%)
 - **Fase 4 - Funcionalidades de Suporte:** 4 / 5 (80%)
-- **Fase 5 - Primeira Iteração:** 0 / 5 (0%)
+- **Fase 5 - Primeira Iteração:** 1 / 5 (20%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -158,7 +158,7 @@ Implementar todas as entidades do domínio como coleções do Isar com suas resp
 - [x] Schema do Isar gerado com sucesso (`build_runner`)
 - [x] Instância do Isar pode ser aberta e fechada
 - [x] Testes unitários para os modelos criados
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
@@ -196,7 +196,7 @@ Criar as interfaces dos repositórios na camada de domínio e suas implementaç�
 - [x] Implementações criadas na camada `data/repositories/`
 - [x] Providers do Riverpod configurados
 - [x] Testes unitários para todos os repositórios
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
@@ -222,7 +222,7 @@ MaterialApp
 - [x] Navegação entre abas funcional
 - [x] App inicia na aba "Início"
 - [x] Testes de widget para navegação básica
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
@@ -466,7 +466,7 @@ Construir a interface completa do Dashboard seguindo o design conceitual, prepar
 - [x] Design system aplicado (cores, tipografia)
 - [x] Componentes criados e organizados
 - [x] Testes de widget para os componentes
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
@@ -606,7 +606,7 @@ Implementar funcionalidade de exportar todos os dados para JSON e importar de vo
 - [x] Diálogos de confirmação implementados
 - [x] Tratamento de erros robusto
 - [x] Testes para lógica de import/export
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
@@ -614,11 +614,11 @@ Implementar funcionalidade de exportar todos os dados para JSON e importar de vo
 
 **Objetivo:** Corrigir bugs identificados no uso inicial e implementar melhorias de UX baseadas em feedback real.
 
-**Status:** 0 / 5 tarefas concluídas
+**Status:** 1 / 5 tarefas concluídas
 
 ---
 
-### [ ] F5-T1: Correção - Persistência de Configurações
+### [x] F5-T1: Correção - Persistência de Configurações
 
 **Branch:** `fix/settings-persistence`
 
@@ -638,17 +638,17 @@ Investigar e corrigir o problema que impede o salvamento das configurações do 
 - Verificar se mudanças refletem imediatamente no Dashboard
 
 **Definition of Done:**
-- [ ] Causa raiz do problema identificada
-- [ ] Salvamento de configurações funcionando corretamente
-- [ ] Dados persistem após fechar e reabrir o app
-- [ ] Mudanças refletem instantaneamente no Dashboard
-- [ ] Feedback visual de sucesso implementado
-- [ ] Testes de integração para persistência adicionados
-- [ ] Merge realizado para `develop`
+- [x] Causa raiz do problema identificada
+- [x] Salvamento de configurações funcionando corretamente
+- [x] Dados persistem após fechar e reabrir o app
+- [x] Mudanças refletem instantaneamente no Dashboard
+- [x] Feedback visual de sucesso implementado
+- [x] Testes de integração para persistência adicionados
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F5-T2: Correção - Bug no Modal de Detalhes da Transação
+### [x] F5-T2: Correção - Bug no Modal de Detalhes da Transação
 
 **Branch:** `fix/transaction-modal-reload`
 
@@ -674,17 +674,17 @@ Corrigir o bug que causa recarregamento completo do `ExpenseDetailsBottomSheet` 
 - Garantir que apenas os widgets afetados sejam reconstruídos
 
 **Definition of Done:**
-- [ ] Bug identificado e causa raiz documentada
-- [ ] Bottom sheet não recarrega ao interagir com campos
-- [ ] Foco nos campos de texto mantido corretamente
-- [ ] Fluxo completo de criação de transação funcional
-- [ ] Teclado aparece e desaparece normalmente
-- [ ] Teste de integração E2E passando
-- [ ] Merge realizado para `develop`
+- [x] Bug identificado e causa raiz documentada
+- [x] Bottom sheet não recarrega ao interagir com campos
+- [x] Foco nos campos de texto mantido corretamente
+- [x] Fluxo completo de criação de transação funcional
+- [x] Teclado aparece e desaparece normalmente
+- [x] Teste de integração E2E passando
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F5-T3: Refatoração - Substituir Calculadora por Input Field
+### [x] F5-T3: Refatoração - Substituir Calculadora por Input Field
 
 **Branch:** `refactor/simple-value-input`
 

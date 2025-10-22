@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../widgets/calculator/calculator_overlay.dart';
 import '../widgets/expense/expense_details_bottom_sheet.dart';
 import '../widgets/dashboard/main_card.dart';
 import '../widgets/dashboard/secondary_card.dart';
@@ -15,14 +14,7 @@ import 'settings_screen.dart';
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
-  void _handleCalculatorConfirm(
-    BuildContext context,
-    WidgetRef ref,
-    double value,
-  ) {
-    // Close calculator overlay
-    Navigator.of(context).pop();
-
+  void _handleOpenExpenseSheet(BuildContext context, WidgetRef ref) {
     // Fetch accounts and categories repositories
     final accountRepository = ref.read(accountRepositoryProvider);
     final categoryRepository = ref.read(categoryRepositoryProvider);
@@ -47,13 +39,12 @@ class DashboardScreen extends ConsumerWidget {
           category.id as int: category.name as String
       };
 
-      // Show expense details bottom sheet with pre-loaded data
+      // Show expense details bottom sheet with no pre-filled value
       if (!context.mounted) return;
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         builder: (context) => ExpenseDetailsBottomSheet(
-          initialValue: value,
           accounts: accountsMap,
           categories: categoriesMap,
           onSave: ({
@@ -124,10 +115,6 @@ class DashboardScreen extends ConsumerWidget {
         ),
       );
     });
-  }
-
-  void _handleCalculatorCancel(BuildContext context) {
-    Navigator.of(context).pop();
   }
 
   @override
@@ -236,15 +223,8 @@ class DashboardScreen extends ConsumerWidget {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.background,
         onPressed: () {
-          // Open calculator overlay
-          showDialog(
-            context: context,
-            builder: (context) => CalculatorOverlay(
-              onConfirm: (value) =>
-                  _handleCalculatorConfirm(context, ref, value),
-              onCancel: () => _handleCalculatorCancel(context),
-            ),
-          );
+          // Open expense details bottom sheet directly
+          _handleOpenExpenseSheet(context, ref);
         },
         child: const Icon(Icons.add),
       ),

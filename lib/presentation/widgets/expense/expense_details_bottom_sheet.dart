@@ -10,7 +10,7 @@ import '../buttons/secondary_button.dart';
 
 /// Expense details bottom sheet for entering transaction information
 class ExpenseDetailsBottomSheet extends StatefulWidget {
-  final double initialValue;
+  final double? initialValue;
   final Map<int, String>? accounts;
   final Map<int, String>? categories;
   final FutureOr<void> Function({
@@ -25,7 +25,7 @@ class ExpenseDetailsBottomSheet extends StatefulWidget {
   final VoidCallback onCancel;
 
   const ExpenseDetailsBottomSheet({
-    required this.initialValue,
+    this.initialValue,
     this.accounts,
     this.categories,
     this.onSave,
@@ -40,31 +40,91 @@ class ExpenseDetailsBottomSheet extends StatefulWidget {
 
 class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
   final _formKey = GlobalKey<FormState>();
+  late TextEditingController _valueController;
   late TextEditingController _descriptionController;
   late TextEditingController _notesController;
+  late FocusNode _valueFocusNode;
   int? _selectedAccountId;
   int? _selectedCategoryId;
   String _transactionType = 'debit';
   DateTime _selectedDate = DateTime.now();
+  double _currentValue = 0.0;
 
   @override
   void initState() {
     super.initState();
+    _valueController = TextEditingController();
     _descriptionController = TextEditingController();
     _notesController = TextEditingController();
+    _valueFocusNode = FocusNode();
+
+    // Initialize with pre-filled value if provided
+    if (widget.initialValue != null && widget.initialValue! > 0) {
+      _currentValue = widget.initialValue!;
+      _valueController.text = _formatCurrency(widget.initialValue!);
+    }
+
     if (widget.accounts != null && widget.accounts!.isNotEmpty) {
       _selectedAccountId = widget.accounts!.keys.first;
     }
     if (widget.categories != null && widget.categories!.isNotEmpty) {
       _selectedCategoryId = widget.categories!.keys.first;
     }
+
+    // Request focus on the value field after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _valueFocusNode.requestFocus();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _valueController.dispose();
     _descriptionController.dispose();
     _notesController.dispose();
+    _valueFocusNode.dispose();
     super.dispose();
+  }
+
+  /// Formats a double value as Brazilian currency (R$ X.XXX,XX)
+  String _formatCurrency(double value) {
+    final parts = value.toStringAsFixed(2).split('.');
+    final integerPart = parts[0];
+    final decimalPart = parts[1];
+
+    // Add thousand separators to integer part
+    String formatted = '';
+    for (int i = 0; i < integerPart.length; i++) {
+      if (i > 0 && (integerPart.length - i) % 3 == 0) {
+        formatted += '.';
+      }
+      formatted += integerPart[i];
+    }
+
+    return 'R\$ $formatted,$decimalPart';
+  }
+
+  /// Parses currency input and returns the numeric value
+  /// Handles both formats: "1000,50" and "1.000,50"
+  double _parseCurrencyInput(String input) {
+    // Remove currency symbol
+    String cleaned = input.replaceAll('R\$ ', '').trim();
+
+    // Remove thousand separators (dots)
+    cleaned = cleaned.replaceAll('.', '');
+
+    // Replace comma with dot for decimal point
+    cleaned = cleaned.replaceAll(',', '.');
+
+    return double.tryParse(cleaned) ?? 0.0;
+  }
+
+  void _handleValueChange(String input) {
+    setState(() {
+      _currentValue = _parseCurrencyInput(input);
+    });
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -87,8 +147,20 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
       return;
     }
 
+    // Validate that value is provided and greater than 0
+    if (_currentValue <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('O valor deve ser maior que zero'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     widget.onSave?.call(
-      value: widget.initialValue,
+      value: _currentValue,
       description: _descriptionController.text,
       notes: _notesController.text.isEmpty ? null : _notesController.text,
       accountId: _selectedAccountId!,
@@ -142,18 +214,12 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                       ),
                     ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
                           'Detalhes da Transação',
                           style: AppTypography.headlineSmall.copyWith(
                             color: AppColors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          'R\$ ${widget.initialValue.toStringAsFixed(2)}',
-                          style: AppTypography.headlineLarge.copyWith(
-                            color: AppColors.primary,
                           ),
                         ),
                       ],
@@ -172,6 +238,32 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Value Input
+                        CustomTextField(
+                          label: 'Valor',
+                          hint: 'R\$ 0,00',
+                          controller: _valueController,
+                          focusNode: _valueFocusNode,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                            signed: false,
+                          ),
+                          textInputAction: TextInputAction.next,
+                          prefixIcon: Icons.attach_money,
+                          onChanged: _handleValueChange,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'O valor é obrigatório';
+                            }
+                            final parsed = _parseCurrencyInput(value);
+                            if (parsed <= 0) {
+                              return 'O valor deve ser maior que zero';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+
                         // Description
                         CustomTextField(
                           label: 'Descrição',
