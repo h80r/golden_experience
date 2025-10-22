@@ -234,7 +234,15 @@ class MockAccountRepository implements IAccountRepository {
   Future<bool> updateBalance(int id, double newBalance) async {
     final account = _accounts[id];
     if (account == null) return false;
-    _accounts[id] = account.copyWith(initialBalance: newBalance);
+    _accounts[id] = account.copyWith(balance: newBalance);
+    return true;
+  }
+
+  @override
+  Future<bool> updateCreditUsed(int id, double newCreditUsed) async {
+    final account = _accounts[id];
+    if (account == null) return false;
+    _accounts[id] = account.copyWith(creditUsed: newCreditUsed);
     return true;
   }
 
@@ -363,9 +371,11 @@ void main() {
         final debitAccount = AccountModel(
           id: 1,
           name: 'Main Account',
-          type: AccountType.debit,
-          initialBalance: 1000.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 1000.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -419,9 +429,11 @@ void main() {
         final debitAccount = AccountModel(
           id: 1,
           name: 'Main Account',
-          type: AccountType.debit,
-          initialBalance: 1000.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 1000.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         );
 
         final expense1 = RecurringExpenseModel(
@@ -482,9 +494,11 @@ void main() {
         final debitAccount = AccountModel(
           id: 1,
           name: 'Main Account',
-          type: AccountType.debit,
-          initialBalance: 1000.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 1000.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         );
 
         // Create expenses for different days
@@ -547,9 +561,11 @@ void main() {
         final creditAccount = AccountModel(
           id: 1,
           name: 'Credit Card',
-          type: AccountType.credit,
-          initialBalance: 0.0,
+          isDebit: false,
+          isCredit: true,
+          balance: 0.0,
           creditLimit: 5000.0,
+          creditUsed: 0.0,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -578,9 +594,9 @@ void main() {
         expect(result.success, true);
         expect(result.processedCount, 1);
 
-        // Verify credit limit was updated
+        // Verify credit used was updated
         final updatedAccount = await mockAccountRepository.getById(1);
-        expect(updatedAccount!.creditLimit, 4800.0);
+        expect(updatedAccount!.creditUsed, 200.0);
       });
 
 
@@ -642,9 +658,11 @@ void main() {
         final debitAccount = AccountModel(
           id: 1,
           name: 'Main Account',
-          type: AccountType.debit,
-          initialBalance: 1000.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 1000.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         );
 
         final expense1 = RecurringExpenseModel(
@@ -738,9 +756,11 @@ void main() {
         final debitAccount = AccountModel(
           id: 1,
           name: 'Main Account',
-          type: AccountType.debit,
-          initialBalance: 1000.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 1000.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -786,9 +806,11 @@ void main() {
         final debitAccount = AccountModel(
           id: 1,
           name: 'Main Account',
-          type: AccountType.debit,
-          initialBalance: 1000.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 1000.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         );
 
         final recurringExpense = RecurringExpenseModel(

@@ -55,7 +55,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -63,7 +63,42 @@ class LocalDatabase extends _$LocalDatabase {
           await m.createAll();
         },
         onUpgrade: (Migrator m, int from, int to) async {
-          // Add migration logic here when schema changes
+          // Migration from v1 to v2: Update accounts table schema
+          if (from == 1) {
+            // SQLite doesn't support DROP COLUMN, so we need to recreate the table
+            // Step 1: Create new accounts table with new schema
+            await customStatement('''
+              CREATE TABLE accounts_new (
+                id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                is_debit INTEGER NOT NULL DEFAULT 1 CHECK ("is_debit" IN (0, 1)),
+                is_credit INTEGER NOT NULL DEFAULT 0 CHECK ("is_credit" IN (0, 1)),
+                balance REAL NOT NULL DEFAULT 0.0,
+                credit_limit REAL NOT NULL DEFAULT 0.0,
+                credit_used REAL NOT NULL DEFAULT 0.0
+              )
+            ''');
+
+            // Step 2: Copy data from old table to new table, converting old schema to new
+            await customStatement('''
+              INSERT INTO accounts_new (id, name, is_debit, is_credit, balance, credit_limit, credit_used)
+              SELECT
+                id,
+                name,
+                CASE WHEN type = 0 THEN 1 ELSE 0 END as is_debit,
+                CASE WHEN type = 1 THEN 1 ELSE 0 END as is_credit,
+                CASE WHEN type = 0 THEN initial_balance ELSE 0.0 END as balance,
+                credit_limit,
+                0.0 as credit_used
+              FROM accounts
+            ''');
+
+            // Step 3: Drop old table
+            await customStatement('DROP TABLE accounts');
+
+            // Step 4: Rename new table to original name
+            await customStatement('ALTER TABLE accounts_new RENAME TO accounts');
+          }
         },
       );
 }

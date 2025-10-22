@@ -84,18 +84,36 @@ class BackupRepositoryImpl implements IBackupRepository {
         final accounts = tables['accounts'] as List;
         for (final accountJson in accounts) {
           final accountData = accountJson as Map<String, dynamic>;
-          // Parse account type from string
-          final accountTypeStr = accountData['type'] as String;
-          final accountType = accountTypeStr == 'debit'
-              ? AccountType.debit
-              : AccountType.credit;
+
+          // Handle both old (single-type) and new (dual-type) format
+          bool isDebit, isCredit;
+          double balance, creditLimit, creditUsed = 0.0;
+
+          if (accountData.containsKey('type')) {
+            // Old format: single type (enum string)
+            final accountTypeStr = accountData['type'] as String;
+            isDebit = accountTypeStr == 'debit';
+            isCredit = accountTypeStr == 'credit';
+            balance = (accountData['initialBalance'] as num?)?.toDouble() ?? 0.0;
+            creditLimit = (accountData['creditLimit'] as num?)?.toDouble() ?? 0.0;
+            creditUsed = 0.0;
+          } else {
+            // New format: dual-type (boolean fields)
+            isDebit = (accountData['isDebit'] as bool?) ?? false;
+            isCredit = (accountData['isCredit'] as bool?) ?? false;
+            balance = (accountData['balance'] as num?)?.toDouble() ?? 0.0;
+            creditLimit = (accountData['creditLimit'] as num?)?.toDouble() ?? 0.0;
+            creditUsed = (accountData['creditUsed'] as num?)?.toDouble() ?? 0.0;
+          }
 
           final companion = AccountModelCompanion(
             id: Value(accountData['id'] as int),
             name: Value(accountData['name'] as String),
-            type: Value(accountType),
-            initialBalance: Value((accountData['initialBalance'] as num).toDouble()),
-            creditLimit: Value((accountData['creditLimit'] as num).toDouble()),
+            isDebit: Value(isDebit),
+            isCredit: Value(isCredit),
+            balance: Value(balance),
+            creditLimit: Value(creditLimit),
+            creditUsed: Value(creditUsed),
           );
           await _db.into(_db.accounts).insert(companion);
         }

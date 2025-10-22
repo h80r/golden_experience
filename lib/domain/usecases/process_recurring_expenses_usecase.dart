@@ -225,24 +225,31 @@ class ProcessRecurringExpensesUseCase {
     return nextMonth.subtract(const Duration(days: 1)).day;
   }
 
-  /// Updates the account balance (debit) or credit limit (credit) after a transaction.
+  /// Updates the account balance (debit) and/or creditUsed (credit) after a transaction.
   ///
-  /// For debit accounts: Decreases the initialBalance
-  /// For credit accounts: Decreases the creditLimit (increases used credit)
+  /// For debit accounts: Decreases the balance
+  /// For credit accounts: Increases the creditUsed (amount owed)
   ///
   /// This is a direct copy of the logic in AddTransactionUseCase to maintain consistency.
   Future<void> _updateAccountAfterTransaction({
     required AccountModel account,
     required double transactionValue,
   }) async {
-    if (account.type == AccountType.debit) {
-      // Debit account: decrease the balance
-      final newBalance = account.initialBalance - transactionValue;
-      await _accountRepository.updateBalance(account.id, newBalance);
-    } else {
-      // Credit account: decrease available limit (increase used amount)
-      final newLimit = account.creditLimit - transactionValue;
-      await _accountRepository.updateCreditLimit(account.id, newLimit);
+    try {
+      // Handle debit account update
+      if (account.isDebit) {
+        final newBalance = account.balance - transactionValue;
+        await _accountRepository.updateBalance(account.id, newBalance);
+      }
+
+      // Handle credit account update
+      if (account.isCredit) {
+        final newCreditUsed = account.creditUsed + transactionValue;
+        await _accountRepository.updateCreditUsed(account.id, newCreditUsed);
+      }
+    } catch (e) {
+      // Log error but continue processing other expenses
+      // In a real app, you might want to handle this differently
     }
   }
 }

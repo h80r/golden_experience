@@ -97,11 +97,6 @@ class AccountsScreen extends ConsumerWidget {
     WidgetRef ref,
     AccountModel account,
   ) {
-    final isDebit = account.type == AccountType.debit;
-    final displayValue =
-        isDebit ? account.initialBalance : account.creditLimit;
-    final label = isDebit ? 'Saldo' : 'Limite Disponível';
-
     return Card(
       color: AppColors.surface,
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
@@ -117,6 +112,7 @@ class AccountsScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header: Name and Type Badges
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -131,42 +127,52 @@ class AccountsScreen extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: AppSpacing.sm),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDebit
-                              ? AppColors.successWithOpacity
-                              : AppColors.warningWithOpacity,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusSmall),
-                        ),
-                        child: Text(
-                          isDebit ? 'Débito' : 'Crédito',
-                          style: AppTypography.labelSmall.copyWith(
-                            color: isDebit ? AppColors.success : AppColors.warning,
-                          ),
-                        ),
+                      // Type badges
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        children: [
+                          if (account.isDebit)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.sm,
+                                vertical: AppSpacing.xs,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.successWithOpacity,
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.radiusSmall,
+                                ),
+                              ),
+                              child: Text(
+                                'Débito',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: AppColors.success,
+                                ),
+                              ),
+                            ),
+                          if (account.isCredit)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.sm,
+                                vertical: AppSpacing.xs,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.warningWithOpacity,
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.radiusSmall,
+                                ),
+                              ),
+                              child: Text(
+                                'Crédito',
+                                style: AppTypography.labelSmall.copyWith(
+                                  color: AppColors.warning,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(width: AppSpacing.lg),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      _formatCurrency(displayValue),
-                      style: AppTypography.displaySmall,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      label,
-                      style: AppTypography.labelSmall,
-                    ),
-                  ],
                 ),
               ],
             ),
@@ -176,6 +182,65 @@ class AccountsScreen extends ConsumerWidget {
               height: 1,
             ),
             const SizedBox(height: AppSpacing.lg),
+
+            // Account Details (Debit and/or Credit)
+            if (account.isDebit)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Saldo',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    _formatCurrency(account.balance),
+                    style: AppTypography.displaySmall,
+                  ),
+                  if (account.isCredit) const SizedBox(height: AppSpacing.lg),
+                ],
+              ),
+
+            if (account.isCredit)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Limite de Crédito',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    _formatCurrency(account.creditLimit),
+                    style: AppTypography.displaySmall,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Utilizado: ${_formatCurrency(account.creditUsed)}',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Disponível: ${_formatCurrency(account.creditLimit - account.creditUsed)}',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+
+            const SizedBox(height: AppSpacing.lg),
+            const Divider(
+              color: AppColors.divider,
+              height: 1,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Action Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

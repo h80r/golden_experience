@@ -38,7 +38,7 @@ class AccountRepositoryImpl implements IAccountRepository {
       final account = await getById(accountId);
       if (account == null) return false;
 
-      final updated = account.copyWith(initialBalance: newBalance);
+      final updated = account.copyWith(balance: newBalance);
       return await update(updated);
     } catch (e) {
       return false;
@@ -52,6 +52,19 @@ class AccountRepositoryImpl implements IAccountRepository {
       if (account == null) return false;
 
       final updated = account.copyWith(creditLimit: newLimit);
+      return await update(updated);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> updateCreditUsed(int accountId, double newCreditUsed) async {
+    try {
+      final account = await getById(accountId);
+      if (account == null) return false;
+
+      final updated = account.copyWith(creditUsed: newCreditUsed);
       return await update(updated);
     } catch (e) {
       return false;

@@ -37,14 +37,14 @@ class AddTransactionResult {
 /// 1. Validates the transaction data
 /// 2. Verifies the account exists
 /// 3. Creates the transaction in the repository
-/// 4. Updates the account balance (debit) or credit limit (credit)
+/// 4. Updates the account balance (debit) and/or credit used (credit)
 ///
 /// Business Rules:
 /// - Transaction value must be positive (> 0)
 /// - Description cannot be empty
 /// - Account must exist
-/// - For debit accounts: Updates the initialBalance (decreases)
-/// - For credit accounts: Updates the creditLimit (decreases available limit)
+/// - For debit accounts (isDebit=true): Updates the balance (decreases)
+/// - For credit accounts (isCredit=true): Updates creditUsed (increases used amount)
 class AddTransactionUseCase {
   final ITransactionRepository _transactionRepository;
   final IAccountRepository _accountRepository;
@@ -141,24 +141,34 @@ class AddTransactionUseCase {
     return null;
   }
 
-  /// Updates the account balance (debit) or credit limit (credit) after a transaction.
+  /// Updates the account balance (debit) and/or creditUsed (credit) after a transaction.
   ///
-  /// For debit accounts: Decreases the initialBalance
-  /// For credit accounts: Decreases the creditLimit (increases used credit)
+  /// For debit accounts: Decreases the balance
+  /// For credit accounts: Increases the creditUsed (amount owed)
   ///
   /// Returns true if the update was successful, false otherwise.
   Future<bool> _updateAccountAfterTransaction({
     required AccountModel account,
     required double transactionValue,
   }) async {
-    if (account.type == AccountType.debit) {
-      // Debit account: decrease the balance
-      final newBalance = account.initialBalance - transactionValue;
-      return await _accountRepository.updateBalance(account.id, newBalance);
-    } else {
-      // Credit account: decrease available limit (increase used amount)
-      final newLimit = account.creditLimit - transactionValue;
-      return await _accountRepository.updateCreditLimit(account.id, newLimit);
+    try {
+      // Handle debit account update
+      if (account.isDebit) {
+        final newBalance = account.balance - transactionValue;
+        final debitUpdateSuccess = await _accountRepository.updateBalance(account.id, newBalance);
+        if (!debitUpdateSuccess) return false;
+      }
+
+      // Handle credit account update
+      if (account.isCredit) {
+        final newCreditUsed = account.creditUsed + transactionValue;
+        final creditUpdateSuccess = await _accountRepository.updateCreditUsed(account.id, newCreditUsed);
+        if (!creditUpdateSuccess) return false;
+      }
+
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 }

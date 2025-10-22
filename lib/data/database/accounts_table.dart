@@ -1,21 +1,24 @@
 import 'package:drift/drift.dart';
 
-/// Account type enum - debit or credit
-enum AccountType {
-  debit,
-  credit,
-}
-
 /// Drift table definition for accounts
+/// Supports dual-type accounts (can be both debit and credit simultaneously)
 @DataClassName('AccountModel')
 class Accounts extends Table {
   IntColumn get id => integer().autoIncrement()();
 
   TextColumn get name => text()();
 
-  IntColumn get type => intEnum<AccountType>()();
+  // Dual-type support: account can be both debit and credit
+  BoolColumn get isDebit => boolean().withDefault(Constant(true))();
 
-  RealColumn get initialBalance => real()();
+  BoolColumn get isCredit => boolean().withDefault(Constant(false))();
 
-  RealColumn get creditLimit => real()();
+  // Balance for debit operations
+  RealColumn get balance => real().withDefault(Constant(0.0))();
+
+  // Credit limit for credit operations
+  RealColumn get creditLimit => real().withDefault(Constant(0.0))();
+
+  // Amount of credit used (for credit accounts)
+  RealColumn get creditUsed => real().withDefault(Constant(0.0))();
 }

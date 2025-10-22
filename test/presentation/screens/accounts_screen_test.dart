@@ -54,20 +54,24 @@ void main() {
 
     testWidgets('Renders list of accounts when data is available',
         (WidgetTester tester) async {
-      final accounts = [
+      final accounts = <AccountModel>[
         AccountModel(
           id: 1,
           name: 'Conta Corrente',
-          type: AccountType.debit,
-          initialBalance: 5000.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 5000.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         ),
         AccountModel(
           id: 2,
           name: 'Cartão de Crédito',
-          type: AccountType.credit,
-          initialBalance: 0.0,
+          isDebit: false,
+          isCredit: true,
+          balance: 0.0,
           creditLimit: 10000.0,
+          creditUsed: 0.0,
         ),
       ];
 
@@ -98,13 +102,15 @@ void main() {
 
     testWidgets('Displays account balances correctly',
         (WidgetTester tester) async {
-      final accounts = [
+      final accounts = <AccountModel>[
         AccountModel(
           id: 1,
           name: 'Conta Corrente',
-          type: AccountType.debit,
-          initialBalance: 1234.50,
+          isDebit: true,
+          isCredit: false,
+          balance: 1234.50,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         ),
       ];
 
@@ -131,13 +137,15 @@ void main() {
 
     testWidgets('Displays credit limits for credit accounts',
         (WidgetTester tester) async {
-      final accounts = [
+      final accounts = <AccountModel>[
         AccountModel(
           id: 1,
           name: 'Cartão de Crédito',
-          type: AccountType.credit,
-          initialBalance: 0.0,
+          isDebit: false,
+          isCredit: true,
+          balance: 0.0,
           creditLimit: 5000.0,
+          creditUsed: 0.0,
         ),
       ];
 
@@ -157,9 +165,9 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Verify account name and credit limit label are displayed
+      // Verify account name and credit-related text are displayed
       expect(find.text('Cartão de Crédito'), findsOneWidget);
-      expect(find.text('Limite Disponível'), findsOneWidget);
+      expect(find.textContaining('Disponível:'), findsOneWidget);
       expect(find.text('Crédito'), findsOneWidget);
     });
 
@@ -218,13 +226,15 @@ void main() {
 
     testWidgets('Edit button opens form with account data',
         (WidgetTester tester) async {
-      final accounts = [
+      final accounts = <AccountModel>[
         AccountModel(
           id: 1,
           name: 'Test Account',
-          type: AccountType.debit,
-          initialBalance: 1000.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 1000.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         ),
       ];
 
@@ -257,13 +267,15 @@ void main() {
 
     testWidgets('Delete button shows confirmation dialog',
         (WidgetTester tester) async {
-      final accounts = [
+      final accounts = <AccountModel>[
         AccountModel(
           id: 1,
           name: 'Test Account',
-          type: AccountType.debit,
-          initialBalance: 1000.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 1000.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         ),
       ];
 
@@ -311,13 +323,15 @@ void main() {
 
     testWidgets('Account cards show account name and type',
         (WidgetTester tester) async {
-      final accounts = [
+      final accounts = <AccountModel>[
         AccountModel(
           id: 1,
           name: 'Minha Conta Corrente',
-          type: AccountType.debit,
-          initialBalance: 2500.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 2500.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         ),
       ];
 
@@ -367,27 +381,33 @@ void main() {
 
     testWidgets('Multiple accounts are displayed in list',
         (WidgetTester tester) async {
-      final accounts = [
+      final accounts = <AccountModel>[
         AccountModel(
           id: 1,
           name: 'Conta 1',
-          type: AccountType.debit,
-          initialBalance: 1000.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 1000.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         ),
         AccountModel(
           id: 2,
           name: 'Conta 2',
-          type: AccountType.credit,
-          initialBalance: 0.0,
+          isDebit: false,
+          isCredit: true,
+          balance: 0.0,
           creditLimit: 5000.0,
+          creditUsed: 0.0,
         ),
         AccountModel(
           id: 3,
           name: 'Conta 3',
-          type: AccountType.debit,
-          initialBalance: 3000.0,
+          isDebit: true,
+          isCredit: false,
+          balance: 3000.0,
           creditLimit: 0.0,
+          creditUsed: 0.0,
         ),
       ];
 

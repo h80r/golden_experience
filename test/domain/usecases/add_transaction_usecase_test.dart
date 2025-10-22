@@ -124,9 +124,30 @@ class MockAccountRepository implements IAccountRepository {
     _accounts[accountId] = AccountModel(
       id: account.id,
       name: account.name,
-      type: account.type,
-      initialBalance: newBalance,
+      isDebit: account.isDebit,
+      isCredit: account.isCredit,
+      balance: newBalance,
       creditLimit: account.creditLimit,
+      creditUsed: account.creditUsed,
+    );
+    return true;
+  }
+
+  @override
+  Future<bool> updateCreditUsed(int accountId, double newCreditUsed) async {
+    if (shouldFailOnUpdate) return false;
+
+    final account = _accounts[accountId];
+    if (account == null) return false;
+
+    _accounts[accountId] = AccountModel(
+      id: account.id,
+      name: account.name,
+      isDebit: account.isDebit,
+      isCredit: account.isCredit,
+      balance: account.balance,
+      creditLimit: account.creditLimit,
+      creditUsed: newCreditUsed,
     );
     return true;
   }
@@ -141,9 +162,11 @@ class MockAccountRepository implements IAccountRepository {
     _accounts[accountId] = AccountModel(
       id: account.id,
       name: account.name,
-      type: account.type,
-      initialBalance: account.initialBalance,
+      isDebit: account.isDebit,
+      isCredit: account.isCredit,
+      balance: account.balance,
       creditLimit: newLimit,
+      creditUsed: account.creditUsed,
     );
     return true;
   }
@@ -176,9 +199,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Test Account',
-            type: AccountType.debit,
-            initialBalance: 1000.0,
+            isDebit: true,
+            isCredit: false,
+            balance: 1000.0,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
 
@@ -205,9 +230,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Test Account',
-            type: AccountType.debit,
-            initialBalance: 1000.0,
+            isDebit: true,
+            isCredit: false,
+            balance: 1000.0,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
 
@@ -234,9 +261,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Test Account',
-            type: AccountType.debit,
-            initialBalance: 1000.0,
+            isDebit: true,
+            isCredit: false,
+            balance: 1000.0,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
 
@@ -263,9 +292,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Test Account',
-            type: AccountType.debit,
-            initialBalance: 1000.0,
+            isDebit: true,
+            isCredit: false,
+            balance: 1000.0,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
 
@@ -309,9 +340,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Checking Account',
-            type: AccountType.debit,
-            initialBalance: 1000.0,
+            isDebit: true,
+            isCredit: false,
+            balance: 1000.0,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
 
@@ -340,9 +373,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Checking Account',
-            type: AccountType.debit,
-            initialBalance: initialBalance,
+            isDebit: true,
+            isCredit: false,
+            balance: initialBalance,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
 
@@ -358,7 +393,7 @@ void main() {
         // Assert
         final account = await accountRepository.getById(1);
         expect(account, matcher.isNotNull);
-        expect(account!.initialBalance, initialBalance - transactionValue);
+        expect(account!.balance, initialBalance - transactionValue);
       });
 
       test('should create transaction in repository', () async {
@@ -367,9 +402,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Checking Account',
-            type: AccountType.debit,
-            initialBalance: 1000.0,
+            isDebit: true,
+            isCredit: false,
+            balance: 1000.0,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
 
@@ -404,9 +441,11 @@ void main() {
           AccountModel(
             id: 2,
             name: 'Credit Card',
-            type: AccountType.credit,
-            initialBalance: 0.0,
+            isDebit: false,
+            isCredit: true,
+            balance: 0.0,
             creditLimit: 5000.0,
+            creditUsed: 0.0,
           ),
         );
 
@@ -425,7 +464,7 @@ void main() {
         expect(result.errorMessage, matcher.isNull);
       });
 
-      test('should decrease credit limit after transaction', () async {
+      test('should increase credit used after transaction', () async {
         // Arrange
         const initialLimit = 5000.0;
         const transactionValue = 200.0;
@@ -433,9 +472,11 @@ void main() {
           AccountModel(
             id: 2,
             name: 'Credit Card',
-            type: AccountType.credit,
-            initialBalance: 0.0,
+            isDebit: false,
+            isCredit: true,
+            balance: 0.0,
             creditLimit: initialLimit,
+            creditUsed: 0.0,
           ),
         );
 
@@ -451,7 +492,7 @@ void main() {
         // Assert
         final account = await accountRepository.getById(2);
         expect(account, matcher.isNotNull);
-        expect(account!.creditLimit, initialLimit - transactionValue);
+        expect(account!.creditUsed, transactionValue);
       });
     });
 
@@ -462,9 +503,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Test Account',
-            type: AccountType.debit,
-            initialBalance: 1000.0,
+            isDebit: true,
+            isCredit: false,
+            balance: 1000.0,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
         accountRepository.shouldFailOnUpdate = true;
@@ -496,9 +539,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Test Account',
-            type: AccountType.debit,
-            initialBalance: 1000.0,
+            isDebit: true,
+            isCredit: false,
+            balance: 1000.0,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
         transactionRepository.shouldFailOnCreate = true;
@@ -525,9 +570,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Test Account',
-            type: AccountType.debit,
-            initialBalance: 1000.0,
+            isDebit: true,
+            isCredit: false,
+            balance: 1000.0,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
 
@@ -553,9 +600,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Test Account',
-            type: AccountType.debit,
-            initialBalance: 100.0,
+            isDebit: true,
+            isCredit: false,
+            balance: 100.0,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
 
@@ -572,7 +621,7 @@ void main() {
         expect(result.success, isTrue);
 
         final account = await accountRepository.getById(1);
-        expect(account!.initialBalance, closeTo(99.99, 0.001));
+        expect(account!.balance, closeTo(99.99, 0.001));
       });
 
       test('should handle very large transaction values', () async {
@@ -581,9 +630,11 @@ void main() {
           AccountModel(
             id: 1,
             name: 'Test Account',
-            type: AccountType.debit,
-            initialBalance: 1000000.0,
+            isDebit: true,
+            isCredit: false,
+            balance: 1000000.0,
             creditLimit: 0.0,
+            creditUsed: 0.0,
           ),
         );
 
@@ -600,7 +651,7 @@ void main() {
         expect(result.success, isTrue);
 
         final account = await accountRepository.getById(1);
-        expect(account!.initialBalance, closeTo(0.01, 0.001));
+        expect(account!.balance, closeTo(0.01, 0.001));
       });
     });
   });

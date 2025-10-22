@@ -26,12 +26,42 @@ void main() {
   });
 
   group('AccountRepositoryImpl', () {
-    test('should create a new account', () async {
+    test('should create a new debit account', () async {
       final account = AccountModelCompanion.insert(
-        name: 'Test Account',
-        type: AccountType.debit,
-        initialBalance: 1000.0,
-        creditLimit: 0.0,
+        name: 'Test Debit Account',
+        isDebit: Value(true),
+        isCredit: Value(false),
+        balance: Value(1000.0),
+        creditLimit: Value(0.0),
+        creditUsed: Value(0.0),
+      );
+
+      final id = await repository.create(account);
+      expect(id, greaterThan(0));
+    });
+
+    test('should create a new credit account', () async {
+      final account = AccountModelCompanion.insert(
+        name: 'Test Credit Account',
+        isDebit: Value(false),
+        isCredit: Value(true),
+        balance: Value(0.0),
+        creditLimit: Value(5000.0),
+        creditUsed: Value(0.0),
+      );
+
+      final id = await repository.create(account);
+      expect(id, greaterThan(0));
+    });
+
+    test('should create a dual-type account', () async {
+      final account = AccountModelCompanion.insert(
+        name: 'Test Dual-Type Account',
+        isDebit: Value(true),
+        isCredit: Value(true),
+        balance: Value(1000.0),
+        creditLimit: Value(5000.0),
+        creditUsed: Value(0.0),
       );
 
       final id = await repository.create(account);
@@ -41,9 +71,11 @@ void main() {
     test('should retrieve an account by id', () async {
       final account = AccountModelCompanion.insert(
         name: 'Get by ID Account',
-        type: AccountType.credit,
-        initialBalance: 0.0,
-        creditLimit: 5000.0,
+        isDebit: Value(false),
+        isCredit: Value(true),
+        balance: Value(0.0),
+        creditLimit: Value(5000.0),
+        creditUsed: Value(0.0),
       );
 
       final id = await repository.create(account);
@@ -51,7 +83,8 @@ void main() {
 
       expect(retrieved, isNotNull);
       expect(retrieved!.name, equals('Get by ID Account'));
-      expect(retrieved.type, equals(AccountType.credit));
+      expect(retrieved.isCredit, isTrue);
+      expect(retrieved.isDebit, isFalse);
     });
 
     test('should return null for non-existent account', () async {
@@ -67,9 +100,11 @@ void main() {
     test('should update an account', () async {
       final account = AccountModelCompanion.insert(
         name: 'Update Account',
-        type: AccountType.debit,
-        initialBalance: 500.0,
-        creditLimit: 0.0,
+        isDebit: Value(true),
+        isCredit: Value(false),
+        balance: Value(500.0),
+        creditLimit: Value(0.0),
+        creditUsed: Value(0.0),
       );
 
       final id = await repository.create(account);
@@ -87,9 +122,11 @@ void main() {
     test('should update account balance', () async {
       final account = AccountModelCompanion.insert(
         name: 'Balance Account',
-        type: AccountType.debit,
-        initialBalance: 1000.0,
-        creditLimit: 0.0,
+        isDebit: Value(true),
+        isCredit: Value(false),
+        balance: Value(1000.0),
+        creditLimit: Value(0.0),
+        creditUsed: Value(0.0),
       );
 
       final id = await repository.create(account);
@@ -98,15 +135,36 @@ void main() {
       expect(success, isTrue);
 
       final updated = await repository.getById(id);
-      expect(updated!.initialBalance, equals(1500.0));
+      expect(updated!.balance, equals(1500.0));
+    });
+
+    test('should update credit used', () async {
+      final account = AccountModelCompanion.insert(
+        name: 'Credit Account',
+        isDebit: Value(false),
+        isCredit: Value(true),
+        balance: Value(0.0),
+        creditLimit: Value(2000.0),
+        creditUsed: Value(0.0),
+      );
+
+      final id = await repository.create(account);
+      final success = await repository.updateCreditUsed(id, 500.0);
+
+      expect(success, isTrue);
+
+      final updated = await repository.getById(id);
+      expect(updated!.creditUsed, equals(500.0));
     });
 
     test('should update credit limit', () async {
       final account = AccountModelCompanion.insert(
-        name: 'Credit Account',
-        type: AccountType.credit,
-        initialBalance: 0.0,
-        creditLimit: 2000.0,
+        name: 'Credit Limit Account',
+        isDebit: Value(false),
+        isCredit: Value(true),
+        balance: Value(0.0),
+        creditLimit: Value(2000.0),
+        creditUsed: Value(0.0),
       );
 
       final id = await repository.create(account);
@@ -121,9 +179,11 @@ void main() {
     test('should delete an account', () async {
       final account = AccountModelCompanion.insert(
         name: 'Delete Account',
-        type: AccountType.debit,
-        initialBalance: 100.0,
-        creditLimit: 0.0,
+        isDebit: Value(true),
+        isCredit: Value(false),
+        balance: Value(100.0),
+        creditLimit: Value(0.0),
+        creditUsed: Value(0.0),
       );
 
       final id = await repository.create(account);

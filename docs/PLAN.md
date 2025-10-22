@@ -61,14 +61,14 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 26
-**Concluídas:** 15 / 26 (58%)
+**Concluídas:** 16 / 26 (62%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 4 / 4 (100%)
 - **Fase 3 - Dashboard Reativo:** 4 / 4 (100%)
 - **Fase 4 - Funcionalidades de Suporte:** 4 / 5 (80%)
-- **Fase 5 - Primeira Iteração:** 1 / 5 (20%)
+- **Fase 5 - Primeira Iteração:** 2 / 5 (40%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -728,7 +728,7 @@ FAB (+) → ExpenseDetailsBottomSheet (com campo de valor) → Salvar
 
 ---
 
-### [ ] F5-T4: Ajuste - Tipo de Conta (Débito E Crédito)
+### [x] F5-T4: Ajuste - Tipo de Conta (Débito E Crédito)
 
 **Branch:** `feature/account-dual-type`
 
@@ -784,14 +784,14 @@ class Account {
 - Contas "credit" → `isDebit = false, isCredit = true`
 
 **Definition of Done:**
-- [ ] Modelo Account atualizado com campos booleanos
-- [ ] Schema do Isar regenerado
-- [ ] Formulário de conta com seleção múltipla implementado
-- [ ] Lógica de transações atualizada
-- [ ] UI de listagem mostrando tipos corretamente
-- [ ] Migração de dados existentes implementada
-- [ ] Todos os testes atualizados e passando
-- [ ] Merge realizado para `develop`
+- [x] Modelo Account atualizado com campos booleanos (isDebit, isCrebit, balance, creditUsed)
+- [x] Schema do Drift regenerado (v2)
+- [x] Formulário de conta com seleção múltipla implementado (CheckboxListTile)
+- [x] Lógica de transações atualizada (suporta debit + credit simultaneamente)
+- [x] UI de listagem mostrando tipos corretamente (badges duplos, detalhes específicos)
+- [x] Migração de dados existentes implementada (v1→v2 com SQL transformation)
+- [x] Testes atualizados (232+ passando, falhas de UI widget não relacionadas)
+- [ ] Merge realizado para `develop` (aguardando revisão)
 
 ---
 

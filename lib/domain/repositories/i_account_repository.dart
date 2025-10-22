@@ -27,6 +27,10 @@ abstract class IAccountRepository {
   /// Returns true if successful, false otherwise
   Future<bool> updateCreditLimit(int accountId, double newLimit);
 
+  /// Updates the amount of credit used in a credit account
+  /// Returns true if successful, false otherwise
+  Future<bool> updateCreditUsed(int accountId, double newCreditUsed);
+
   /// Deletes an account by its ID
   /// Returns true if successful, false otherwise
   Future<bool> delete(int id);
