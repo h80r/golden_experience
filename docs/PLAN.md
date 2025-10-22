@@ -61,12 +61,12 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 6 / 21 (29%)
+**Concluídas:** 7 / 21 (33%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 2 / 4 (50%)
-- **Fase 3 - Dashboard Reativo:** 0 / 4 (0%)
+- **Fase 3 - Dashboard Reativo:** 1 / 4 (25%)
 - **Fase 4 - Funcionalidades de Suporte:** 0 / 5 (0%)
 
 ### Legenda de Status
@@ -334,7 +334,7 @@ Criar o Use Case na camada de domínio responsável por orquestrar a lógica de 
 
 ---
 
-### [ ] F2-T4: Integração Fim-a-Fim do Fluxo
+### [x] F2-T4: Integração Fim-a-Fim do Fluxo
 
 **Branch:** `feature/expense-flow-integration`
 
@@ -347,14 +347,14 @@ FAB (+) → CalculatorOverlay → ExpenseDetailsBottomSheet → ExpenseFormNotif
 ```
 
 **Definition of Done:**
-- [ ] FAB no Dashboard abre a calculadora
-- [ ] Calculadora confirma valor e abre bottom sheet
-- [ ] Bottom sheet salva e chama o use case
-- [ ] Transação é persistida no Isar
-- [ ] Saldo/limite da conta é atualizado
-- [ ] Fluxo fecha e retorna ao Dashboard
-- [ ] Teste de integração E2E para o fluxo completo
-- [ ] Merge realizado para `develop`
+- [x] FAB no Dashboard abre a calculadora
+- [x] Calculadora confirma valor e abre bottom sheet
+- [x] Bottom sheet salva e chama o use case
+- [x] Transação é persistida no Isar
+- [x] Saldo/limite da conta é atualizado
+- [x] Fluxo fecha e retorna ao Dashboard
+- [x] Teste de integração E2E para o fluxo completo
+- [x] Merge realizado para `develop`
 
 ---
 
@@ -362,11 +362,11 @@ FAB (+) → CalculatorOverlay → ExpenseDetailsBottomSheet → ExpenseFormNotif
 
 **Objetivo:** Implementar o Dashboard com todos os cálculos financeiros e reatividade em tempo real.
 
-**Status:** 0 / 4 tarefas concluídas
+**Status:** 1 / 4 tarefas concluídas
 
 ---
 
-### [ ] F3-T1: Use Case - Dados do Dashboard
+### [x] F3-T1: Use Case - Dados do Dashboard
 
 **Branch:** `feature/dashboard-usecase`
 
@@ -393,11 +393,11 @@ class DashboardData {
 ```
 
 **Definition of Done:**
-- [ ] `GetDashboardDataUseCase` implementado
-- [ ] Todos os cálculos corretos conforme PRD
-- [ ] Testes unitários cobrindo múltiplos cenários
-- [ ] Casos extremos tratados (reserva negativa, etc.)
-- [ ] Provider configurado
+- [x] `GetDashboardDataUseCase` implementado
+- [x] Todos os cálculos corretos conforme PRD
+- [x] Testes unitários cobrindo múltiplos cenários
+- [x] Casos extremos tratados (reserva negativa, etc.)
+- [x] Provider configurado
 - [ ] Merge realizado para `develop`
 
 ---
