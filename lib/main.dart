@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'data/datasources/local_database.dart';
 import 'data/repositories/app_settings_repository_impl.dart';
 import 'data/repositories/category_repository_impl.dart';
@@ -11,6 +12,9 @@ import 'presentation/theme/app_theme.dart';
 void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize locale data for intl package (used in TransactionCard and other widgets)
+  await initializeDateFormatting('pt_BR');
 
   // Initialize the database before running the app
   await LocalDatabase.initialize();

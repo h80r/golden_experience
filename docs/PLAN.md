@@ -864,7 +864,7 @@ class ReservePercentageSlider extends StatelessWidget {
 
 ---
 
-### [ ] F6-T1: Welcome Tour / Onboarding Inicial
+### [x] F6-T1: Welcome Tour / Onboarding Inicial
 
 **Branch:** `feature/welcome-tour`
 
@@ -900,19 +900,19 @@ Implementar um tour de boas-vindas que guia o usuário na primeira inicializaç�
 - Persistir flag `hasCompletedOnboarding` no `AppSettings`
 
 **Definition of Done:**
-- [ ] Package de onboarding adicionado (ou implementação customizada)
-- [ ] Fluxo de 5 telas implementado
-- [ ] Dados coletados salvos no banco (AppSettings, Account, Categories)
-- [ ] Flag `hasCompletedOnboarding` controla exibição do tour
-- [ ] Tour só aparece na primeira inicialização
-- [ ] Design system aplicado em todas as telas
-- [ ] Botão "Pular" permite acesso ao app sem completar
-- [ ] Testes de widget para o fluxo de onboarding
-- [ ] Merge realizado para `develop`
+- [x] Package de onboarding adicionado (ou implementação customizada)
+- [x] Fluxo de 5 telas implementado
+- [x] Dados coletados salvos no banco (AppSettings, Account, Categories)
+- [x] Flag `hasCompletedOnboarding` controla exibição do tour
+- [x] Tour só aparece na primeira inicialização
+- [x] Design system aplicado em todas as telas
+- [x] Botão "Pular" permite acesso ao app sem completar
+- [x] Testes de widget para o fluxo de onboarding
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F6-T2: Listagem de Transações com CRUD
+### [x] F6-T2: Listagem de Transações com CRUD
 
 **Branch:** `feature/transactions-list`
 
@@ -963,15 +963,15 @@ Criar uma nova tela dedicada à visualização e gestão completa de todas as tr
 - `TransactionFiltersSheet`
 
 **Definition of Done:**
-- [ ] Tela de listagem implementada
-- [ ] Filtros de período, conta e categoria funcionais
-- [ ] Swipe actions para editar/deletar implementados
-- [ ] Bottom sheet reutilizado para edição
-- [ ] Dialog de confirmação de exclusão implementado
-- [ ] Lógica de reversão de saldo/limite ao deletar
-- [ ] Navegação adicionada (nova aba ou menu)
-- [ ] Empty state quando não há transações
-- [ ] Testes de widget para a tela e componentes
+- [x] Tela de listagem implementada
+- [x] Filtros de período, conta e categoria funcionais
+- [x] Swipe actions para editar/deletar implementados
+- [x] Bottom sheet reutilizado para edição
+- [x] Dialog de confirmação de exclusão implementado
+- [x] Lógica de reversão de saldo/limite ao deletar
+- [x] Navegação adicionada (nova aba ou menu)
+- [x] Empty state quando não há transações
+- [x] Testes de widget para a tela e componentes
 - [ ] Merge realizado para `develop`
 
 ---

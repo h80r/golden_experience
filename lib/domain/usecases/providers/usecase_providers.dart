@@ -3,6 +3,8 @@ import '../../models/dashboard_data.dart';
 import '../../../data/providers/repository_providers.dart';
 import '../../../data/datasources/local_database.dart';
 import '../add_transaction_usecase.dart';
+import '../update_transaction_usecase.dart';
+import '../delete_transaction_usecase.dart';
 import '../get_dashboard_data_usecase.dart';
 import '../process_recurring_expenses_usecase.dart';
 
@@ -115,4 +117,47 @@ final dashboardDataStreamProvider =
     StreamProvider.autoDispose<DashboardData>((ref) {
   final useCase = ref.watch(getDashboardDataUseCaseProvider);
   return useCase.executeReactive();
+});
+
+/// Provider for UpdateTransactionUseCase
+///
+/// This provider creates an instance of UpdateTransactionUseCase with the required
+/// repository dependencies injected via Riverpod.
+///
+/// Usage:
+/// ```dart
+/// final updateTransactionUseCase = ref.read(updateTransactionUseCaseProvider);
+/// final result = await updateTransactionUseCase.execute(
+///   id: 1,
+///   value: 150.0,
+///   description: 'Updated description',
+///   date: DateTime.now(),
+///   accountId: 1,
+///   categoryId: 1,
+/// );
+/// ```
+final updateTransactionUseCaseProvider =
+    Provider<UpdateTransactionUseCase>((ref) {
+  return UpdateTransactionUseCase(
+    transactionRepository: ref.read(transactionRepositoryProvider),
+    accountRepository: ref.read(accountRepositoryProvider),
+  );
+});
+
+/// Provider for DeleteTransactionUseCase
+///
+/// This provider creates an instance of DeleteTransactionUseCase with the required
+/// repository dependencies injected via Riverpod.
+///
+/// Usage:
+/// ```dart
+/// final deleteTransactionUseCase = ref.read(deleteTransactionUseCaseProvider);
+/// final result = await deleteTransactionUseCase.execute(id: 1);
+/// ```
+final deleteTransactionUseCaseProvider =
+    Provider<DeleteTransactionUseCase>((ref) {
+  return DeleteTransactionUseCase(
+    transactionRepository: ref.read(transactionRepositoryProvider),
+    accountRepository: ref.read(accountRepositoryProvider),
+  );
 });

@@ -87,6 +87,7 @@ class AccountsScreen extends ConsumerWidget {
         },
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.background,
+        heroTag: 'accounts_fab',
         child: const Icon(Icons.add),
       ),
     );

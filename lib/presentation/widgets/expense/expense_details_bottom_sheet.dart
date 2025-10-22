@@ -11,8 +11,14 @@ import '../buttons/secondary_button.dart';
 /// Expense details bottom sheet for entering transaction information
 class ExpenseDetailsBottomSheet extends StatefulWidget {
   final double? initialValue;
+  final String? initialDescription;
+  final String? initialNotes;
+  final int? initialAccountId;
+  final int? initialCategoryId;
+  final DateTime? initialDate;
   final Map<int, String>? accounts;
   final Map<int, String>? categories;
+  final bool isEditMode;
   final FutureOr<void> Function({
     required double value,
     required String description,
@@ -26,8 +32,14 @@ class ExpenseDetailsBottomSheet extends StatefulWidget {
 
   const ExpenseDetailsBottomSheet({
     this.initialValue,
+    this.initialDescription,
+    this.initialNotes,
+    this.initialAccountId,
+    this.initialCategoryId,
+    this.initialDate,
     this.accounts,
     this.categories,
+    this.isEditMode = false,
     this.onSave,
     required this.onCancel,
     super.key,
@@ -64,19 +76,43 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
       _valueController.text = _formatCurrency(widget.initialValue!);
     }
 
-    if (widget.accounts != null && widget.accounts!.isNotEmpty) {
+    // Initialize description
+    if (widget.initialDescription != null) {
+      _descriptionController.text = widget.initialDescription!;
+    }
+
+    // Initialize notes
+    if (widget.initialNotes != null) {
+      _notesController.text = widget.initialNotes!;
+    }
+
+    // Initialize account
+    if (widget.initialAccountId != null) {
+      _selectedAccountId = widget.initialAccountId!;
+    } else if (widget.accounts != null && widget.accounts!.isNotEmpty) {
       _selectedAccountId = widget.accounts!.keys.first;
     }
-    if (widget.categories != null && widget.categories!.isNotEmpty) {
+
+    // Initialize category
+    if (widget.initialCategoryId != null) {
+      _selectedCategoryId = widget.initialCategoryId!;
+    } else if (widget.categories != null && widget.categories!.isNotEmpty) {
       _selectedCategoryId = widget.categories!.keys.first;
     }
 
-    // Request focus on the value field after the widget is built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _valueFocusNode.requestFocus();
-      }
-    });
+    // Initialize date
+    if (widget.initialDate != null) {
+      _selectedDate = widget.initialDate!;
+    }
+
+    // Request focus on the value field after the widget is built (only if not in edit mode)
+    if (!widget.isEditMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _valueFocusNode.requestFocus();
+        }
+      });
+    }
   }
 
   @override
@@ -217,7 +253,7 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         Text(
-                          'Detalhes da Transação',
+                          widget.isEditMode ? 'Editar Transação' : 'Detalhes da Transação',
                           style: AppTypography.headlineSmall.copyWith(
                             color: AppColors.textPrimary,
                           ),

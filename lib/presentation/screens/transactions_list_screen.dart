@@ -1,0 +1,468 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../widgets/transactions/transaction_card.dart';
+import '../widgets/transactions/transaction_filters_sheet.dart';
+import '../widgets/expense/expense_details_bottom_sheet.dart';
+import '../state/expense_form_notifier.dart';
+import '../../domain/usecases/providers/usecase_providers.dart';
+import '../../data/providers/repository_providers.dart';
+
+/// TransactionsListScreen - Complete transaction list with CRUD operations
+///
+/// Features:
+/// - Display all transactions in a scrollable list
+/// - Filter by period (today, week, month, custom)
+/// - Filter by account and category
+/// - Edit transactions (swipe or menu)
+/// - Delete transactions (swipe or menu)
+/// - Empty state when no transactions
+class TransactionsListScreen extends ConsumerStatefulWidget {
+  final VoidCallback? onBackPressed;
+
+  const TransactionsListScreen({
+    super.key,
+    this.onBackPressed,
+  });
+
+  @override
+  ConsumerState<TransactionsListScreen> createState() =>
+      _TransactionsListScreenState();
+}
+
+class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen> {
+  FilterPeriod _filterPeriod = FilterPeriod.thisMonth;
+  DateTime? _customStartDate;
+  DateTime? _customEndDate;
+  Set<int> _selectedAccountIds = {};
+  Set<int> _selectedCategoryIds = {};
+
+  /// Get date range based on selected filter period
+  ({DateTime start, DateTime end}) _getDateRange() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    switch (_filterPeriod) {
+      case FilterPeriod.today:
+        return (start: today, end: today.add(const Duration(days: 1)));
+      case FilterPeriod.thisWeek:
+        final weekStart = today.subtract(Duration(days: today.weekday - 1));
+        final daysToEndOfWeek = 8 - today.weekday;
+        return (start: weekStart, end: today.add(Duration(days: daysToEndOfWeek)));
+      case FilterPeriod.thisMonth:
+        final monthStart = DateTime(now.year, now.month, 1);
+        final monthEnd = DateTime(now.year, now.month + 1, 1);
+        return (start: monthStart, end: monthEnd);
+      case FilterPeriod.custom:
+        return (
+          start: _customStartDate ?? today,
+          end: _customEndDate?.add(const Duration(days: 1)) ?? today
+        );
+    }
+  }
+
+  void _handleEditTransaction(
+    TransactionCardData transaction,
+    Map<int, String> accountsMap,
+    Map<int, String> categoriesMap,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => ExpenseDetailsBottomSheet(
+        accounts: accountsMap,
+        categories: categoriesMap,
+        initialValue: transaction.value,
+        initialDescription: transaction.description,
+        initialNotes: transaction.notes,
+        initialAccountId: transaction.accountId,
+        initialCategoryId: transaction.categoryId,
+        initialDate: transaction.date,
+        isEditMode: true,
+        onSave: ({
+          required value,
+          required description,
+          required notes,
+          required accountId,
+          required transactionType,
+          required categoryId,
+          required date,
+        }) async {
+          final updateTransactionUseCase =
+              ref.read(updateTransactionUseCaseProvider);
+
+          final result = await updateTransactionUseCase.execute(
+            id: transaction.id,
+            value: value,
+            description: description,
+            date: date,
+            accountId: accountId,
+            categoryId: categoryId,
+            notes: notes,
+          );
+
+          if (!context.mounted) return;
+
+          ref.read(expenseFormProvider.notifier).reset();
+          Navigator.of(context).pop();
+
+          if (result.success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Transação atualizada com sucesso!'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result.errorMessage ?? 'Erro ao atualizar transação'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        },
+        onCancel: () {
+          Navigator.of(context).pop();
+          ref.read(expenseFormProvider.notifier).reset();
+        },
+      ),
+    );
+  }
+
+  Future<void> _handleDeleteTransaction(TransactionCardData transaction) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar exclusão'),
+        content: Text(
+          'Tem certeza que deseja deletar a transação "${transaction.description}"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              'Deletar',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed ?? false) {
+      final deleteTransactionUseCase =
+          ref.read(deleteTransactionUseCaseProvider);
+
+      final result = await deleteTransactionUseCase.execute(
+        id: transaction.id,
+      );
+
+      if (!context.mounted) return;
+
+      if (result.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Transação deletada com sucesso!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.errorMessage ?? 'Erro ao deletar transação'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showFiltersSheet(
+    List<({int id, String name})> accounts,
+    List<({int id, String name})> categories,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => TransactionFiltersSheet(
+        accounts: accounts,
+        categories: categories,
+        initialPeriod: _filterPeriod,
+        initialCustomStartDate: _customStartDate,
+        initialCustomEndDate: _customEndDate,
+        initialSelectedAccountIds: _selectedAccountIds,
+        initialSelectedCategoryIds: _selectedCategoryIds,
+        onFiltersChanged: ({
+          required period,
+          required customStartDate,
+          required customEndDate,
+          required selectedAccountIds,
+          required selectedCategoryIds,
+        }) {
+          setState(() {
+            _filterPeriod = period;
+            _customStartDate = customStartDate;
+            _customEndDate = customEndDate;
+            _selectedAccountIds = selectedAccountIds;
+            _selectedCategoryIds = selectedCategoryIds;
+          });
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final transactionsAsync = ref.watch(transactionsStreamProvider);
+    final accountsAsync = ref.watch(accountsStreamProvider);
+    final categoriesAsync = ref.watch(categoriesStreamProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Transações'),
+        backgroundColor: AppColors.background,
+        leading: widget.onBackPressed != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: widget.onBackPressed,
+              )
+            : null,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () {
+              accountsAsync.whenData((accounts) {
+                categoriesAsync.whenData((categories) {
+                  _showFiltersSheet(
+                    accounts
+                        .map((a) => (id: a.id, name: a.name))
+                        .toList(),
+                    categories
+                        .map((c) => (id: c.id, name: c.name))
+                        .toList(),
+                  );
+                });
+              });
+            },
+          ),
+        ],
+      ),
+      backgroundColor: AppColors.background,
+      body: transactionsAsync.when(
+        data: (transactions) {
+          // Get date range
+          final dateRange = _getDateRange();
+
+          // Filter transactions by date
+          final filteredByDate = transactions.where((t) {
+            return t.date.isAfter(dateRange.start) &&
+                t.date.isBefore(dateRange.end);
+          }).toList();
+
+          // Filter by accounts
+          List filteredByAccount = filteredByDate;
+          if (_selectedAccountIds.isNotEmpty) {
+            filteredByAccount = filteredByDate
+                .where((t) => _selectedAccountIds.contains(t.accountId))
+                .toList();
+          }
+
+          // Filter by categories
+          List filteredByCategory = filteredByAccount;
+          if (_selectedCategoryIds.isNotEmpty) {
+            filteredByCategory = filteredByAccount
+                .where((t) => _selectedCategoryIds.contains(t.categoryId))
+                .toList();
+          }
+
+          // Sort by date (newest first)
+          filteredByCategory.sort((a, b) => b.date.compareTo(a.date));
+
+          // Get accounts and categories for mapping
+          return accountsAsync.when(
+            data: (accounts) {
+              return categoriesAsync.when(
+                data: (categories) {
+                  final accountsMap = {
+                    for (var account in accounts) account.id: account.name
+                  };
+                  final categoriesMap = {
+                    for (var category in categories) category.id: category.name
+                  };
+
+                  if (filteredByCategory.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.receipt_long_outlined,
+                              size: 64,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            Text(
+                              'Nenhuma transação encontrada',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(
+                              'Tente ajustar os filtros',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: AppColors.textTertiary,
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    itemCount: filteredByCategory.length,
+                    itemBuilder: (context, index) {
+                      final transaction = filteredByCategory[index];
+                      final cardData = TransactionCardData(
+                        id: transaction.id,
+                        value: transaction.value,
+                        description: transaction.description,
+                        date: transaction.date,
+                        accountId: transaction.accountId,
+                        accountName: accountsMap[transaction.accountId] ?? 'Desconhecida',
+                        categoryId: transaction.categoryId,
+                        categoryName:
+                            categoriesMap[transaction.categoryId] ?? 'Sem categoria',
+                        notes: transaction.notes,
+                      );
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: Dismissible(
+                          key: Key(transaction.id.toString()),
+                          background: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.success,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            alignment: Alignment.centerLeft,
+                            padding: const EdgeInsets.only(left: AppSpacing.lg),
+                            child: const Icon(
+                              Icons.edit,
+                              color: AppColors.background,
+                            ),
+                          ),
+                          secondaryBackground: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.error,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: AppSpacing.lg),
+                            child: const Icon(
+                              Icons.delete,
+                              color: AppColors.background,
+                            ),
+                          ),
+                          onDismissed: (direction) {
+                            if (direction == DismissDirection.startToEnd) {
+                              // Edit
+                              _handleEditTransaction(
+                                cardData,
+                                accountsMap,
+                                categoriesMap,
+                              );
+                            } else {
+                              // Delete
+                              _handleDeleteTransaction(cardData);
+                            }
+                          },
+                          child: TransactionCard(
+                            transaction: cardData,
+                            onTap: () {
+                              _handleEditTransaction(
+                                cardData,
+                                accountsMap,
+                                categoriesMap,
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                error: (error, stack) => Center(
+                  child: Text('Erro ao carregar categorias: $error'),
+                ),
+              );
+            },
+            loading: () => const Center(
+              child: CircularProgressIndicator(),
+            ),
+            error: (error, stack) => Center(
+              child: Text('Erro ao carregar contas: $error'),
+            ),
+          );
+        },
+        loading: () => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                color: AppColors.error,
+                size: 48.0,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text('Erro ao carregar transações: $error'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Provider for watching all transactions
+final transactionsStreamProvider = StreamProvider.autoDispose(
+  (ref) => ref.read(transactionRepositoryProvider).watchAll(),
+);
+
+/// Provider for watching all accounts
+final accountsStreamProvider = StreamProvider.autoDispose(
+  (ref) => ref.read(accountRepositoryProvider).watchAll(),
+);
+
+/// Provider for watching all categories
+final categoriesStreamProvider = StreamProvider.autoDispose(
+  (ref) => ref.read(categoryRepositoryProvider).watchAll(),
+);

@@ -12,7 +12,12 @@ import 'settings_screen.dart';
 
 /// DashboardScreen - The main dashboard showing financial overview
 class DashboardScreen extends ConsumerWidget {
-  const DashboardScreen({super.key});
+  final VoidCallback? onViewTransactionsPressed;
+
+  const DashboardScreen({
+    super.key,
+    this.onViewTransactionsPressed,
+  });
 
   void _handleOpenExpenseSheet(BuildContext context, WidgetRef ref) {
     // Fetch accounts and categories repositories
@@ -163,6 +168,27 @@ class DashboardScreen extends ConsumerWidget {
                 isLoading: false,
               ),
               const SizedBox(height: AppSpacing.xl),
+
+              // Transactions button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.receipt_long),
+                  label: const Text('Ver todas as transações'),
+                  onPressed: onViewTransactionsPressed,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.md,
+                    ),
+                    side: const BorderSide(
+                      color: AppColors.primary,
+                      width: 2,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
             ],
           ),
         ),
@@ -186,6 +212,27 @@ class DashboardScreen extends ConsumerWidget {
                 partialResult: 0.0,
                 finalReserve: 0.0,
                 isLoading: true,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Transactions button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.receipt_long),
+                  label: const Text('Ver todas as transações'),
+                  onPressed: onViewTransactionsPressed,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.md,
+                    ),
+                    side: const BorderSide(
+                      color: AppColors.primary,
+                      width: 2,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: AppSpacing.xl),
             ],
@@ -222,6 +269,7 @@ class DashboardScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.background,
+        heroTag: 'dashboard_fab',
         onPressed: () {
           // Open expense details bottom sheet directly
           _handleOpenExpenseSheet(context, ref);

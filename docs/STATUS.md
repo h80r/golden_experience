@@ -4,43 +4,80 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F6-T1
-- **current_task_title**: Welcome Tour / Onboarding Inicial
-- **current_task_status**: IN_PROGRESS
-
-## Step Tracking (Only for complex tasks)
-
-- **completed_steps**:
-  - [F6-T1.1] Added `hasCompletedOnboarding` boolean field to AppSettings Drift table
-  - [F6-T1.2] Updated AppSettingsRepository interface and implementation with updateHasCompletedOnboarding() method
-  - [F6-T1.3] Created comprehensive OnboardingScreen with PageView for 5-step flow
-  - [F6-T1.4] Implemented WelcomeStep with feature highlights and intro messaging
-  - [F6-T1.5] Implemented SettingsStep to configure salary, reserve balance, and reserve percentage (with slider)
-  - [F6-T1.6] Implemented AccountStep to create first account with dual-type support (debit/credit)
-  - [F6-T1.7] Implemented CategoriesStep to display and review default categories
-  - [F6-T1.8] Implemented CompletionStep with animated checkmark, summary, and next steps guidance
-  - [F6-T1.9] Integrated onboarding into main.dart with conditional routing based on hasCompletedOnboarding flag
-  - [F6-T1.10] Created appSettingsStreamProvider for reactive app settings observation
-
-- **next_atomic_step**: TASK COMPLETED - Ready for merge
-
-## Compilation Status
-✅ All 90 compilation errors have been fixed:
-  - Fixed all AppSpacing constant names (large→xl, medium→md, small→sm)
-  - Fixed all import paths for onboarding widgets
-  - Fixed Value<T> type wrapping in AccountModelCompanion.insert()
-  - Fixed VoidCallback type issues in button handlers
-  - Fixed double comma syntax errors in test files
-  - Added updateHasCompletedOnboarding() method to all MockAppSettingsRepository classes
-  - Updated all AppSettingsModel instantiations to include hasCompletedOnboarding parameter
-
-Final analysis: 65 issues found (all warnings/info, 0 errors)
+- **current_task_id**: F6-T2
+- **current_task_title**: Listagem de Transações com CRUD
+- **current_task_status**: COMPLETED
 
 ## Implementation Summary
 
-F5-T5 successfully implements the slider improvement for reserve percentage selection:
-- **Widget**: ReservePercentageSlider with 0-100% range, 1% increments, visual feedback, and helpful description
-- **UI**: Slider integrated into settings screen replacing text field for better UX
-- **Design System**: Applied AppColors (primary for active elements) and AppSpacing for consistent styling
-- **Testing**: 11 slider widget tests + 12 updated settings screen tests all passing
-- **User Experience**: Percentage selection is now more intuitive with visual slider feedback
+F6-T2 successfully implements complete transaction list management with CRUD operations:
+
+### Components Implemented:
+1. **TransactionsListScreen** - Main screen with:
+   - Display all transactions in scrollable list
+   - Filter by period (today, week, month, custom dates)
+   - Filter by account and category (multi-select)
+   - Sort by date (newest first)
+   - Empty state UI with helpful messaging
+
+2. **TransactionCard** - Compact card widget showing:
+   - Value with color-coded formatting (green/red for positive/negative)
+   - Description and account name
+   - Date and category badge
+   - Tap to edit functionality
+
+3. **TransactionFiltersSheet** - Bottom sheet filter UI with:
+   - Period selector (today, week, month, custom)
+   - Custom date range picker
+   - Multi-select accounts filter
+   - Multi-select categories filter
+   - Clear and apply buttons
+
+4. **Use Cases**:
+   - `UpdateTransactionUseCase` - Edit existing transactions with account balance/credit updates
+   - `DeleteTransactionUseCase` - Delete transactions with reversal of account effects
+
+5. **Navigation Integration**:
+   - Added "Ver todas as transações" button to Dashboard
+   - Button navigates to TransactionsListScreen with full functionality
+   - Fills empty space on dashboard screen
+   - Maintains original 3-tab BottomNavigationBar (Início, Recorrências, Contas)
+
+6. **Swipe Actions**:
+   - Swipe left to delete (red background)
+   - Swipe right to edit (green background)
+   - Long tap to edit (fallback)
+   - Confirmation dialog before deletion
+
+7. **UI/UX Enhancements**:
+   - Updated ExpenseDetailsBottomSheet to support edit mode
+   - Pre-fill all fields when editing
+   - Different header text for edit vs create
+   - Intl package added for currency and date formatting (Brazilian locale)
+
+### Technical Details:
+- **Database**: Reactive StreamProviders for real-time updates
+- **State Management**: Riverpod with auto-dispose
+- **Providers Added**:
+  - `transactionsStreamProvider` - Watch all transactions
+  - `accountsStreamProvider` - Watch all accounts
+  - `categoriesStreamProvider` - Watch all categories
+  - `updateTransactionUseCaseProvider` - Dependency injection
+  - `deleteTransactionUseCaseProvider` - Dependency injection
+
+### Code Quality:
+- ✅ No compilation errors (30 info warnings only, all pre-existing)
+- ✅ Clean architecture maintained
+- ✅ Comprehensive error handling
+- ✅ Proper disposal of resources
+- ✅ Reactive updates with Riverpod
+
+### State Management Fix:
+- **IndexedStack Implementation**: Changed MainScreen to use IndexedStack instead of simple widget indexing
+- **State Preservation**: All screens remain mounted, preserving DashboardContainer state when switching tabs
+- **User Experience**: Transactions list view persists when user navigates to other tabs and returns
+
+### Ready for:
+- Testing (unit and widget tests needed)
+- Code review
+- Merge to develop branch

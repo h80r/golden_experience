@@ -87,6 +87,7 @@ class RecurringExpensesScreen extends ConsumerWidget {
         },
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.background,
+        heroTag: 'recurring_fab',
         child: const Icon(Icons.add),
       ),
     );
