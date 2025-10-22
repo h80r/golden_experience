@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/calculator/calculator_overlay.dart';
 import '../widgets/expense/expense_details_bottom_sheet.dart';
+import '../widgets/dashboard/main_card.dart';
+import '../widgets/dashboard/secondary_card.dart';
 import '../state/expense_form_notifier.dart';
 import '../../domain/usecases/providers/usecase_providers.dart';
 import '../../data/providers/repository_providers.dart';
+import '../../presentation/theme/app_colors.dart';
+import '../../presentation/theme/app_spacing.dart';
 
 /// DashboardScreen - The main dashboard showing financial overview
 class DashboardScreen extends ConsumerWidget {
@@ -129,6 +133,7 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Início'),
+        backgroundColor: AppColors.background,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -138,10 +143,35 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: const Center(
-        child: Text('Dashboard Screen'),
+      backgroundColor: AppColors.background,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Main card - Remaining budget
+            MainCard(
+              remainingBudget: 1250.50,
+              reserveUsagePercentage: 35.0,
+              isLoading: false,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Secondary card - Financial details
+            SecondaryCard(
+              monthlySalary: 5000.00,
+              totalSpent: 1234.50,
+              partialResult: 3765.50,
+              finalReserve: 2500.00,
+              isLoading: false,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.background,
         onPressed: () {
           // Open calculator overlay
           showDialog(

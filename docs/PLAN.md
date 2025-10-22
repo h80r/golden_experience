@@ -61,12 +61,12 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 7 / 21 (33%)
+**Concluídas:** 9 / 21 (43%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
-- **Fase 2 - Registro de Gastos:** 2 / 4 (50%)
-- **Fase 3 - Dashboard Reativo:** 1 / 4 (25%)
+- **Fase 2 - Registro de Gastos:** 4 / 4 (100%)
+- **Fase 3 - Dashboard Reativo:** 2 / 4 (50%)
 - **Fase 4 - Funcionalidades de Suporte:** 0 / 5 (0%)
 
 ### Legenda de Status
@@ -402,7 +402,7 @@ class DashboardData {
 
 ---
 
-### [ ] F3-T2: Lógica de Processamento de Recorrências
+### [x] F3-T2: Lógica de Processamento de Recorrências
 
 **Branch:** `feature/recurring-processor`
 
@@ -423,16 +423,16 @@ Implementar a lógica que processa despesas recorrentes na inicialização do ap
 - Múltiplos dias sem abrir o app
 
 **Definition of Done:**
-- [ ] `ProcessRecurringExpensesUseCase` implementado
-- [ ] Lógica de múltiplos dias funcional
-- [ ] Meses com diferentes durações tratados
-- [ ] Testes unitários com casos extremos
-- [ ] Execução na inicialização configurada
-- [ ] Merge realizado para `develop`
+- [x] `ProcessRecurringExpensesUseCase` implementado
+- [x] Lógica de múltiplos dias funcional
+- [x] Meses com diferentes durações tratados
+- [x] Testes unitários com casos extremos
+- [x] Execução na inicialização configurada
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F3-T3: UI do Dashboard
+### [x] F3-T3: UI do Dashboard
 
 **Branch:** `feature/dashboard-ui`
 
@@ -460,16 +460,16 @@ Construir a interface completa do Dashboard seguindo o design conceitual, prepar
    - Botão "+" para adicionar gasto
 
 **Definition of Done:**
-- [ ] Layout fiel ao design conceitual
-- [ ] Responsividade para diferentes tamanhos de tela
-- [ ] Design system aplicado (cores, tipografia)
-- [ ] Componentes criados e organizados
-- [ ] Testes de widget para os componentes
+- [x] Layout fiel ao design conceitual
+- [x] Responsividade para diferentes tamanhos de tela
+- [x] Design system aplicado (cores, tipografia)
+- [x] Componentes criados e organizados
+- [x] Testes de widget para os componentes
 - [ ] Merge realizado para `develop`
 
 ---
 
-### [ ] F3-T4: Integração Reativa do Dashboard
+### [x] F3-T4: Integração Reativa do Dashboard
 
 **Branch:** `feature/dashboard-reactive`
 
@@ -488,12 +488,12 @@ Dashboard UI (atualiza automaticamente)
 ```
 
 **Definition of Done:**
-- [ ] `StreamProvider` configurado para o dashboard
-- [ ] Dashboard consome o provider reativamente
-- [ ] Adicionar novo gasto atualiza Dashboard instantaneamente
-- [ ] Todas as mudanças refletidas em tempo real
-- [ ] Estados de loading e erro tratados
-- [ ] Teste de integração para reatividade
+- [x] `StreamProvider` configurado para o dashboard
+- [x] Dashboard consome o provider reativamente
+- [x] Adicionar novo gasto atualiza Dashboard instantaneamente
+- [x] Todas as mudanças refletidas em tempo real
+- [x] Estados de loading e erro tratados
+- [x] Teste de integração para reatividade
 - [ ] Merge realizado para `develop`
 
 ---

@@ -4,18 +4,18 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F3-T2
-- **current_task_title**: Lógica de Processamento de Recorrências
+- **current_task_id**: F3-T3
+- **current_task_title**: UI do Dashboard
 - **current_task_status**: COMPLETED
 
 ## Step Tracking (Only for complex tasks)
 
 - **completed_steps**:
-  - [F3-T2.1] Analyzed existing codebase structure for recurring expense handling
-  - [F3-T2.2] Implemented ProcessRecurringExpensesUseCase with complete algorithm
-  - [F3-T2.3] Added provider for ProcessRecurringExpensesUseCase
-  - [F3-T2.4] Created comprehensive unit tests (12 tests passing)
-  - [F3-T2.5] Integrated recurring processor into app initialization (main.dart)
-  - [F3-T2.6] Handles edge cases: multiple days, month-end, first initialization
+  - [F3-T3.1] Created MainCard widget for displaying remaining budget with progress bar
+  - [F3-T3.2] Created SecondaryCard widget for financial details (salary, spent, results, reserve)
+  - [F3-T3.3] Updated DashboardScreen to use new card components
+  - [F3-T3.4] Implemented responsive scrollable layout with proper spacing
+  - [F3-T3.5] Created comprehensive widget tests (27 tests, all passing)
+  - [F3-T3.6] Applied design system (colors, typography, spacing)
 
 - **next_atomic_step**: TASK COMPLETED - Ready for merge
