@@ -12,6 +12,7 @@ import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
 import '../inputs/custom_text_field.dart';
+import '../inputs/currency_text_field.dart';
 import '../inputs/custom_dropdown.dart';
 
 /// RecurringExpenseFormBottomSheet - Form for creating/editing recurring expenses
@@ -116,22 +117,18 @@ class _RecurringExpenseFormBottomSheetState
               const SizedBox(height: AppSpacing.lg),
 
               // Value Field
-              CustomTextField(
+              CurrencyTextField(
                 label: 'Valor',
-                hint: '0.00',
+                hint: 'R\$ 0,00',
                 controller: _valueController,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                prefixIcon: Icons.attach_money,
+                initialValue: widget.expense?.value ?? 0.0,
+                onChanged: (value) {
+                  // Update state with parsed value
+                },
+                required: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor, insira um valor';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Por favor, insira um valor numérico válido';
-                  }
-                  if (double.parse(value) <= 0) {
-                    return 'O valor deve ser maior que zero';
                   }
                   return null;
                 },

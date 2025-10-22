@@ -4,6 +4,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../inputs/custom_text_field.dart';
+import '../inputs/currency_text_field.dart';
 import '../inputs/custom_dropdown.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
@@ -275,18 +276,19 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Value Input
-                        CustomTextField(
+                        CurrencyTextField(
                           label: 'Valor',
                           hint: 'R\$ 0,00',
                           controller: _valueController,
                           focusNode: _valueFocusNode,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                            signed: false,
-                          ),
                           textInputAction: TextInputAction.next,
-                          prefixIcon: Icons.attach_money,
-                          onChanged: _handleValueChange,
+                          initialValue: widget.initialValue,
+                          onChanged: (value) {
+                            setState(() {
+                              _currentValue = value;
+                            });
+                          },
+                          required: true,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'O valor é obrigatório';

@@ -7,6 +7,7 @@ import '../theme/app_spacing.dart';
 import '../widgets/buttons/primary_button.dart';
 import '../widgets/buttons/secondary_button.dart';
 import '../widgets/inputs/custom_text_field.dart';
+import '../widgets/inputs/currency_text_field.dart';
 import '../widgets/inputs/reserve_percentage_slider.dart';
 import '../state/app_settings_form_notifier.dart';
 import '../state/backup_notifier.dart';
@@ -57,18 +58,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  void _onMonthlySalaryChanged(String value) {
-    final salary = double.tryParse(value) ?? 0.0;
-    ref.read(appSettingsFormProvider.notifier).updateMonthlySalary(
-          salary.isNaN ? 0.0 : salary,
-        );
+  void _onMonthlySalaryChanged(double value) {
+    ref.read(appSettingsFormProvider.notifier).updateMonthlySalary(value);
   }
 
-  void _onReserveBalanceChanged(String value) {
-    final balance = double.tryParse(value) ?? 0.0;
-    ref.read(appSettingsFormProvider.notifier).updateReserveBalance(
-          balance.isNaN ? 0.0 : balance,
-        );
+  void _onReserveBalanceChanged(double value) {
+    ref.read(appSettingsFormProvider.notifier).updateReserveBalance(value);
   }
 
   void _onMaxReservePercentageChanged(double value) {
@@ -272,26 +267,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Salário Mensal
-            CustomTextField(
+            CurrencyTextField(
               label: 'Salário Mensal',
               hint: 'Digite seu salário mensal',
               controller: _monthlySalaryController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
               onChanged: _onMonthlySalaryChanged,
-              prefixIcon: Icons.attach_money,
+              initialValue: formState.monthlySalary,
             ),
             const SizedBox(height: AppSpacing.lg),
 
             // Saldo da Reserva
-            CustomTextField(
+            CurrencyTextField(
               label: 'Saldo Inicial da Reserva',
               hint: 'Digite o saldo inicial da reserva',
               controller: _reserveBalanceController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
               onChanged: _onReserveBalanceChanged,
-              prefixIcon: Icons.savings,
+              initialValue: formState.reserveBalance,
             ),
             const SizedBox(height: AppSpacing.xl),
 

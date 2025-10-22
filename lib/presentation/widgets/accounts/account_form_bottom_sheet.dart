@@ -10,6 +10,7 @@ import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
 import '../inputs/custom_text_field.dart';
+import '../inputs/currency_text_field.dart';
 
 /// AccountFormBottomSheet - Form for creating/editing accounts
 /// Supports dual-type accounts (can be both debit and credit)
@@ -188,23 +189,17 @@ class _AccountFormBottomSheetState
               if (_isDebit)
                 Column(
                   children: [
-                    CustomTextField(
+                    CurrencyTextField(
                       label: 'Saldo Inicial (Débito)',
-                      hint: '0.00',
+                      hint: 'R\$ 0,00',
                       controller: _balanceController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      prefixIcon: Icons.attach_money,
+                      initialValue: widget.account?.balance ?? 0.0,
+                      onChanged: (value) {
+                        _balanceController.text = value.toStringAsFixed(2);
+                      },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Por favor, insira um valor';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Por favor, insira um valor numérico válido';
-                        }
-                        if (double.parse(value) < 0) {
-                          return 'O valor não pode ser negativo';
                         }
                         return null;
                       },
@@ -217,23 +212,17 @@ class _AccountFormBottomSheetState
               if (_isCredit)
                 Column(
                   children: [
-                    CustomTextField(
+                    CurrencyTextField(
                       label: 'Limite de Crédito',
-                      hint: '0.00',
+                      hint: 'R\$ 0,00',
                       controller: _creditLimitController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      prefixIcon: Icons.attach_money,
+                      initialValue: widget.account?.creditLimit ?? 0.0,
+                      onChanged: (value) {
+                        _creditLimitController.text = value.toStringAsFixed(2);
+                      },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Por favor, insira um limite';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Por favor, insira um valor numérico válido';
-                        }
-                        if (double.parse(value) < 0) {
-                          return 'O valor não pode ser negativo';
                         }
                         return null;
                       },

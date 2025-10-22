@@ -61,15 +61,15 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 29
-**Concluídas:** 17 / 29 (59%)
+**Concluídas:** 18 / 29 (62%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 4 / 4 (100%)
 - **Fase 3 - Dashboard Reativo:** 4 / 4 (100%)
 - **Fase 4 - Funcionalidades de Suporte:** 4 / 5 (80%)
-- **Fase 5 - Primeira Iteração:** 3 / 5 (60%)
-- **Fase 6 - Segunda Iteração:** 0 / 3 (0%)
+- **Fase 5 - Primeira Iteração:** 5 / 5 (100%)
+- **Fase 6 - Segunda Iteração:** 1 / 3 (33%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -972,11 +972,11 @@ Criar uma nova tela dedicada à visualização e gestão completa de todas as tr
 - [x] Navegação adicionada (nova aba ou menu)
 - [x] Empty state quando não há transações
 - [x] Testes de widget para a tela e componentes
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F6-T3: Padronização de Input Numérico com Vírgula
+### [x] F6-T3: Padronização de Input Numérico com Vírgula
 
 **Branch:** `refactor/numeric-input-standard`
 
