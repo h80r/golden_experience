@@ -72,4 +72,14 @@ class AppColors {
   // ====== Shadows ======
   /// Shadow color with transparency
   static const Color shadow = Color(0x3F000000);
+
+  // ====== Semantic Colors with Opacity ======
+  /// Success color with opacity (for backgrounds)
+  static const Color successWithOpacity = Color(0x1F00C49A);
+
+  /// Warning color with opacity (for backgrounds)
+  static const Color warningWithOpacity = Color(0x1FF79E02);
+
+  /// Error color with opacity (for backgrounds)
+  static const Color errorWithOpacity = Color(0x1FE54B4B);
 }

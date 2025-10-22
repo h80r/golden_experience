@@ -4,19 +4,20 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F3-T4
-- **current_task_title**: Integração Reativa do Dashboard
+- **current_task_id**: F4-T1
+- **current_task_title**: CRUD de Contas
 - **current_task_status**: COMPLETED
 
 ## Step Tracking (Only for complex tasks)
 
 - **completed_steps**:
-  - [F3-T4.1] Added executeReactive() method to GetDashboardDataUseCase for reactive stream execution
-  - [F3-T4.2] Created dashboardDataStreamProvider using StreamProvider.autoDispose in usecase_providers.dart
-  - [F3-T4.3] Updated DashboardScreen to consume the reactive provider with .when() pattern
-  - [F3-T4.4] Implemented loading state with CircularProgressIndicator placeholders
-  - [F3-T4.5] Implemented error state with error message display
-  - [F3-T4.6] Updated all dashboard tests to mock the StreamProvider (14 tests, all passing)
-  - [F3-T4.7] Updated widget_test.dart and main_screen_test.dart to work with reactive provider
+  - [F4-T1.1] Implemented AccountsScreen with reactive list view using StreamBuilder
+  - [F4-T1.2] Created AccountFormBottomSheet for account creation and editing
+  - [F4-T1.3] Implemented account type badge (Débito/Crédito) with color coding
+  - [F4-T1.4] Added currency formatting helper function for BRL display
+  - [F4-T1.5] Implemented delete confirmation dialog with transaction validation
+  - [F4-T1.6] Added account card UI with balance/limit display and action buttons
+  - [F4-T1.7] Created 14 comprehensive widget tests for AccountsScreen (all passing)
+  - [F4-T1.8] Added missing color constants to AppColors for semantic backgrounds
 
 - **next_atomic_step**: TASK COMPLETED - Ready for merge

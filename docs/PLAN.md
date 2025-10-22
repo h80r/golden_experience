@@ -61,13 +61,13 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 10 / 21 (48%)
+**Concluídas:** 11 / 21 (52%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 4 / 4 (100%)
-- **Fase 3 - Dashboard Reativo:** 3 / 4 (75%)
-- **Fase 4 - Funcionalidades de Suporte:** 0 / 5 (0%)
+- **Fase 3 - Dashboard Reativo:** 4 / 4 (100%)
+- **Fase 4 - Funcionalidades de Suporte:** 1 / 5 (20%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -506,7 +506,7 @@ Dashboard UI (atualiza automaticamente)
 
 ---
 
-### [ ] F4-T1: CRUD de Contas
+### [x] F4-T1: CRUD de Contas
 
 **Branch:** `feature/accounts-crud`
 
@@ -521,11 +521,11 @@ Implementar a tela de Contas com funcionalidades completas de criar, visualizar,
 - Exibir saldo atual (débito) ou limite disponível (crédito)
 
 **Definition of Done:**
-- [ ] Tela de listagem de contas implementada
-- [ ] Formulário de criação/edição implementado
-- [ ] Validações de campos implementadas
-- [ ] Lógica de remoção com verificação
-- [ ] Testes de widget para a tela
+- [x] Tela de listagem de contas implementada
+- [x] Formulário de criação/edição implementado
+- [x] Validações de campos implementadas
+- [x] Lógica de remoção com verificação
+- [x] Testes de widget para a tela
 - [ ] Merge realizado para `develop`
 
 ---
