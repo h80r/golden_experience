@@ -110,6 +110,9 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
   Future<void> updateLastRecurringCheck(DateTime date) async {}
 
   @override
+  Future<void> updateHasCompletedOnboarding(bool completed) async {}
+
+  @override
   Future<void> initializeDefaults() async {}
 
   @override
@@ -152,6 +155,7 @@ void main() {
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -173,6 +177,7 @@ void main() {
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -195,7 +200,8 @@ void main() {
             monthlySalary: 5000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -237,7 +243,8 @@ void main() {
             monthlySalary: 5000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -274,7 +281,8 @@ void main() {
             monthlySalary: 5000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -302,7 +310,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -334,7 +343,8 @@ void main() {
             monthlySalary: 5000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -365,7 +375,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -397,7 +408,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -426,7 +438,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -456,7 +469,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -487,7 +501,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -517,7 +532,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -551,7 +567,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -579,7 +596,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 0.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -611,7 +629,8 @@ void main() {
             monthlySalary: 0.0,
             reserveBalance: 1000.0,
             maxReserveUsagePercentage: 100.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -640,7 +659,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 0.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -669,7 +689,8 @@ void main() {
             monthlySalary: 0.01,
             reserveBalance: 0.01,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -698,7 +719,8 @@ void main() {
             monthlySalary: 1000000.0,
             reserveBalance: 500000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -806,7 +828,8 @@ void main() {
             monthlySalary: 5000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -841,7 +864,8 @@ void main() {
             monthlySalary: 5000.0,
             reserveBalance: 3000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -887,7 +911,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 
@@ -918,7 +943,8 @@ void main() {
             monthlySalary: 3000.0,
             reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
-            lastRecurringCheck: DateTime(now.year, now.month, 1),
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
           ),
         );
 

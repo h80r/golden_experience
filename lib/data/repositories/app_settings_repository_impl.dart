@@ -50,6 +50,13 @@ class AppSettingsRepositoryImpl implements IAppSettingsRepository {
   }
 
   @override
+  Future<void> updateHasCompletedOnboarding(bool completed) async {
+    await (_db.update(_db.appSettings)
+          ..where((s) => s.id.equals(_settingsId)))
+        .write(AppSettingsModelCompanion(hasCompletedOnboarding: Value(completed)));
+  }
+
+  @override
   Future<void> initializeDefaults() async {
     final existing = await get();
     if (existing != null) return;
@@ -60,6 +67,7 @@ class AppSettingsRepositoryImpl implements IAppSettingsRepository {
       reserveBalance: 0.0,
       maxReserveUsagePercentage: 0.0,
       lastRecurringCheck: DateTime.now(),
+      hasCompletedOnboarding: Value(false),
     );
 
     await _db.into(_db.appSettings).insert(defaultSettings);

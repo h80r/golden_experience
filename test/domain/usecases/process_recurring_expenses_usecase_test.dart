@@ -85,6 +85,7 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
       reserveBalance: companion.reserveBalance.value,
       maxReserveUsagePercentage: companion.maxReserveUsagePercentage.value,
       lastRecurringCheck: companion.lastRecurringCheck.value,
+      hasCompletedOnboarding: companion.hasCompletedOnboarding.value,
     );
   }
 
@@ -110,6 +111,12 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
   Future<void> updateLastRecurringCheck(DateTime date) async {
     if (_settings == null) return;
     _settings = _settings!.copyWith(lastRecurringCheck: date);
+  }
+
+  @override
+  Future<void> updateHasCompletedOnboarding(bool completed) async {
+    if (_settings == null) return;
+    _settings = _settings!.copyWith(hasCompletedOnboarding: completed);
   }
 
   @override
@@ -307,6 +314,7 @@ void main() {
           reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: todayAtMidnight,
+            hasCompletedOnboarding: false,
         );
 
         mockAppSettingsRepository =
@@ -337,6 +345,7 @@ void main() {
           reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
+            hasCompletedOnboarding: false,
         );
 
         mockAppSettingsRepository =
@@ -366,6 +375,7 @@ void main() {
           reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
+            hasCompletedOnboarding: false,
         );
 
         final debitAccount = AccountModel(
@@ -424,6 +434,7 @@ void main() {
           reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
+            hasCompletedOnboarding: false,
         );
 
         final debitAccount = AccountModel(
@@ -489,6 +500,7 @@ void main() {
           reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: threeDaysAgo,
+            hasCompletedOnboarding: false,
         );
 
         final debitAccount = AccountModel(
@@ -556,6 +568,7 @@ void main() {
           reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
+            hasCompletedOnboarding: false,
         );
 
         final creditAccount = AccountModel(
@@ -611,6 +624,7 @@ void main() {
           reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
+            hasCompletedOnboarding: false,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -653,6 +667,7 @@ void main() {
           reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
+            hasCompletedOnboarding: false,
         );
 
         final debitAccount = AccountModel(
@@ -719,6 +734,7 @@ void main() {
           reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
+            hasCompletedOnboarding: false,
         );
 
         mockAppSettingsRepository =
@@ -751,6 +767,7 @@ void main() {
           reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
+            hasCompletedOnboarding: false,
         );
 
         final debitAccount = AccountModel(
@@ -801,6 +818,7 @@ void main() {
           reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
+            hasCompletedOnboarding: false,
         );
 
         final debitAccount = AccountModel(

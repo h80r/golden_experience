@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/dashboard_data.dart';
 import '../../../data/providers/repository_providers.dart';
+import '../../../data/datasources/local_database.dart';
 import '../add_transaction_usecase.dart';
 import '../get_dashboard_data_usecase.dart';
 import '../process_recurring_expenses_usecase.dart';
@@ -71,6 +72,28 @@ final processRecurringExpensesUseCaseProvider =
     transactionRepository: ref.read(transactionRepositoryProvider),
     accountRepository: ref.read(accountRepositoryProvider),
   );
+});
+
+/// Provider for reactive app settings
+///
+/// This StreamProvider watches for changes in app settings,
+/// automatically emitting new AppSettingsModel whenever settings change.
+/// Note: NOT using autoDispose because we need this provider to stay alive
+/// for the app to properly switch between onboarding and main screens.
+///
+/// Usage:
+/// ```dart
+/// final appSettingsAsync = ref.watch(appSettingsStreamProvider);
+/// appSettingsAsync.when(
+///   data: (settings) => Text('Salary: ${settings?.monthlySalary}'),
+///   loading: () => CircularProgressIndicator(),
+///   error: (error, stack) => Text('Error: $error'),
+/// );
+/// ```
+final appSettingsStreamProvider =
+    StreamProvider<AppSettingsModel?>((ref) {
+  final repository = ref.read(appSettingsRepositoryProvider);
+  return repository.watch();
 });
 
 /// Provider for reactive dashboard data

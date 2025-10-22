@@ -5,6 +5,7 @@ import 'data/repositories/app_settings_repository_impl.dart';
 import 'data/repositories/category_repository_impl.dart';
 import 'domain/usecases/providers/usecase_providers.dart';
 import 'presentation/screens/main_screen.dart';
+import 'presentation/screens/onboarding_screen.dart';
 import 'presentation/theme/app_theme.dart';
 
 void main() async {
@@ -64,11 +65,28 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch the app settings to check if onboarding has been completed
+    final appSettingsAsync = ref.watch(appSettingsStreamProvider);
+
     return MaterialApp(
       title: 'Previsor Financeiro',
       theme: AppTheme.darkTheme(),
       themeMode: ThemeMode.dark,
-      home: const MainScreen(),
+      home: appSettingsAsync.when(
+        data: (settings) {
+          if (settings != null && settings.hasCompletedOnboarding) {
+            return const MainScreen();
+          } else {
+            return const OnboardingScreen();
+          }
+        },
+        loading: () => const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+        error: (error, stack) => const MainScreen(), // Fallback to main screen on error
+      ),
     );
   }
 }

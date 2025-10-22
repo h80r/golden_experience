@@ -60,8 +60,8 @@ main (develop)
 
 ## 📊 Progresso Geral
 
-**Total de Tarefas:** 26
-**Concluídas:** 17 / 26 (65%)
+**Total de Tarefas:** 29
+**Concluídas:** 17 / 29 (59%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -69,6 +69,7 @@ main (develop)
 - **Fase 3 - Dashboard Reativo:** 4 / 4 (100%)
 - **Fase 4 - Funcionalidades de Suporte:** 4 / 5 (80%)
 - **Fase 5 - Primeira Iteração:** 3 / 5 (60%)
+- **Fase 6 - Segunda Iteração:** 0 / 3 (0%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -844,13 +845,209 @@ class ReservePercentageSlider extends StatelessWidget {
 ```
 
 **Definition of Done:**
-- [ ] TextField do percentual removido
-- [ ] Slider widget implementado
-- [ ] Design system aplicado (cores, tipografia)
-- [ ] Valor exibido claramente acima do slider
-- [ ] Texto auxiliar explicativo adicionado
-- [ ] Salvamento do valor funcionando
-- [ ] Testes de widget para o slider
+- [x] TextField do percentual removido
+- [x] Slider widget implementado
+- [x] Design system aplicado (cores, tipografia)
+- [x] Valor exibido claramente acima do slider
+- [x] Texto auxiliar explicativo adicionado
+- [x] Salvamento do valor funcionando
+- [x] Testes de widget para o slider
+- [x] Merge realizado para `develop`
+
+---
+
+## 🎨 Fase 6: Segunda Iteração - UX e Refinamentos
+
+**Objetivo:** Melhorar a experiência do usuário com onboarding guiado, gestão completa de transações e padronização de inputs numéricos.
+
+**Status:** 0 / 3 tarefas concluídas
+
+---
+
+### [ ] F6-T1: Welcome Tour / Onboarding Inicial
+
+**Branch:** `feature/welcome-tour`
+
+**Descrição:**
+Implementar um tour de boas-vindas que guia o usuário na primeira inicialização do app, coletando todas as configurações essenciais para começar a usar o aplicativo imediatamente.
+
+**Fluxo do Onboarding:**
+1. **Tela de Boas-Vindas**
+   - Apresentação do app
+   - Explicação do propósito
+   - Botão "Começar"
+
+2. **Configurações Iniciais (Multi-Step)**
+   - **Passo 1:** Salário mensal fixo
+   - **Passo 2:** Saldo inicial da reserva
+   - **Passo 3:** Percentual máximo de uso da reserva (slider)
+
+3. **Criação de Conta Padrão**
+   - Sugerir criação de primeira conta
+   - Permitir escolher nome, tipo (débito/crédito), e saldo/limite
+
+4. **Categorias Padrão**
+   - Mostrar categorias pré-configuradas
+   - Permitir adicionar mais categorias personalizadas
+
+5. **Conclusão**
+   - Resumo das configurações
+   - Mensagem motivacional
+   - Redirecionar para o Dashboard
+
+**Tecnologias Sugeridas:**
+- Package `introduction_screen` (^4.0.0) para slides
+- Persistir flag `hasCompletedOnboarding` no `AppSettings`
+
+**Definition of Done:**
+- [ ] Package de onboarding adicionado (ou implementação customizada)
+- [ ] Fluxo de 5 telas implementado
+- [ ] Dados coletados salvos no banco (AppSettings, Account, Categories)
+- [ ] Flag `hasCompletedOnboarding` controla exibição do tour
+- [ ] Tour só aparece na primeira inicialização
+- [ ] Design system aplicado em todas as telas
+- [ ] Botão "Pular" permite acesso ao app sem completar
+- [ ] Testes de widget para o fluxo de onboarding
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F6-T2: Listagem de Transações com CRUD
+
+**Branch:** `feature/transactions-list`
+
+**Descrição:**
+Criar uma nova tela dedicada à visualização e gestão completa de todas as transações registradas, permitindo edição e exclusão de forma intuitiva.
+
+**Funcionalidades da Tela:**
+1. **Lista de Transações**
+   - Exibir todas as transações ordenadas por data (mais recente primeiro)
+   - Card compacto mostrando:
+     - Valor (com cor verde/vermelho conforme entrada/saída)
+     - Descrição
+     - Data
+     - Conta
+     - Categoria (badge)
+   - Scroll infinito ou paginação
+
+2. **Filtros**
+   - Por período (Hoje, Esta semana, Este mês, Personalizado)
+   - Por conta (dropdown multi-select)
+   - Por categoria (dropdown multi-select)
+   - Botão "Limpar Filtros"
+
+3. **Ações por Transação**
+   - Swipe para a direita: Editar (ícone de lápis)
+   - Swipe para a esquerda: Deletar (ícone de lixeira)
+   - Ou menu de ações (três pontos verticais)
+
+4. **Edição de Transação**
+   - Reutilizar `ExpenseDetailsBottomSheet`
+   - Pré-preencher campos com dados existentes
+   - Salvar atualiza a transação no banco
+   - Atualizar saldo/limite da conta
+
+5. **Exclusão de Transação**
+   - Dialog de confirmação
+   - Reverter impacto no saldo/limite da conta
+   - Deletar do banco
+   - Feedback visual (Snackbar)
+
+6. **Navegação**
+   - Nova aba na `BottomNavigationBar` (ícone de lista)
+   - Ou acessível via menu no Dashboard
+
+**Widgets a Criar:**
+- `TransactionsListScreen`
+- `TransactionCard`
+- `TransactionFiltersSheet`
+
+**Definition of Done:**
+- [ ] Tela de listagem implementada
+- [ ] Filtros de período, conta e categoria funcionais
+- [ ] Swipe actions para editar/deletar implementados
+- [ ] Bottom sheet reutilizado para edição
+- [ ] Dialog de confirmação de exclusão implementado
+- [ ] Lógica de reversão de saldo/limite ao deletar
+- [ ] Navegação adicionada (nova aba ou menu)
+- [ ] Empty state quando não há transações
+- [ ] Testes de widget para a tela e componentes
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F6-T3: Padronização de Input Numérico com Vírgula
+
+**Branch:** `refactor/numeric-input-standard`
+
+**Descrição:**
+Criar um widget reutilizável para entrada de valores monetários que aceite vírgula como separador decimal e aplicá-lo consistentemente em todo o aplicativo, substituindo campos numéricos existentes.
+
+**Problema Atual:**
+- Inputs numéricos usam ponto (.) como separador decimal (padrão inglês)
+- Usuários brasileiros esperam usar vírgula (,)
+- Formatação inconsistente entre diferentes telas
+- Validação de valores duplicada em vários lugares
+
+**Solução: Widget `CurrencyTextField`**
+
+**Especificações do Widget:**
+```dart
+class CurrencyTextField extends StatelessWidget {
+  final String label;
+  final double? initialValue;
+  final ValueChanged<double> onChanged;
+  final String? errorText;
+  final bool required;
+
+  // Recursos:
+  // - TextInputFormatter customizado para aceitar vírgula
+  // - Conversão automática vírgula → ponto internamente
+  // - Formatação visual com separador de milhar (R$ 1.234,56)
+  // - Validação de valores negativos/inválidos
+  // - Cursor posicionado corretamente após formatação
+}
+```
+
+**Características:**
+- **Input:** Aceita vírgula como separador decimal
+- **Formatação:** Adiciona separadores de milhar automaticamente (exemplo: 1234.5 → R$ 1.234,50)
+- **Validação:** Apenas números e vírgula permitidos
+- **Acessibilidade:** Teclado numérico com vírgula
+- **Reatividade:** Atualiza estado em tempo real
+
+**Locais de Aplicação:**
+1. **ExpenseDetailsBottomSheet**
+   - Campo de valor da transação
+
+2. **SettingsScreen**
+   - Campo de salário mensal
+   - Campo de saldo da reserva
+
+3. **AccountForm**
+   - Campo de saldo inicial (débito)
+   - Campo de limite de crédito
+
+4. **RecurringExpenseForm**
+   - Campo de valor da recorrência
+
+**Packages Necessários:**
+- `intl` (já usado): Para formatação brasileira
+- `flutter_masked_text2` (opcional): Para máscaras avançadas
+- Ou implementação customizada com `TextInputFormatter`
+
+**Definition of Done:**
+- [ ] Widget `CurrencyTextField` criado em `lib/presentation/widgets/inputs/`
+- [ ] TextInputFormatter customizado para vírgula implementado
+- [ ] Formatação com separador de milhar funcional
+- [ ] Validação de valores implementada
+- [ ] Aplicado em ExpenseDetailsBottomSheet
+- [ ] Aplicado em SettingsScreen
+- [ ] Aplicado em AccountForm
+- [ ] Aplicado em RecurringExpenseForm
+- [ ] Testes de widget para CurrencyTextField
+- [ ] Testes de validação e formatação
+- [ ] Documentação do widget (comentários)
 - [ ] Merge realizado para `develop`
 
 ---
@@ -878,8 +1075,10 @@ As fases devem ser seguidas sequencialmente, mas dentro de cada fase há alguma 
 
 ## 🎊 Conclusão
 
-Este plano mapeia todas as **26 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
+Este plano mapeia todas as **29 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
 
 A **Fase 5** representa a primeira iteração de melhorias baseada em uso real, demonstrando a importância de testar o aplicativo e iterar sobre o design inicial.
+
+A **Fase 6** adiciona refinamentos críticos de UX: onboarding para novos usuários, gestão completa de transações, e padronização de inputs numéricos para o mercado brasileiro.
 
 **Bom desenvolvimento! 🚀**

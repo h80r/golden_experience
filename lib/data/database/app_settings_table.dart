@@ -14,6 +14,9 @@ class AppSettings extends Table {
 
   DateTimeColumn get lastRecurringCheck => dateTime()();
 
+  BoolColumn get hasCompletedOnboarding =>
+      boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

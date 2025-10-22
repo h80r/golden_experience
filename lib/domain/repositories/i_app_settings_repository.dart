@@ -24,6 +24,9 @@ abstract class IAppSettingsRepository {
   /// Updates only the last recurring check date
   Future<void> updateLastRecurringCheck(DateTime date);
 
+  /// Updates only the onboarding completion flag
+  Future<void> updateHasCompletedOnboarding(bool completed);
+
   /// Initializes settings with default values if they don't exist
   /// Should be called on first app launch
   Future<void> initializeDefaults();
