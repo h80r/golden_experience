@@ -27,102 +27,103 @@ class DashboardScreen extends ConsumerWidget {
     final accountRepository = ref.read(accountRepositoryProvider);
     final categoryRepository = ref.read(categoryRepositoryProvider);
 
-    // Show expense details bottom sheet
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => FutureBuilder(
-        future: Future.wait([
-          accountRepository.getAll(),
-          categoryRepository.getAll(),
-        ]),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    // Load data before showing bottom sheet to prevent rebuilds
+    Future.wait([
+      accountRepository.getAll(),
+      categoryRepository.getAll(),
+    ]).then((results) {
+      if (!context.mounted) return;
 
-          if (snapshot.hasError || !snapshot.hasData) {
-            return const Center(
-              child: Text('Erro ao carregar dados'),
+      final accounts = results[0] as List;
+      final categories = results[1] as List;
+
+      // Convert lists to maps for the bottom sheet
+      final accountsMap = {
+        for (var account in accounts)
+          account.id as int: account.name as String
+      };
+      final categoriesMap = {
+        for (var category in categories)
+          category.id as int: category.name as String
+      };
+
+      // Show expense details bottom sheet with pre-loaded data
+      if (!context.mounted) return;
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => ExpenseDetailsBottomSheet(
+          initialValue: value,
+          accounts: accountsMap,
+          categories: categoriesMap,
+          onSave: ({
+            required value,
+            required description,
+            required notes,
+            required accountId,
+            required transactionType,
+            required categoryId,
+            required date,
+          }) async {
+            // Get the add transaction use case
+            final addTransactionUseCase =
+                ref.read(addTransactionUseCaseProvider);
+
+            // Create and save the transaction
+            final result = await addTransactionUseCase.execute(
+              value: value,
+              description: description,
+              notes: notes,
+              accountId: accountId,
+              categoryId: categoryId,
+              date: date,
             );
-          }
 
-          final accounts = snapshot.data![0] as List;
-          final categories = snapshot.data![1] as List;
+            // Handle result
+            if (!context.mounted) return;
 
-          // Convert lists to maps for the bottom sheet
-          final accountsMap = {
-            for (var account in accounts)
-              account.id as int: account.name as String
-          };
-          final categoriesMap = {
-            for (var category in categories)
-              category.id as int: category.name as String
-          };
+            // Reset form state for next transaction
+            ref.read(expenseFormProvider.notifier).reset();
 
-          return ExpenseDetailsBottomSheet(
-            initialValue: value,
-            accounts: accountsMap,
-            categories: categoriesMap,
-            onSave: ({
-              required value,
-              required description,
-              required notes,
-              required accountId,
-              required transactionType,
-              required categoryId,
-              required date,
-            }) async {
-              // Get the add transaction use case
-              final addTransactionUseCase =
-                  ref.read(addTransactionUseCaseProvider);
+            // Close the modal first
+            Navigator.of(context).pop();
 
-              // Create and save the transaction
-              final result = await addTransactionUseCase.execute(
-                value: value,
-                description: description,
-                notes: notes,
-                accountId: accountId,
-                categoryId: categoryId,
-                date: date,
+            // Show feedback after modal is closed
+            if (result.success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Transação salva com sucesso!'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
+                ),
               );
-
-              // Handle result
-              if (!context.mounted) return;
-
-              if (result.success) {
-                // Reset form state for next transaction
-                ref.read(expenseFormProvider.notifier).reset();
-                Navigator.of(context).pop();
-
-                // Show success feedback
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Transação salva com sucesso!'),
-                    backgroundColor: Colors.green,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              } else {
-                // Show error feedback
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(result.errorMessage ?? 'Erro ao salvar transação'),
-                    backgroundColor: Colors.red,
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-              }
-            },
-            onCancel: () {
-              Navigator.of(context).pop();
-              // Reset form state
-              ref.read(expenseFormProvider.notifier).reset();
-            },
-          );
-        },
-      ),
-    );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(result.errorMessage ?? 'Erro ao salvar transação'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            }
+          },
+          onCancel: () {
+            Navigator.of(context).pop();
+            // Reset form state
+            ref.read(expenseFormProvider.notifier).reset();
+          },
+        ),
+      );
+    }).catchError((error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao carregar dados: $error'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    });
   }
 
   void _handleCalculatorCancel(BuildContext context) {

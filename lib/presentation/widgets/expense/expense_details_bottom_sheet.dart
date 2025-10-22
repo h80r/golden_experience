@@ -39,6 +39,7 @@ class ExpenseDetailsBottomSheet extends StatefulWidget {
 }
 
 class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
+  final _formKey = GlobalKey<FormState>();
   late TextEditingController _descriptionController;
   late TextEditingController _notesController;
   int? _selectedAccountId;
@@ -80,19 +81,9 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
     }
   }
 
-  bool _isFormValid() {
-    return _descriptionController.text.isNotEmpty &&
-        _selectedAccountId != null &&
-        _selectedCategoryId != null;
-  }
-
   void _handleSave() {
-    if (!_isFormValid()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, preencha todos os campos obrigatórios'),
-        ),
-      );
+    // Trigger validation and show error states on all fields
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
@@ -176,19 +167,27 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                 child: SingleChildScrollView(
                   controller: scrollController,
                   padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Description
-                      CustomTextField(
-                        label: 'Descrição',
-                        hint: 'Ex: Almoço, Supermercado...',
-                        controller: _descriptionController,
-                        keyboardType: TextInputType.text,
-                        textInputAction: TextInputAction.next,
-                        prefixIcon: Icons.description,
-                      ),
-                      const SizedBox(height: AppSpacing.lg),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Description
+                        CustomTextField(
+                          label: 'Descrição',
+                          hint: 'Ex: Almoço, Supermercado...',
+                          controller: _descriptionController,
+                          keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.next,
+                          prefixIcon: Icons.description,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'A descrição é obrigatória';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
 
                       // Notes
                       CustomTextField(
@@ -220,6 +219,12 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                           setState(() {
                             _selectedAccountId = value;
                           });
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Selecione uma conta';
+                          }
+                          return null;
                         },
                       ),
                       const SizedBox(height: AppSpacing.lg),
@@ -319,6 +324,12 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                             _selectedCategoryId = value;
                           });
                         },
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Selecione uma categoria';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: AppSpacing.lg),
 
@@ -372,7 +383,8 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                         ],
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

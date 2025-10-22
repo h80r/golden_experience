@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'data/datasources/local_database.dart';
 import 'data/repositories/app_settings_repository_impl.dart';
+import 'data/repositories/category_repository_impl.dart';
 import 'domain/usecases/providers/usecase_providers.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/theme/app_theme.dart';
@@ -16,6 +17,10 @@ void main() async {
   // Initialize default settings if they don't exist
   final appSettingsRepository = AppSettingsRepositoryImpl();
   await appSettingsRepository.initializeDefaults();
+
+  // Seed default categories if they don't exist
+  final categoryRepository = CategoryRepositoryImpl();
+  await categoryRepository.seedDefaultCategories();
 
   runApp(
     const ProviderScope(
