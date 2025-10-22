@@ -61,13 +61,13 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 11 / 21 (52%)
+**Concluídas:** 12 / 21 (57%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 4 / 4 (100%)
 - **Fase 3 - Dashboard Reativo:** 4 / 4 (100%)
-- **Fase 4 - Funcionalidades de Suporte:** 1 / 5 (20%)
+- **Fase 4 - Funcionalidades de Suporte:** 2 / 5 (40%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -526,11 +526,11 @@ Implementar a tela de Contas com funcionalidades completas de criar, visualizar,
 - [x] Validações de campos implementadas
 - [x] Lógica de remoção com verificação
 - [x] Testes de widget para a tela
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F4-T2: CRUD de Recorrências
+### [x] F4-T2: CRUD de Recorrências
 
 **Branch:** `feature/recurring-crud`
 
@@ -545,11 +545,11 @@ Implementar a tela de Recorrências permitindo gerenciar despesas fixas mensais.
 - Indicador visual do próximo dia de cobrança
 
 **Definition of Done:**
-- [ ] Tela de listagem implementada
-- [ ] Formulário de criação/edição implementado
-- [ ] Validações (dia de cobrança entre 1-31)
-- [ ] Lógica de remoção implementada
-- [ ] Testes de widget para a tela
+- [x] Tela de listagem implementada
+- [x] Formulário de criação/edição implementado
+- [x] Validações (dia de cobrança entre 1-31)
+- [x] Lógica de remoção implementada
+- [x] Testes de widget para a tela
 - [ ] Merge realizado para `develop`
 
 ---

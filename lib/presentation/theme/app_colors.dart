@@ -82,4 +82,7 @@ class AppColors {
 
   /// Error color with opacity (for backgrounds)
   static const Color errorWithOpacity = Color(0x1FE54B4B);
+
+  /// Info color with opacity (for backgrounds)
+  static const Color infoWithOpacity = Color(0x1F22D3EE);
 }
