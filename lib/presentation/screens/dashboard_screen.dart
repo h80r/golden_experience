@@ -9,6 +9,7 @@ import '../../domain/usecases/providers/usecase_providers.dart';
 import '../../data/providers/repository_providers.dart';
 import '../../presentation/theme/app_colors.dart';
 import '../../presentation/theme/app_spacing.dart';
+import 'settings_screen.dart';
 
 /// DashboardScreen - The main dashboard showing financial overview
 class DashboardScreen extends ConsumerWidget {
@@ -141,7 +142,11 @@ class DashboardScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // TODO: Navigate to settings screen
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
             },
           ),
         ],

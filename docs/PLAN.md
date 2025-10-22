@@ -61,13 +61,13 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 21
-**Concluídas:** 12 / 21 (57%)
+**Concluídas:** 13 / 21 (62%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
 - **Fase 2 - Registro de Gastos:** 4 / 4 (100%)
 - **Fase 3 - Dashboard Reativo:** 4 / 4 (100%)
-- **Fase 4 - Funcionalidades de Suporte:** 2 / 5 (40%)
+- **Fase 4 - Funcionalidades de Suporte:** 3 / 5 (60%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -550,11 +550,11 @@ Implementar a tela de Recorrências permitindo gerenciar despesas fixas mensais.
 - [x] Validações (dia de cobrança entre 1-31)
 - [x] Lógica de remoção implementada
 - [x] Testes de widget para a tela
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F4-T3: Tela de Configurações
+### [x] F4-T3: Tela de Configurações
 
 **Branch:** `feature/settings`
 
@@ -567,12 +567,12 @@ Implementar a tela onde o usuário define os valores base para os cálculos do a
 3. **Percentual Máximo de Gasto da Reserva** (0-100%)
 
 **Definition of Done:**
-- [ ] Tela de configurações acessível pelo ícone no Dashboard
-- [ ] Formulário com os 3 campos implementado
-- [ ] Validações de valores implementadas
-- [ ] Dados salvos em `AppSettings`
-- [ ] Mudanças refletem imediatamente no Dashboard
-- [ ] Testes de widget para a tela
+- [x] Tela de configurações acessível pelo ícone no Dashboard
+- [x] Formulário com os 3 campos implementado
+- [x] Validações de valores implementadas
+- [x] Dados salvos em `AppSettings`
+- [x] Mudanças refletem imediatamente no Dashboard
+- [x] Testes de widget para a tela (12 testes implementados e passando)
 - [ ] Merge realizado para `develop`
 
 ---
