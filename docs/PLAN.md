@@ -398,7 +398,7 @@ class DashboardData {
 - [x] Testes unitários cobrindo múltiplos cenários
 - [x] Casos extremos tratados (reserva negativa, etc.)
 - [x] Provider configurado
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
