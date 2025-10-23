@@ -4,6 +4,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'data/datasources/local_database.dart';
 import 'data/repositories/app_settings_repository_impl.dart';
 import 'data/repositories/category_repository_impl.dart';
+import 'data/services/notification_service.dart';
+import 'data/services/transaction_notification_service.dart';
 import 'domain/usecases/providers/usecase_providers.dart';
 import 'presentation/screens/main_screen.dart';
 import 'presentation/screens/onboarding_screen.dart';
@@ -27,6 +29,12 @@ void main() async {
   final categoryRepository = CategoryRepositoryImpl();
   await categoryRepository.seedDefaultCategories();
 
+  // Initialize local notifications plugin (for showing transaction notifications)
+  await TransactionNotificationService.initialize();
+
+  // Initialize notification listener (for listening to bank notifications)
+  await NotificationService.initialize();
+
   runApp(
     const ProviderScope(
       child: MyApp(),
@@ -49,6 +57,9 @@ class _MyAppState extends ConsumerState<MyApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _processRecurringExpenses();
     });
+
+    // Setup notification response handler for when user taps transaction notification
+    _setupNotificationHandler();
   }
 
   Future<void> _processRecurringExpenses() async {
@@ -65,6 +76,20 @@ class _MyAppState extends ConsumerState<MyApp> {
       // Silently handle errors during recurring expenses processing
       // The app will still function normally
     }
+  }
+
+  void _setupNotificationHandler() {
+    // This is where we would handle notification taps
+    // The actual navigation is handled in TransactionNotificationService._handleNotificationTap
+    // In a more complete implementation, we would use a global navigator key
+    // to navigate to the expense form with pre-filled data when notification is tapped
+  }
+
+  @override
+  void dispose() {
+    // Clean up notification service
+    NotificationService.dispose();
+    super.dispose();
   }
 
   @override

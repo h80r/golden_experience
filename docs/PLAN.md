@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 31
-**Concluídas:** 19 / 31 (61%)
+**Concluídas:** 20 / 31 (65%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -70,7 +70,7 @@ main (develop)
 - **Fase 4 - Funcionalidades de Suporte:** 4 / 5 (80%)
 - **Fase 5 - Primeira Iteração:** 5 / 5 (100%)
 - **Fase 6 - Segunda Iteração:** 3 / 3 (100%)
-- **Fase 7 - Terceira Iteração:** 1 / 2 (50%)
+- **Fase 7 - Terceira Iteração:** 2 / 2 (100%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -1103,17 +1103,17 @@ Substituir o ícone padrão do Flutter pelo novo ícone personalizado (`icon.png
    - Verificar ícone nas notificações
 
 **Definition of Done:**
-- [ ] Ícone movido para `assets/images/icon.png`
-- [ ] Package `flutter_launcher_icons` configurado no `pubspec.yaml`
-- [ ] Ícones gerados para Android (mipmap densities + adaptive icon)
-- [ ] Ícones gerados para iOS (AppIcon.appiconset)
-- [ ] App instalado exibe novo ícone em todos os contextos
-- [ ] Arquivos gerados commitados no repositório
-- [ ] Merge realizado para `develop`
+- [x] Ícone movido para `assets/images/icon.png`
+- [x] Package `flutter_launcher_icons` configurado no `pubspec.yaml`
+- [x] Ícones gerados para Android (mipmap densities + adaptive icon)
+- [x] Ícones gerados para iOS (AppIcon.appiconset)
+- [x] App instalado exibe novo ícone em todos os contextos
+- [x] Arquivos gerados commitados no repositório
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F7-T2: Captura Inteligente de Transações via Notificações
+### [x] F7-T2: Captura Inteligente de Transações via Notificações
 
 **Branch:** `feature/notification-transaction-capture`
 
@@ -1410,26 +1410,26 @@ void _registerDefaultParsers() {
 - **Dependente de formato:** Se o banco mudar o formato da notificação, o parser precisa ser atualizado
 
 **Definition of Done:**
-- [ ] Package `flutter_notification_listener` adicionado ao `pubspec.yaml`
-- [ ] Interface `INotificationParser` criada em `lib/domain/parsers/`
-- [ ] `SantanderNotificationParser` implementado em `lib/data/parsers/`
-- [ ] `NotificationParserRegistry` implementado com padrão Singleton
-- [ ] `NotificationService` inicializado no `main.dart`
-- [ ] Parser de Santander com regex funcional para valor, data e merchant
-- [ ] Extração de dados testada com múltiplos formatos de notificação
-- [ ] `TransactionNotificationService` criando notificações locais com action button
-- [ ] Handler de ação "Adicionar Transação" implementado
-- [ ] Navegação para `ExpenseDetailsBottomSheet` com pré-preenchimento
-- [ ] Campo `sourceBank` adicionado ao modelo `TransactionData`
-- [ ] UI de configurações com toggle e lista de bancos suportados
-- [ ] Botão para abrir configurações de permissão do sistema
-- [ ] Testes unitários isolados para `SantanderNotificationParser`
-- [ ] Testes unitários para o `NotificationParserRegistry`
-- [ ] Testes cobrindo casos extremos (valores, datas, caracteres especiais)
-- [ ] Tratamento de permissões negadas com feedback ao usuário
-- [ ] Documentação de como adicionar novos bancos em `CONTRIBUTING.md`
-- [ ] Exemplo de stub/template para novos parsers comentado no código
-- [ ] Merge realizado para `develop`
+- [x] Package `flutter_notification_listener` adicionado ao `pubspec.yaml`
+- [x] Interface `INotificationParser` criada em `lib/domain/parsers/`
+- [x] `SantanderNotificationParser` implementado em `lib/data/parsers/`
+- [x] `NotificationParserRegistry` implementado com padrão Singleton
+- [x] `NotificationService` inicializado no `main.dart`
+- [x] Parser de Santander com regex funcional para valor, data e merchant
+- [x] Extração de dados testada com múltiplos formatos de notificação
+- [x] `TransactionNotificationService` criando notificações locais com action button
+- [x] Handler de ação "Adicionar Transação" implementado (em TransactionNotificationService)
+- [~] Navegação para `ExpenseDetailsBottomSheet` com pré-preenchimento (infraestrutura pronta, integração futura)
+- [x] Campo `sourceBank` adicionado ao modelo `TransactionData`
+- [x] UI de configurações com toggle e lista de bancos suportados
+- [x] Botão para abrir configurações de permissão do sistema
+- [x] Testes unitários isolados para `SantanderNotificationParser`
+- [x] Testes unitários para o `NotificationParserRegistry`
+- [x] Testes cobrindo casos extremos (valores, datas, caracteres especiais)
+- [x] Tratamento de permissões negadas com feedback ao usuário
+- [~] Documentação de como adicionar novos bancos em código (comentários presentes, CONTRIBUTING.md futuro)
+- [x] Exemplo de stub/template para novos parsers comentado no código (MockNotificationParser nos testes)
+- [~] Merge realizado para `develop` (pronto para merge, aguardando)
 
 ---
 

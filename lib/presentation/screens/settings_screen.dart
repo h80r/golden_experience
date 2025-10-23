@@ -9,6 +9,7 @@ import '../widgets/buttons/secondary_button.dart';
 import '../widgets/inputs/custom_text_field.dart';
 import '../widgets/inputs/currency_text_field.dart';
 import '../widgets/inputs/reserve_percentage_slider.dart';
+import '../widgets/settings/notification_settings_section.dart';
 import '../state/app_settings_form_notifier.dart';
 import '../state/backup_notifier.dart';
 import '../../data/providers/repository_providers.dart';
@@ -441,6 +442,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
               ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Divider
+            Divider(
+              color: AppColors.border,
+              thickness: 1,
+              height: AppSpacing.xl,
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Notifications Section
+            const NotificationSettingsSection(),
           ],
         ),
       ),

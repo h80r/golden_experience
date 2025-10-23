@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -43,8 +44,7 @@ class SecondaryCard extends StatelessWidget {
       child: isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(AppColors.secondary),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.secondary),
               ),
             )
           : Column(
@@ -52,6 +52,7 @@ class SecondaryCard extends StatelessWidget {
                 _FinancialRow(
                   label: 'Salário mensal',
                   value: monthlySalary,
+                  isHighlight: true,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 const Divider(
@@ -75,9 +76,8 @@ class SecondaryCard extends StatelessWidget {
                   label: 'Resultado parcial',
                   value: partialResult,
                   isHighlight: true,
-                  color: partialResult >= 0
-                      ? AppColors.success
-                      : AppColors.error,
+                  color:
+                      partialResult >= 0 ? AppColors.success : AppColors.error,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 const Divider(
@@ -89,9 +89,8 @@ class SecondaryCard extends StatelessWidget {
                   label: 'Reserva final prevista',
                   value: finalReserve,
                   isHighlight: true,
-                  color: finalReserve >= 0
-                      ? AppColors.success
-                      : AppColors.warning,
+                  color:
+                      finalReserve >= 0 ? AppColors.success : AppColors.warning,
                 ),
               ],
             ),
