@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/providers/repository_providers.dart';
 import '../../domain/usecases/providers/usecase_providers.dart';
+import '../state/dashboard_view_notifier.dart';
 import '../state/expense_form_notifier.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -103,12 +104,13 @@ class _TransactionsListScreenState
       appBar: AppBar(
         title: const Text('Transações'),
         backgroundColor: AppColors.background,
-        leading: widget.onBackPressed != null
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: widget.onBackPressed,
-              )
-            : null,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // Use the provider to go back to dashboard
+            ref.read(dashboardViewProvider.notifier).showDashboard();
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),

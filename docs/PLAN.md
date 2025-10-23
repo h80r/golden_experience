@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 37
-**Concluídas:** 25 / 37 (68%)
+**Concluídas:** 26 / 37 (70%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -1729,7 +1729,7 @@ Future<void> _executeDelete(Transaction transaction) async {
 
 ---
 
-### [ ] F8-T4: Feature - Alternar Dashboard/Histórico na Aba Início
+### [x] F8-T4: Feature - Alternar Dashboard/Histórico na Aba Início
 
 **Branch:** `feature/toggle-dashboard-history`
 
@@ -1815,12 +1815,12 @@ Permitir que o usuário alterne entre a visualização do Dashboard e o Históri
    - Histórico: `Icons.history` ou `Icons.list`
 
 **Definition of Done:**
-- [ ] Provider `DashboardViewState` criado
-- [ ] Lógica de toggle implementada no `MainScreen`
-- [ ] Tocar na aba "Início" alterna entre Dashboard e Histórico
-- [ ] Botão voltar do Android retorna para Dashboard antes de sair
-- [ ] `WillPopScope` configurado corretamente
-- [ ] Transição suave entre as telas
+- [x] Provider `DashboardViewState` criado
+- [x] Lógica de toggle implementada no `MainScreen`
+- [x] Tocar na aba "Início" alterna entre Dashboard e Histórico
+- [x] Botão voltar do Android retorna para Dashboard antes de sair
+- [x] `WillPopScope` configurado corretamente
+- [x] Transição suave entre as telas
 - [ ] Indicação visual do estado atual (opcional)
 - [ ] Testes de widget para a navegação
 - [ ] Merge realizado para `develop`
