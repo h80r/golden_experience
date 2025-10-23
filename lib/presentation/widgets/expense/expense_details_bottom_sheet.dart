@@ -4,7 +4,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../inputs/custom_text_field.dart';
-import '../inputs/currency_text_field.dart';
+import '../inputs/nubank_style_currency_field.dart';
 import '../inputs/custom_dropdown.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
@@ -72,9 +72,11 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
     _valueFocusNode = FocusNode();
 
     // Initialize with pre-filled value if provided
+    // NubankStyleCurrencyField expects cents as string internally
     if (widget.initialValue != null && widget.initialValue! > 0) {
       _currentValue = widget.initialValue!;
-      _valueController.text = _formatCurrency(widget.initialValue!);
+      final cents = (widget.initialValue! * 100).toInt();
+      _valueController.text = cents.toString();
     }
 
     // Initialize description
@@ -125,44 +127,6 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
     super.dispose();
   }
 
-  /// Formats a double value as Brazilian currency (R$ X.XXX,XX)
-  String _formatCurrency(double value) {
-    final parts = value.toStringAsFixed(2).split('.');
-    final integerPart = parts[0];
-    final decimalPart = parts[1];
-
-    // Add thousand separators to integer part
-    String formatted = '';
-    for (int i = 0; i < integerPart.length; i++) {
-      if (i > 0 && (integerPart.length - i) % 3 == 0) {
-        formatted += '.';
-      }
-      formatted += integerPart[i];
-    }
-
-    return 'R\$ $formatted,$decimalPart';
-  }
-
-  /// Parses currency input and returns the numeric value
-  /// Handles both formats: "1000,50" and "1.000,50"
-  double _parseCurrencyInput(String input) {
-    // Remove currency symbol
-    String cleaned = input.replaceAll('R\$ ', '').trim();
-
-    // Remove thousand separators (dots)
-    cleaned = cleaned.replaceAll('.', '');
-
-    // Replace comma with dot for decimal point
-    cleaned = cleaned.replaceAll(',', '.');
-
-    return double.tryParse(cleaned) ?? 0.0;
-  }
-
-  void _handleValueChange(String input) {
-    setState(() {
-      _currentValue = _parseCurrencyInput(input);
-    });
-  }
 
   Future<void> _selectDate(BuildContext context) async {
     final picked = await showDatePicker(
@@ -276,7 +240,7 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Value Input
-                        CurrencyTextField(
+                        NubankStyleCurrencyField(
                           label: 'Valor',
                           hint: 'R\$ 0,00',
                           controller: _valueController,
@@ -293,8 +257,7 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                             if (value == null || value.trim().isEmpty) {
                               return 'O valor é obrigatório';
                             }
-                            final parsed = _parseCurrencyInput(value);
-                            if (parsed <= 0) {
+                            if (double.tryParse(value) == null || double.parse(value) <= 0) {
                               return 'O valor deve ser maior que zero';
                             }
                             return null;

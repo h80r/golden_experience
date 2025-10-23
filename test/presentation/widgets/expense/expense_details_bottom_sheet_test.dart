@@ -27,7 +27,7 @@ void main() {
         ),
       );
 
-      expect(find.text('R\$ 50.00'), findsOneWidget);
+      expect(find.text('R\$ 50,00'), findsOneWidget);
     });
 
     testWidgets('shows title and header', (WidgetTester tester) async {
@@ -341,15 +341,24 @@ void main() {
         ),
       );
 
+      // Find and fill the description field (skipping the value field)
+      final textFields = find.byType(TextField);
       await tester.enterText(
-        find.byType(TextField).first,
+        textFields.at(1), // Skip value field, get description field
         'Almoço',
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Salvar'));
+      // Scroll down to make the save button visible
+      await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -500));
       await tester.pumpAndSettle();
 
+      // Now tap the save button - use warnIfMissed: false to suppress the warning
+      // if the button is still off-screen, since we're testing the functionality
+      await tester.tap(find.text('Salvar'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      // The value was initialized to 50.0 and should persist
       expect(savedData['value'], 50.0);
       expect(savedData['description'], 'Almoço');
     });

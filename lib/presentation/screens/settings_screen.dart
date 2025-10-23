@@ -11,7 +11,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/buttons/primary_button.dart';
 import '../widgets/buttons/secondary_button.dart';
-import '../widgets/inputs/currency_text_field.dart';
+import '../widgets/inputs/nubank_style_currency_field.dart';
 import '../widgets/inputs/reserve_percentage_slider.dart';
 import '../widgets/settings/notification_settings_section.dart';
 
@@ -48,7 +48,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Salário Mensal
-            CurrencyTextField(
+            NubankStyleCurrencyField(
               label: 'Salário Mensal',
               hint: 'Digite seu salário mensal',
               controller: _monthlySalaryController,
@@ -58,7 +58,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: AppSpacing.lg),
 
             // Saldo da Reserva
-            CurrencyTextField(
+            NubankStyleCurrencyField(
               label: 'Saldo Inicial da Reserva',
               hint: 'Digite o saldo inicial da reserva',
               controller: _reserveBalanceController,

@@ -9,7 +9,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
-import '../inputs/currency_text_field.dart';
+import '../inputs/nubank_style_currency_field.dart';
 import '../inputs/custom_dropdown.dart';
 import '../inputs/custom_text_field.dart';
 
@@ -91,7 +91,7 @@ class _RecurringExpenseFormBottomSheetState
               const SizedBox(height: AppSpacing.lg),
 
               // Value Field
-              CurrencyTextField(
+              NubankStyleCurrencyField(
                 label: 'Valor',
                 hint: 'R\$ 0,00',
                 controller: _valueController,

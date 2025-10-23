@@ -4,64 +4,76 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F7-T2
-- **current_task_title**: Captura Inteligente de Transações via Notificações
+- **current_task_id**: F8-T1
+- **current_task_title**: Correção - Sistema de Input Numérico tipo Nubank
 - **current_task_status**: COMPLETED
 
 ## Task Completion Summary
 
-**F7-T2: Captura Inteligente de Transações via Notificações** - COMPLETED
+**F8-T1: Correção - Sistema de Input Numérico tipo Nubank** - COMPLETED
 
 ### Implemented Components
 
-1. **Domain Layer (Interfaces & Models)**
-   - `INotificationParser` interface for extensible bank notification parsing
-   - `TransactionData` model for extracted transaction information
-   - `NotificationEvent` model representing incoming notifications
+1. **New Widget: NubankStyleCurrencyField**
+   - Located at `lib/presentation/widgets/inputs/nubank_style_currency_field.dart`
+   - Implements Nubank-style currency input where user types digits and system builds value from right to left (cents first)
+   - Examples: 1 → R$ 0,01, 123 → R$ 1,23, 10056 → R$ 100,56
 
-2. **Data Layer (Implementations & Services)**
-   - `SantanderNotificationParser` - Extracts transaction data from Santander notifications using regex patterns
-   - `NotificationParserRegistry` - Singleton registry for managing multiple bank parsers
-   - `NotificationService` - Listens to system notifications and dispatches to appropriate parser
-   - `TransactionNotificationService` - Shows local notifications with action button
+2. **Widget Features**
+   - Accepts only digits as input
+   - Maintains internal representation as cents (integer)
+   - Displays formatted Brazilian currency (R$ X.XXX,XX)
+   - Supports initialization with double value
+   - Full validation support (required, custom validators)
+   - Focus state handling with visual feedback
+   - Disabled state support
 
-3. **Presentation Layer**
-   - `NotificationSettingsSection` widget in SettingsScreen
-   - UI for enabling/disabling auto-capture with bank list display
-   - Permission management and system settings integration
+3. **Applied In Four Locations**
+   - `ExpenseDetailsBottomSheet` - Transaction value field
+   - `SettingsScreen` - Salário Mensal and Saldo Inicial da Reserva fields
+   - `AccountFormBottomSheet` - Saldo Inicial (Débito) and Limite de Crédito fields
+   - `RecurringExpenseFormBottomSheet` - Valor field
 
-4. **App Initialization**
-   - Notification services integrated in main.dart
-   - Proper initialization and cleanup in app lifecycle
+4. **Testing**
+   - Comprehensive test suite: `test/presentation/widgets/inputs/nubank_style_currency_field_test.dart`
+   - 18 tests covering:
+     - Single digit conversion (1 → R$ 0,01)
+     - Multi-digit values (123 → R$ 1,23)
+     - Large values (10056 → R$ 100,56)
+     - Empty input handling
+     - Non-digit character filtering
+     - Required field validation
+     - Custom validators
+     - Zero value handling
+     - Enabled/disabled state
+     - Focus state changes
+   - All 18 tests passing ✓
 
-5. **Testing**
-   - Comprehensive unit tests for `SantanderNotificationParser` (basic properties, parsing, edge cases)
-   - Comprehensive unit tests for `NotificationParserRegistry` (singleton, registration, retrieval)
-   - MockNotificationParser for testing extensibility
-   - Test coverage for date parsing, value parsing, and error handling
+5. **Bug Fixes from Integration**
+   - Fixed ExpenseDetailsBottomSheet test to account for new decimal format (R$ X,XX)
+   - Updated test to properly find and interact with description field in bottom sheet
+   - Improved test scrolling to ensure save button is accessible
 
-6. **Architecture**
-   - Extensible design allows adding new bank parsers without modifying existing code
-   - Clean separation of concerns (domain interfaces, data implementations, presentation UI)
-   - Singleton registry pattern for parser management
-   - Support for multiple languages via regex patterns
+### Key Improvements Over CurrencyTextField
 
-### Dependencies Added
-- `flutter_notification_listener: ^1.3.4` - Listens to system notifications
-- `flutter_local_notifications: ^17.0.0` - Shows local notifications with actions
+1. **Intuitive Input** - User types without worrying about decimal separators
+2. **Automatic Formatting** - System handles all formatting internally
+3. **Consistent Behavior** - Uses internal cents representation for accurate calculations
+4. **Better UX** - No manual comma/period confusion
+5. **Brazilian Standard** - Properly displays R$ X.XXX,XX format
 
-### How to Extend (Adding New Banks)
-1. Create new parser implementing `INotificationParser` in `lib/data/parsers/`
-2. Register in `NotificationParserRegistry._registerDefaultParsers()`
-3. Add tests for the new parser
-4. Parser is automatically available in settings UI
+### Files Modified
 
-## Previous Task Completed
+- `lib/presentation/widgets/inputs/nubank_style_currency_field.dart` (NEW)
+- `lib/presentation/widgets/expense/expense_details_bottom_sheet.dart` (Updated import & usage)
+- `lib/presentation/screens/settings_screen.dart` (Updated import & usage)
+- `lib/presentation/widgets/accounts/account_form_bottom_sheet.dart` (Updated import & usage)
+- `lib/presentation/widgets/recurring/recurring_expense_form_bottom_sheet.dart` (Updated import & usage)
+- `test/presentation/widgets/inputs/nubank_style_currency_field_test.dart` (NEW - 18 tests)
+- `test/presentation/widgets/expense/expense_details_bottom_sheet_test.dart` (Updated for compatibility)
+- `docs/PLAN.md` (Marked F8-T1 as complete, updated status)
+
+## Previous Tasks Completed
 
 **F7-T1: Substituição do Ícone do Aplicativo** - COMPLETED
-- Ícone movido para `assets/images/icon.png`
-- Package `flutter_launcher_icons` v0.14.4 adicionado ao `pubspec.yaml`
-- Ícones gerados para Android (mipmap densities em hdpi, mdpi, xhdpi, xxhdpi, xxxhdpi + adaptive icon em mipmap-anydpi-v26)
-- Ícones gerados para iOS (AppIcon.appiconset com 15 tamanhos diferentes)
-- Colors.xml criado com background color #F5C842
-- App builds corretamente com os novos ícones
+**F7-T2: Captura Inteligente de Transações via Notificações** - COMPLETED

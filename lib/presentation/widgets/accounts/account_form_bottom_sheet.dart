@@ -9,7 +9,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
-import '../inputs/currency_text_field.dart';
+import '../inputs/nubank_style_currency_field.dart';
 import '../inputs/custom_text_field.dart';
 
 /// AccountFormBottomSheet - Form for creating/editing accounts
@@ -157,13 +157,13 @@ class _AccountFormBottomSheetState
               if (_isDebit)
                 Column(
                   children: [
-                    CurrencyTextField(
+                    NubankStyleCurrencyField(
                       label: 'Saldo Inicial (Débito)',
                       hint: 'R\$ 0,00',
                       controller: _balanceController,
                       initialValue: widget.account?.balance ?? 0.0,
                       onChanged: (value) {
-                        _balanceController.text = value.toStringAsFixed(2);
+                        // Value is already converted by widget
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -180,13 +180,13 @@ class _AccountFormBottomSheetState
               if (_isCredit)
                 Column(
                   children: [
-                    CurrencyTextField(
+                    NubankStyleCurrencyField(
                       label: 'Limite de Crédito',
                       hint: 'R\$ 0,00',
                       controller: _creditLimitController,
                       initialValue: widget.account?.creditLimit ?? 0.0,
                       onChanged: (value) {
-                        _creditLimitController.text = value.toStringAsFixed(2);
+                        // Value is already converted by widget
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) {

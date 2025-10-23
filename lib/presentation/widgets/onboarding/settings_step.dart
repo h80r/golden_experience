@@ -5,7 +5,7 @@ import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
-import '../inputs/custom_text_field.dart';
+import '../inputs/nubank_style_currency_field.dart';
 import '../inputs/reserve_percentage_slider.dart';
 import '../../../data/repositories/app_settings_repository_impl.dart';
 
@@ -45,10 +45,15 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
       final settings = await repository.get();
       if (settings != null && mounted) {
         setState(() {
-          _salaryController.text =
-              settings.monthlySalary > 0 ? settings.monthlySalary.toString() : '';
-          _reserveController.text =
-              settings.reserveBalance > 0 ? settings.reserveBalance.toString() : '';
+          // NubankStyleCurrencyField uses internal representation (cents)
+          if (settings.monthlySalary > 0) {
+            final cents = (settings.monthlySalary * 100).toInt();
+            _salaryController.text = cents.toString();
+          }
+          if (settings.reserveBalance > 0) {
+            final cents = (settings.reserveBalance * 100).toInt();
+            _reserveController.text = cents.toString();
+          }
           _reservePercentage = settings.maxReserveUsagePercentage;
         });
       }
@@ -76,8 +81,12 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
     });
 
     try {
-      final salary = double.tryParse(_salaryController.text) ?? 0.0;
-      final reserve = double.tryParse(_reserveController.text) ?? 0.0;
+      // NubankStyleCurrencyField uses internal representation (cents)
+      final salaryCents = int.tryParse(_salaryController.text) ?? 0;
+      final reserveCents = int.tryParse(_reserveController.text) ?? 0;
+
+      final salary = salaryCents / 100.0;
+      final reserve = reserveCents / 100.0;
 
       if (salary <= 0 || reserve < 0) {
         throw Exception('Salário deve ser maior que 0 e reserva não pode ser negativa');
@@ -168,22 +177,18 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
             child: Column(
               children: [
                 // Salary field
-                CustomTextField(
-                  label: 'Salário Mensal (R\$)',
+                NubankStyleCurrencyField(
+                  label: 'Salário Mensal',
+                  hint: 'R\$ 0,00',
                   controller: _salaryController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  hint: '0.00',
                   isEnabled: !_isLoading,
                 ),
                 SizedBox(height: AppSpacing.xl),
                 // Reserve balance field
-                CustomTextField(
-                  label: 'Saldo da Reserva (R\$)',
+                NubankStyleCurrencyField(
+                  label: 'Saldo da Reserva',
+                  hint: 'R\$ 0,00',
                   controller: _reserveController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  hint: '0.00',
                   isEnabled: !_isLoading,
                 ),
                 SizedBox(height: AppSpacing.xl),

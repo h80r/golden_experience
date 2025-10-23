@@ -7,6 +7,7 @@ import '../../theme/app_spacing.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
 import '../inputs/custom_text_field.dart';
+import '../inputs/nubank_style_currency_field.dart';
 import '../../../data/repositories/account_repository_impl.dart';
 import '../../../data/datasources/local_database.dart';
 
@@ -67,8 +68,12 @@ class _AccountStepState extends ConsumerState<AccountStep> {
     });
 
     try {
-      final balance = double.tryParse(_balanceController.text) ?? 0.0;
-      final creditLimit = double.tryParse(_creditLimitController.text) ?? 0.0;
+      // NubankStyleCurrencyField uses internal representation (cents)
+      final balanceCents = int.tryParse(_balanceController.text) ?? 0;
+      final creditLimitCents = int.tryParse(_creditLimitController.text) ?? 0;
+
+      final balance = balanceCents / 100.0;
+      final creditLimit = creditLimitCents / 100.0;
 
       if (balance < 0 || creditLimit < 0) {
         throw Exception('Valores não podem ser negativos');
@@ -247,24 +252,20 @@ class _AccountStepState extends ConsumerState<AccountStep> {
                 SizedBox(height: AppSpacing.xl),
                 // Balance (if debit)
                 if (_isDebit) ...[
-                  CustomTextField(
-                    label: 'Saldo Inicial (R\$)',
+                  NubankStyleCurrencyField(
+                    label: 'Saldo Inicial',
+                    hint: 'R\$ 0,00',
                     controller: _balanceController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    hint: '0.00',
                     isEnabled: !_isLoading,
                   ),
                   SizedBox(height: AppSpacing.xl),
                 ],
                 // Credit limit (if credit)
                 if (_isCredit) ...[
-                  CustomTextField(
-                    label: 'Limite de Crédito (R\$)',
+                  NubankStyleCurrencyField(
+                    label: 'Limite de Crédito',
+                    hint: 'R\$ 0,00',
                     controller: _creditLimitController,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    hint: '0.00',
                     isEnabled: !_isLoading,
                   ),
                   SizedBox(height: AppSpacing.xl),
