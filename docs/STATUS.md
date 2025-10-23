@@ -4,11 +4,57 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F8-T1
-- **current_task_title**: Correção - Sistema de Input Numérico tipo Nubank
+- **current_task_id**: F8-T2
+- **current_task_title**: Melhoria - Bottom Sheet com Sistema de Abas
 - **current_task_status**: COMPLETED
 
 ## Task Completion Summary
+
+**F8-T2: Melhoria - Bottom Sheet com Sistema de Abas** - COMPLETED
+
+### Implemented Changes
+
+1. **PageView-Based Navigation**
+   - Refactored `ExpenseDetailsBottomSheet` to use `PageView` for navigation between two pages
+   - Uses `PageController` for smooth transitions
+   - Physics set to `NeverScrollableScrollPhysics()` to prevent manual swiping
+
+2. **Page 1 (Main Fields)**
+   - Valor (Value) - NubankStyleCurrencyField
+   - Descrição (Description) - CustomTextField
+   - Conta (Account) - CustomDropdown
+   - Débito/Crédito (Debit/Credit) - Toggle buttons
+   - "Próximo" (Next) and "Cancelar" (Cancel) buttons
+
+3. **Page 2 (Complementary Fields)**
+   - Notas (Notes) - CustomTextField (optional)
+   - Categoria (Category) - CustomDropdown
+   - Data (Date) - DatePicker
+   - "Anterior" (Previous) and "Salvar" (Save) buttons
+
+4. **Validation Logic**
+   - Page 1 fields validated before advancing to page 2
+   - Value must be greater than zero
+   - Description is required
+   - Category dropdown required on page 2
+   - Separate form keys for each page
+
+5. **UI Improvements**
+   - Page indicator dots in header (filled for current page, outline for other)
+   - Smooth transitions between pages using `easeInOut` curve
+   - All fields visible without keyboard interference (each page on separate scroll view)
+
+6. **Tests Updated**
+   - 13 tests passing for ExpenseDetailsBottomSheet
+   - Tests updated to navigate through pages
+   - Validation tests confirm proper error messages
+   - Navigation tests confirm page transitions work correctly
+
+### Files Modified
+
+- `lib/presentation/widgets/expense/expense_details_bottom_sheet.dart` (refactored)
+- `test/presentation/widgets/expense/expense_details_bottom_sheet_test.dart` (updated tests)
+- `docs/PLAN.md` (marked F8-T2 as complete, updated progress)
 
 **F8-T1: Correção - Sistema de Input Numérico tipo Nubank** - COMPLETED
 

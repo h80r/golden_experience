@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -20,6 +21,7 @@ class CustomTextField extends StatefulWidget {
   final VoidCallback? onSuffixIconPressed;
   final bool isEnabled;
   final FocusNode? focusNode;
+  final TextAlignVertical? textAlignVertical;
 
   const CustomTextField({
     required this.label,
@@ -37,6 +39,7 @@ class CustomTextField extends StatefulWidget {
     this.onSuffixIconPressed,
     this.isEnabled = true,
     this.focusNode,
+    this.textAlignVertical,
     super.key,
   });
 
@@ -47,31 +50,6 @@ class CustomTextField extends StatefulWidget {
 class _CustomTextFieldState extends State<CustomTextField> {
   late FocusNode _focusNode;
   late bool _isFocused;
-
-  @override
-  void initState() {
-    super.initState();
-    // Use the provided focusNode or create a new one
-    _focusNode = widget.focusNode ?? FocusNode();
-    _isFocused = false;
-    _focusNode.addListener(_handleFocusChange);
-  }
-
-  @override
-  void dispose() {
-    _focusNode.removeListener(_handleFocusChange);
-    // Only dispose if we created the focusNode (not provided from parent)
-    if (widget.focusNode == null) {
-      _focusNode.dispose();
-    }
-    super.dispose();
-  }
-
-  void _handleFocusChange() {
-    setState(() {
-      _isFocused = _focusNode.hasFocus;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +64,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       maxLength: widget.maxLength,
       obscureText: widget.obscureText,
       focusNode: _focusNode,
+      textAlignVertical: widget.textAlignVertical,
       style: AppTypography.bodyMedium.copyWith(
         color: AppColors.textPrimary,
       ),
@@ -101,14 +80,16 @@ class _CustomTextFieldState extends State<CustomTextField> {
         prefixIcon: widget.prefixIcon != null
             ? Icon(
                 widget.prefixIcon,
-                color: _isFocused ? AppColors.secondary : AppColors.textTertiary,
+                color:
+                    _isFocused ? AppColors.secondary : AppColors.textTertiary,
               )
             : null,
         suffixIcon: widget.suffixIcon != null
             ? IconButton(
                 icon: Icon(
                   widget.suffixIcon,
-                  color: _isFocused ? AppColors.secondary : AppColors.textTertiary,
+                  color:
+                      _isFocused ? AppColors.secondary : AppColors.textTertiary,
                 ),
                 onPressed: widget.onSuffixIconPressed,
               )
@@ -149,11 +130,42 @@ class _CustomTextFieldState extends State<CustomTextField> {
           ),
         ),
         filled: true,
-        fillColor: widget.isEnabled
-            ? AppColors.surfaceVariant
-            : AppColors.surface,
-        contentPadding: const EdgeInsets.all(AppSpacing.md),
+        fillColor:
+            widget.isEnabled ? AppColors.surfaceVariant : AppColors.surface,
+        contentPadding: widget.textAlignVertical == TextAlignVertical.top
+            ? const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.md,
+              )
+            : const EdgeInsets.all(AppSpacing.md),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    // Only dispose if we created the focusNode (not provided from parent)
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Use the provided focusNode or create a new one
+    _focusNode = widget.focusNode ?? FocusNode();
+    _isFocused = false;
+    _focusNode.addListener(_handleFocusChange);
+  }
+
+  void _handleFocusChange() {
+    setState(() {
+      _isFocused = _focusNode.hasFocus;
+    });
   }
 }

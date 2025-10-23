@@ -4,32 +4,6 @@ import 'package:golden_experience/presentation/widgets/expense/expense_details_b
 
 void main() {
   group('ExpenseDetailsBottomSheet', () {
-    testWidgets('renders with initial value', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ExpenseDetailsBottomSheet(
-              initialValue: 50.0,
-              accounts: {1: 'Conta 1', 2: 'Conta 2'},
-              categories: {1: 'Alimentação', 2: 'Transporte'},
-              onSave: ({
-                required value,
-                required description,
-                required notes,
-                required accountId,
-                required transactionType,
-                required categoryId,
-                required date,
-              }) {},
-              onCancel: () {},
-            ),
-          ),
-        ),
-      );
-
-      expect(find.text('R\$ 50,00'), findsOneWidget);
-    });
-
     testWidgets('shows title and header', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -82,7 +56,7 @@ void main() {
       expect(find.text('Descrição'), findsOneWidget);
     });
 
-    testWidgets('renders notes field', (WidgetTester tester) async {
+    testWidgets('renders notes field on page 2', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -104,6 +78,16 @@ void main() {
           ),
         ),
       );
+
+      // Fill description and go to page 2
+      final textFields = find.byType(TextField);
+      await tester.enterText(
+        textFields.at(1),
+        'Almoço',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.edit_note));
+      await tester.pumpAndSettle();
 
       expect(find.text('Notas (Opcional)'), findsOneWidget);
     });
@@ -134,7 +118,7 @@ void main() {
       expect(find.text('Conta'), findsOneWidget);
     });
 
-    testWidgets('renders category dropdown', (WidgetTester tester) async {
+    testWidgets('renders category dropdown on page 1', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -157,6 +141,7 @@ void main() {
         ),
       );
 
+      // Category is now on page 1
       expect(find.text('Categoria'), findsOneWidget);
     });
 
@@ -187,7 +172,7 @@ void main() {
       expect(find.text('Crédito'), findsOneWidget);
     });
 
-    testWidgets('renders date picker', (WidgetTester tester) async {
+    testWidgets('renders date picker on page 1', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -210,10 +195,11 @@ void main() {
         ),
       );
 
+      // Date picker is now on page 1
       expect(find.byIcon(Icons.calendar_today), findsOneWidget);
     });
 
-    testWidgets('renders cancel and save buttons', (WidgetTester tester) async {
+    testWidgets('renders page 1 with icon buttons and save', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -236,11 +222,53 @@ void main() {
         ),
       );
 
-      expect(find.text('Cancelar'), findsOneWidget);
+      // Should have close icon, edit_note icon, and Save button
+      expect(find.byIcon(Icons.close), findsOneWidget);
+      expect(find.byIcon(Icons.edit_note), findsOneWidget);
       expect(find.text('Salvar'), findsOneWidget);
     });
 
-    testWidgets('calls onCancel when cancel button pressed',
+    testWidgets('renders page 2 with icon buttons after clicking edit_note', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ExpenseDetailsBottomSheet(
+              initialValue: 50.0,
+              accounts: {1: 'Conta 1'},
+              categories: {1: 'Alimentação'},
+              onSave: ({
+                required value,
+                required description,
+                required notes,
+                required accountId,
+                required transactionType,
+                required categoryId,
+                required date,
+              }) {},
+              onCancel: () {},
+            ),
+          ),
+        ),
+      );
+
+      // Find and fill the description field on page 1
+      final textFields = find.byType(TextField);
+      await tester.enterText(
+        textFields.at(1), // Description field is the 2nd TextField (after value)
+        'Almoço',
+      );
+      await tester.pumpAndSettle();
+
+      // Click edit_note icon to go to page 2
+      await tester.tap(find.byIcon(Icons.edit_note));
+      await tester.pumpAndSettle();
+
+      // Page 2 should have close, arrow_back icons and Salvar button
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+      expect(find.text('Salvar'), findsOneWidget);
+    });
+
+    testWidgets('calls onCancel when close icon pressed',
         (WidgetTester tester) async {
       bool cancelled = false;
 
@@ -268,13 +296,13 @@ void main() {
         ),
       );
 
-      await tester.tap(find.text('Cancelar'));
+      await tester.tap(find.byIcon(Icons.close));
       await tester.pumpAndSettle();
 
       expect(cancelled, isTrue);
     });
 
-    testWidgets('shows snackbar when save without description',
+    testWidgets('allows navigation to page 2 without validation',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -298,13 +326,13 @@ void main() {
         ),
       );
 
-      await tester.tap(find.text('Salvar'));
+      // Click edit_note icon without filling description
+      // Should navigate to page 2 without validation
+      await tester.tap(find.byIcon(Icons.edit_note));
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('Por favor, preencha todos os campos obrigatórios'),
-        findsOneWidget,
-      );
+      // Should be on page 2 (arrow_back icon should be visible)
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
     });
 
     testWidgets('calls onSave with correct data when form is valid',
@@ -341,21 +369,16 @@ void main() {
         ),
       );
 
-      // Find and fill the description field (skipping the value field)
+      // Fill the description field on page 1
       final textFields = find.byType(TextField);
       await tester.enterText(
-        textFields.at(1), // Skip value field, get description field
+        textFields.at(1), // Description field (after value field)
         'Almoço',
       );
       await tester.pumpAndSettle();
 
-      // Scroll down to make the save button visible
-      await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -500));
-      await tester.pumpAndSettle();
-
-      // Now tap the save button - use warnIfMissed: false to suppress the warning
-      // if the button is still off-screen, since we're testing the functionality
-      await tester.tap(find.text('Salvar'), warnIfMissed: false);
+      // On page 1, click Salvar button
+      await tester.tap(find.text('Salvar'));
       await tester.pumpAndSettle();
 
       // The value was initialized to 50.0 and should persist

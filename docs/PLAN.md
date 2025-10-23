@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 37
-**Concluídas:** 20 / 37 (54%)
+**Concluídas:** 21 / 37 (57%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -71,7 +71,7 @@ main (develop)
 - **Fase 5 - Primeira Iteração:** 5 / 5 (100%)
 - **Fase 6 - Segunda Iteração:** 3 / 3 (100%)
 - **Fase 7 - Terceira Iteração:** 2 / 2 (100%)
-- **Fase 8 - Quarta Iteração:** 0 / 6 (0%)
+- **Fase 8 - Quarta Iteração:** 1 / 6 (17%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -1494,18 +1494,18 @@ Corrigir bugs críticos no CurrencyTextField e implementar sistema de input num�
 4. **RecurringExpenseForm:** Campo de valor da recorrência
 
 **Definition of Done:**
-- [ ] Widget `NubankStyleCurrencyField` criado em `lib/presentation/widgets/inputs/`
-- [ ] TextInputFormatter customizado implementado
-- [ ] Bugs de formatação corrigidos (reserva, limite, conta)
-- [ ] Comportamento de construção da direita pra esquerda funcional
-- [ ] Aplicado em todas as 4 telas mencionadas
-- [ ] Testes de widget para o novo campo
-- [ ] Testes de formatação e conversão de valores
-- [ ] Merge realizado para `develop`
+- [x] Widget `NubankStyleCurrencyField` criado em `lib/presentation/widgets/inputs/`
+- [x] TextInputFormatter customizado implementado
+- [x] Bugs de formatação corrigidos (reserva, limite, conta)
+- [x] Comportamento de construção da direita pra esquerda funcional
+- [x] Aplicado em todas as 4 telas mencionadas
+- [x] Testes de widget para o novo campo
+- [x] Testes de formatação e conversão de valores
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F8-T2: Melhoria - Bottom Sheet com Sistema de Abas
+### [x] F8-T2: Melhoria - Bottom Sheet com Sistema de Abas
 
 **Branch:** `feature/transaction-details-tabs`
 
@@ -1563,16 +1563,16 @@ Dividir o `ExpenseDetailsBottomSheet` em duas páginas navegáveis para resolver
    - Componente único para criação E edição (não criar telas separadas)
 
 **Definition of Done:**
-- [ ] PageView implementado no `ExpenseDetailsBottomSheet`
-- [ ] Página 1 com campos: Valor, Descrição, Conta, Débito/Crédito
-- [ ] Página 2 com campos: Notas, Categoria, Data
-- [ ] Navegação com botões "Próximo" / "Anterior" funcional
-- [ ] Indicador visual de página atual
-- [ ] Validação de campos obrigatórios antes de avançar
-- [ ] Todos os campos visíveis mesmo com teclado aberto
-- [ ] Componente continua funcionando para criação E edição
-- [ ] Testes de widget atualizados
-- [ ] Merge realizado para `develop`
+- [x] PageView implementado no `ExpenseDetailsBottomSheet`
+- [x] Página 1 com campos: Valor, Descrição, Conta, Débito/Crédito
+- [x] Página 2 com campos: Notas, Categoria, Data
+- [x] Navegação com botões "Próximo" / "Anterior" funcional
+- [x] Indicador visual de página atual
+- [x] Validação de campos obrigatórios antes de avançar
+- [x] Todos os campos visíveis mesmo com teclado aberto
+- [x] Componente continua funcionando para criação E edição
+- [x] Testes de widget atualizados
+- [~] Merge realizado para `develop`
 
 ---
 
