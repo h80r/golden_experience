@@ -60,8 +60,8 @@ main (develop)
 
 ## 📊 Progresso Geral
 
-**Total de Tarefas:** 29
-**Concluídas:** 18 / 29 (62%)
+**Total de Tarefas:** 31
+**Concluídas:** 19 / 31 (61%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -69,7 +69,8 @@ main (develop)
 - **Fase 3 - Dashboard Reativo:** 4 / 4 (100%)
 - **Fase 4 - Funcionalidades de Suporte:** 4 / 5 (80%)
 - **Fase 5 - Primeira Iteração:** 5 / 5 (100%)
-- **Fase 6 - Segunda Iteração:** 1 / 3 (33%)
+- **Fase 6 - Segunda Iteração:** 3 / 3 (100%)
+- **Fase 7 - Terceira Iteração:** 1 / 2 (50%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -1037,17 +1038,397 @@ class CurrencyTextField extends StatelessWidget {
 - Ou implementação customizada com `TextInputFormatter`
 
 **Definition of Done:**
-- [ ] Widget `CurrencyTextField` criado em `lib/presentation/widgets/inputs/`
-- [ ] TextInputFormatter customizado para vírgula implementado
-- [ ] Formatação com separador de milhar funcional
-- [ ] Validação de valores implementada
-- [ ] Aplicado em ExpenseDetailsBottomSheet
-- [ ] Aplicado em SettingsScreen
-- [ ] Aplicado em AccountForm
-- [ ] Aplicado em RecurringExpenseForm
-- [ ] Testes de widget para CurrencyTextField
-- [ ] Testes de validação e formatação
-- [ ] Documentação do widget (comentários)
+- [x] Widget `CurrencyTextField` criado em `lib/presentation/widgets/inputs/`
+- [x] TextInputFormatter customizado para vírgula implementado
+- [x] Formatação com separador de milhar funcional
+- [x] Validação de valores implementada
+- [x] Aplicado em ExpenseDetailsBottomSheet
+- [x] Aplicado em SettingsScreen
+- [x] Aplicado em AccountForm
+- [x] Aplicado em RecurringExpenseForm
+- [x] Testes de widget para CurrencyTextField
+- [x] Testes de validação e formatação
+- [x] Documentação do widget (comentários)
+- [x] Merge realizado para `develop`
+
+---
+
+## 🔄 Fase 7: Terceira Iteração - Automação e Identidade Visual
+
+**Objetivo:** Modernizar a identidade visual do app com ícone personalizado e implementar captura inteligente de transações via notificações bancárias com arquitetura extensível para múltiplos bancos.
+
+**Status:** 1 / 2 tarefas concluídas
+
+---
+
+### [x] F7-T1: Substituição do Ícone do Aplicativo
+
+**Branch:** `chore/app-icon-update`
+
+**Descrição:**
+Substituir o ícone padrão do Flutter pelo novo ícone personalizado (`icon.png`) em todas as plataformas suportadas, seguindo as melhores práticas de design de ícones mobile.
+
+**Implementação:**
+
+1. **Preparação do Ícone:**
+   - Mover `docs/icon.png` para `assets/images/icon.png`
+   - Validar que a imagem possui dimensões adequadas (recomendado 1024x1024px)
+   - Verificar que o design funciona bem em diferentes fundos
+
+2. **Configuração com flutter_launcher_icons:**
+   - Adicionar dependência dev:
+     ```yaml
+     dev_dependencies:
+       flutter_launcher_icons: ^0.14.4
+     ```
+   - Criar configuração no `pubspec.yaml`:
+     ```yaml
+     flutter_launcher_icons:
+       android: true
+       ios: true
+       image_path: "assets/images/icon.png"
+       adaptive_icon_background: "#F5C842"  # Cor dourada do design
+       adaptive_icon_foreground: "assets/images/icon.png"
+     ```
+
+3. **Geração dos Ícones:**
+   - Executar: `dart run flutter_launcher_icons`
+   - Verificar geração em `android/app/src/main/res/` (mipmap-*)
+   - Verificar geração em `ios/Runner/Assets.xcassets/AppIcon.appiconset/`
+
+4. **Teste Visual:**
+   - Instalar app em dispositivo físico/emulador
+   - Verificar ícone na home screen
+   - Verificar ícone na lista de apps
+   - Verificar ícone nas notificações
+
+**Definition of Done:**
+- [ ] Ícone movido para `assets/images/icon.png`
+- [ ] Package `flutter_launcher_icons` configurado no `pubspec.yaml`
+- [ ] Ícones gerados para Android (mipmap densities + adaptive icon)
+- [ ] Ícones gerados para iOS (AppIcon.appiconset)
+- [ ] App instalado exibe novo ícone em todos os contextos
+- [ ] Arquivos gerados commitados no repositório
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F7-T2: Captura Inteligente de Transações via Notificações
+
+**Branch:** `feature/notification-transaction-capture`
+
+**Descrição:**
+Implementar um sistema extensível que detecta notificações de compras aprovadas de bancos parceiros, extrai automaticamente os dados da transação (valor, data, descrição) e oferece ao usuário um botão para criar a transação rapidamente no app. A arquitetura permite adicionar novos bancos facilmente no futuro.
+
+**Fluxo do Usuário:**
+1. Usuário recebe notificação do banco: "Compra aprovada! Compra no cartão final 1167, de R$ 208,05, em 22/10/25, às 07:58, em aliexpress, aprovada."
+2. App detecta a notificação e extrai os dados usando o parser apropriado
+3. App cria uma notificação própria: "💰 Nova compra detectada: R$ 208,05 em aliexpress"
+4. Usuário toca no botão "Adicionar Transação"
+5. `ExpenseDetailsBottomSheet` abre pré-preenchido com os dados extraídos
+6. Usuário revisa, seleciona conta/categoria e confirma
+
+**Arquitetura Extensível:**
+
+**1. Interface do Parser (Domain Layer)**
+```dart
+// lib/domain/parsers/i_notification_parser.dart
+abstract class INotificationParser {
+  /// Package name do app do banco (ex: 'com.santander.app')
+  String get packageName;
+
+  /// Nome do banco para exibição
+  String get bankName;
+
+  /// Tenta fazer parse da notificação
+  /// Retorna null se não for uma notificação de transação válida
+  TransactionData? parse(NotificationEvent event);
+
+  /// Valida se a notificação é elegível para parse
+  bool canParse(NotificationEvent event);
+}
+```
+
+**2. Implementação Santander (Data Layer)**
+```dart
+// lib/data/parsers/santander_notification_parser.dart
+class SantanderNotificationParser implements INotificationParser {
+  @override
+  String get packageName => 'com.santander.app';
+
+  @override
+  String get bankName => 'Santander';
+
+  // Regex patterns específicos do Santander
+  static final _valueRegex = RegExp(r'R\$\s*([\d.,]+)');
+  static final _dateRegex = RegExp(r'em (\d{2}/\d{2}/\d{2}), às (\d{2}:\d{2})');
+  static final _merchantRegex = RegExp(r'em ([^,]+), aprovada');
+
+  @override
+  bool canParse(NotificationEvent event) {
+    final text = event.text ?? '';
+    return text.contains('Compra aprovada') &&
+           text.contains('cartão final');
+  }
+
+  @override
+  TransactionData? parse(NotificationEvent event) {
+    // Implementação com extração via regex
+    // Retorna TransactionData com value, description, date, sourceBank
+  }
+}
+```
+
+**3. Registry de Parsers (Data Layer)**
+```dart
+// lib/data/parsers/notification_parser_registry.dart
+class NotificationParserRegistry {
+  // Singleton pattern
+  static final NotificationParserRegistry _instance =
+      NotificationParserRegistry._internal();
+
+  factory NotificationParserRegistry() => _instance;
+
+  final Map<String, INotificationParser> _parsers = {};
+
+  void _registerDefaultParsers() {
+    register(SantanderNotificationParser());
+    // Futuro: register(NubankNotificationParser());
+    // Futuro: register(ItauNotificationParser());
+  }
+
+  void register(INotificationParser parser) {
+    _parsers[parser.packageName] = parser;
+  }
+
+  INotificationParser? getParser(String packageName) {
+    return _parsers[packageName];
+  }
+
+  List<String> get supportedBanks =>
+      _parsers.values.map((p) => p.bankName).toList();
+}
+```
+
+**4. Service Orquestrador (Presentation/Services)**
+```dart
+// lib/presentation/services/notification_service.dart
+class NotificationService {
+  final _registry = NotificationParserRegistry();
+
+  static Future<void> initialize() async {
+    NotificationsListener.initialize();
+
+    NotificationsListener.receivePort.listen((event) {
+      _handleNotification(event);
+    });
+
+    final hasPermission = await NotificationsListener.hasPermission;
+    if (hasPermission == true) {
+      await NotificationsListener.startService();
+    }
+  }
+
+  static void _handleNotification(NotificationEvent event) {
+    final packageName = event.packageName ?? '';
+
+    // Buscar parser registrado para este packageName
+    final parser = _registry.getParser(packageName);
+    if (parser == null) return; // Banco não suportado
+
+    // Tentar fazer parse
+    final transactionData = parser.parse(event);
+    if (transactionData != null) {
+      TransactionNotificationService.show(transactionData);
+    }
+  }
+}
+```
+
+**5. Notificação de Ação**
+```dart
+// lib/presentation/services/transaction_notification_service.dart
+class TransactionNotificationService {
+  static Future<void> show(TransactionData data) async {
+    const androidDetails = AndroidNotificationDetails(
+      'transaction_channel',
+      'Transações Detectadas',
+      importance: Importance.high,
+      actions: [
+        AndroidNotificationAction(
+          'add_transaction',
+          'Adicionar Transação',
+          showsUserInterface: true,
+        ),
+      ],
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      '💰 Nova compra detectada',
+      'R\$ ${data.value.toStringAsFixed(2)} em ${data.description}',
+      NotificationDetails(android: androidDetails),
+      payload: jsonEncode(data.toJson()),
+    );
+  }
+}
+```
+
+**6. Handler de Navegação**
+```dart
+// No main.dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Configurar handler de notificação
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: (response) {
+      if (response.actionId == 'add_transaction') {
+        final data = TransactionData.fromJson(
+          jsonDecode(response.payload!)
+        );
+        // Navegar para ExpenseDetailsBottomSheet com dados pré-preenchidos
+        // usando navigatorKey global
+      }
+    },
+  );
+
+  await NotificationService.initialize();
+  runApp(MyApp());
+}
+```
+
+**7. UI de Configuração**
+```dart
+// Nas configurações, adicionar seção de notificações
+class NotificationSettingsSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final registry = NotificationParserRegistry();
+    final supportedBanks = registry.supportedBanks;
+
+    return Column(
+      children: [
+        SwitchListTile(
+          title: Text('Captura automática de transações'),
+          subtitle: Text('Detectar compras de notificações bancárias'),
+          value: settings.autoCapture,
+          onChanged: (value) { /* Ativar/desativar feature */ },
+        ),
+
+        if (settings.autoCapture)
+          ListTile(
+            leading: Icon(Icons.security),
+            title: Text('Permissão de notificações'),
+            trailing: Icon(Icons.chevron_right),
+            onTap: () => NotificationsListener.openPermissionSettings(),
+          ),
+
+        ExpansionTile(
+          title: Text('Bancos suportados (${supportedBanks.length})'),
+          children: supportedBanks.map((bank) =>
+            ListTile(
+              leading: Icon(Icons.check_circle, color: Colors.green),
+              title: Text(bank),
+            )
+          ).toList(),
+        ),
+      ],
+    );
+  }
+}
+```
+
+**Packages Necessários:**
+```yaml
+dependencies:
+  flutter_notification_listener: ^2.1.0
+  flutter_local_notifications: ^17.0.0
+```
+
+**Modelo de Dados:**
+```dart
+// Adicionar campo sourceBank ao TransactionData
+class TransactionData {
+  final double value;
+  final String description;
+  final DateTime date;
+  final String? sourceBank; // Novo campo
+
+  // ...
+}
+```
+
+**Como Adicionar Novos Bancos no Futuro:**
+
+**Passo 1:** Criar novo parser implementando `INotificationParser`
+```dart
+// lib/data/parsers/nubank_notification_parser.dart
+class NubankNotificationParser implements INotificationParser {
+  @override
+  String get packageName => 'com.nu.production';
+
+  @override
+  String get bankName => 'Nubank';
+
+  @override
+  bool canParse(NotificationEvent event) {
+    // Lógica específica do Nubank
+  }
+
+  @override
+  TransactionData? parse(NotificationEvent event) {
+    // Regex e lógica específica do Nubank
+  }
+}
+```
+
+**Passo 2:** Registrar no Registry
+```dart
+// Em notification_parser_registry.dart
+void _registerDefaultParsers() {
+  register(SantanderNotificationParser());
+  register(NubankNotificationParser()); // <- Adicionar esta linha
+}
+```
+
+**Pronto!** Novo banco integrado sem modificar código existente.
+
+**Casos Extremos a Tratar:**
+- Notificação de compra cancelada (não criar transação)
+- Formatos de data variados
+- Valores com/sem centavos
+- Caracteres especiais em nomes de estabelecimentos
+- Múltiplas notificações em sequência
+- Permissão negada pelo usuário
+- Service do listener parado
+
+**Limitações Conhecidas:**
+- **Android-only:** iOS não permite acesso a notificações de outros apps por restrições da plataforma
+- **Específico por banco:** Cada banco requer um parser dedicado devido a formatos diferentes de notificação
+- **Dependente de formato:** Se o banco mudar o formato da notificação, o parser precisa ser atualizado
+
+**Definition of Done:**
+- [ ] Package `flutter_notification_listener` adicionado ao `pubspec.yaml`
+- [ ] Interface `INotificationParser` criada em `lib/domain/parsers/`
+- [ ] `SantanderNotificationParser` implementado em `lib/data/parsers/`
+- [ ] `NotificationParserRegistry` implementado com padrão Singleton
+- [ ] `NotificationService` inicializado no `main.dart`
+- [ ] Parser de Santander com regex funcional para valor, data e merchant
+- [ ] Extração de dados testada com múltiplos formatos de notificação
+- [ ] `TransactionNotificationService` criando notificações locais com action button
+- [ ] Handler de ação "Adicionar Transação" implementado
+- [ ] Navegação para `ExpenseDetailsBottomSheet` com pré-preenchimento
+- [ ] Campo `sourceBank` adicionado ao modelo `TransactionData`
+- [ ] UI de configurações com toggle e lista de bancos suportados
+- [ ] Botão para abrir configurações de permissão do sistema
+- [ ] Testes unitários isolados para `SantanderNotificationParser`
+- [ ] Testes unitários para o `NotificationParserRegistry`
+- [ ] Testes cobrindo casos extremos (valores, datas, caracteres especiais)
+- [ ] Tratamento de permissões negadas com feedback ao usuário
+- [ ] Documentação de como adicionar novos bancos em `CONTRIBUTING.md`
+- [ ] Exemplo de stub/template para novos parsers comentado no código
 - [ ] Merge realizado para `develop`
 
 ---
@@ -1075,10 +1456,12 @@ As fases devem ser seguidas sequencialmente, mas dentro de cada fase há alguma 
 
 ## 🎊 Conclusão
 
-Este plano mapeia todas as **29 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
+Este plano mapeia todas as **31 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
 
 A **Fase 5** representa a primeira iteração de melhorias baseada em uso real, demonstrando a importância de testar o aplicativo e iterar sobre o design inicial.
 
 A **Fase 6** adiciona refinamentos críticos de UX: onboarding para novos usuários, gestão completa de transações, e padronização de inputs numéricos para o mercado brasileiro.
+
+A **Fase 7** introduz automação inteligente e identidade visual: ícone personalizado do app e captura automática de transações a partir de notificações bancárias, com arquitetura extensível para suportar múltiplos bancos.
 
 **Bom desenvolvimento! 🚀**
