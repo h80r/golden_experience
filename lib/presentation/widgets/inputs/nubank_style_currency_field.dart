@@ -58,8 +58,8 @@ class _NubankStyleCurrencyFieldState extends State<NubankStyleCurrencyField> {
     _controller = widget.controller ?? TextEditingController();
     _displayController = TextEditingController();
 
-    // Initialize with initial value if provided
-    if (widget.initialValue != null && widget.initialValue! > 0) {
+    // Initialize with initial value if provided (including zero values)
+    if (widget.initialValue != null && widget.initialValue! >= 0) {
       final cents = (widget.initialValue! * 100).toInt();
       _controller.text = cents.toString();
       _updateDisplay();

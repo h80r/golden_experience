@@ -254,8 +254,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _monthlySalaryController = TextEditingController();
     _reserveBalanceController = TextEditingController();
 
-    // Load existing settings
-    _loadSettings();
+    // Load existing settings after the frame is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadSettings();
+    });
   }
 
   Future<void> _exportBackup() async {
@@ -399,14 +401,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final settings = await appSettingsRepository.get();
 
     if (settings != null && mounted) {
-      _monthlySalaryController.text = settings.monthlySalary.toString();
-      _reserveBalanceController.text = settings.reserveBalance.toString();
-
+      // Update the form provider first, which will trigger a rebuild
       ref.read(appSettingsFormProvider.notifier).setFromExisting(
             monthlySalary: settings.monthlySalary,
             reserveBalance: settings.reserveBalance,
             maxReserveUsagePercentage: settings.maxReserveUsagePercentage,
           );
+
+      // Convert values to cents for the controllers
+      // This ensures the controllers are in sync with what the NubankStyleCurrencyField expects
+      final monthlySalaryCents = (settings.monthlySalary * 100).toInt();
+      final reserveBalanceCents = (settings.reserveBalance * 100).toInt();
+
+      // Update controllers with the internal representation (cents)
+      _monthlySalaryController.text = monthlySalaryCents.toString();
+      _reserveBalanceController.text = reserveBalanceCents.toString();
     }
   }
 

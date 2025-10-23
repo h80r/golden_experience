@@ -1351,3 +1351,571 @@ void _registerDefaultParsers() {
 - [~] Merge realizado para `develop` (pronto para merge, aguardando)
 
 ---
+
+## 🔧 Fase 8: Quarta Iteração - Correções Críticas e Refinamentos de UX
+
+**Objetivo:** Corrigir bugs críticos no sistema de input numérico, melhorar a experiência de uso do bottom sheet de transações e refinar interações da lista de transações.
+
+**Status:** 5 / 6 tarefas concluídas
+
+---
+
+### [x] F8-T1: Correção - Sistema de Input Numérico tipo Nubank
+
+**Branch:** `fix/nubank-style-input`
+
+**Descrição:**
+Corrigir bugs críticos no CurrencyTextField e implementar sistema de input numérico inspirado no Nubank, onde o usuário digita sem vírgula e os valores são construídos da direita para a esquerda (centavos primeiro).
+
+**Bugs Atuais a Corrigir:**
+1. **Configuração da Reserva:** Inserir "10056,23" resulta em reserva inicial de R$ 0,00
+2. **Configuração de Limite:** Inserir "10000" resulta em R$ 1$1000,00 (formatação incorreta)
+3. **Cadastro de Conta:** Campo só aceita o primeiro dígito digitado
+
+**Novo Comportamento (Tipo Nubank):**
+- Usuário digita apenas números (sem vírgula)
+- Sistema constrói o valor da direita para a esquerda
+- Exemplos:
+  - Digita `1` → R$ 0,01
+  - Digita `2` → R$ 0,12
+  - Digita `3` → R$ 1,23
+  - Digita `4` → R$ 12,34
+  - Para R$ 100,56 → Digita `10056`
+
+**Implementação:**
+1. **Novo Widget: `NubankStyleCurrencyField`**
+   ```dart
+   class NubankStyleCurrencyField extends StatefulWidget {
+     final String label;
+     final double? initialValue;
+     final ValueChanged<double> onChanged;
+     final String? errorText;
+
+     // TextInputFormatter customizado:
+     // - Aceita apenas dígitos
+     // - Constrói valor em centavos
+     // - Formata exibição como R$ X.XXX,XX
+   }
+   ```
+
+2. **Lógica de Conversão:**
+   - Input interno: string de dígitos (ex: "10056")
+   - Valor real: int em centavos → double (10056 → 100.56)
+   - Display: formatação brasileira (R$ 100,56)
+
+3. **Backspace:** Remove último dígito (R$ 1,23 → R$ 0,12)
+
+**Locais de Aplicação:**
+1. **ExpenseDetailsBottomSheet:** Campo de valor da transação
+2. **SettingsScreen:** Campos de salário mensal e saldo da reserva
+3. **AccountForm:** Campos de saldo inicial e limite de crédito
+4. **RecurringExpenseForm:** Campo de valor da recorrência
+
+**Definition of Done:**
+- [x] Widget `NubankStyleCurrencyField` criado em `lib/presentation/widgets/inputs/`
+- [x] TextInputFormatter customizado implementado
+- [x] Bugs de formatação corrigidos (reserva, limite, conta)
+- [x] Comportamento de construção da direita pra esquerda funcional
+- [x] Aplicado em todas as 4 telas mencionadas
+- [x] Testes de widget para o novo campo
+- [x] Testes de formatação e conversão de valores
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F8-T2: Melhoria - Bottom Sheet com Sistema de Abas
+
+**Branch:** `feature/transaction-details-tabs`
+
+**Descrição:**
+Dividir o `ExpenseDetailsBottomSheet` em duas páginas navegáveis para resolver o problema de campos ficarem ocultos quando o teclado do Android aparece.
+
+**Problema Atual:**
+- Quando o usuário toca em um campo de texto, o teclado abre
+- Campos inferiores (Notas, Categoria, Data) ficam escondidos atrás do teclado
+- Usuário precisa fechar o teclado para acessar esses campos
+- Experiência frustrante e lenta
+
+**Solução: Sistema de Abas/Páginas**
+
+**Página 1 (Dados Principais):**
+- ✅ Valor
+- ✅ Descrição
+- ✅ Conta (dropdown)
+- ✅ Débito/Crédito (toggle buttons)
+
+**Página 2 (Dados Complementares):**
+- ✅ Notas (opcional)
+- ✅ Categoria (dropdown)
+- ✅ Data (date picker)
+
+**Implementação:**
+
+1. **Estrutura com PageView:**
+   ```dart
+   class ExpenseDetailsBottomSheet extends ConsumerStatefulWidget {
+     // PageController para navegação entre páginas
+     final _pageController = PageController();
+     int _currentPage = 0;
+
+     // PageView com 2 páginas
+     // Indicador de página (dots)
+     // Botões "Próximo" / "Anterior"
+   }
+   ```
+
+2. **Navegação:**
+   - **Página 1:** Botão "Próximo" no canto inferior direito
+   - **Página 2:** Botão "Anterior" no canto inferior esquerdo
+   - Indicador visual de página atual (dots ou barra)
+   - Swipe horizontal para alternar (opcional)
+
+3. **Validação:**
+   - Campos obrigatórios da Página 1 validados antes de permitir "Próximo"
+   - Botão "Salvar" só visível na Página 2
+   - Botão "Cancelar" visível em ambas as páginas
+
+4. **Estado Compartilhado:**
+   - Manter o mesmo `ExpenseFormNotifier` do Riverpod
+   - Dados persistem ao navegar entre páginas
+   - Componente único para criação E edição (não criar telas separadas)
+
+**Definition of Done:**
+- [x] PageView implementado no `ExpenseDetailsBottomSheet`
+- [x] Página 1 com campos: Valor, Descrição, Conta, Débito/Crédito
+- [x] Página 2 com campos: Notas, Categoria, Data
+- [x] Navegação com botões "Próximo" / "Anterior" funcional
+- [x] Indicador visual de página atual
+- [x] Validação de campos obrigatórios antes de avançar
+- [x] Todos os campos visíveis mesmo com teclado aberto
+- [x] Componente continua funcionando para criação E edição
+- [x] Testes de widget atualizados
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F8-T3: Melhoria - Swipe-to-Delete com Undo no Toast
+
+**Branch:** `enhancement/slidable-delete`
+
+**Descrição:**
+Remover a ação de swipe-to-edit e melhorar o swipe-to-delete com padrão de "Undo" no toast de sucesso (similar ao Gmail), onde a exclusão só é efetivada após o usuário interagir em outro lugar da tela.
+
+**Mudanças de Comportamento:**
+
+1. **REMOVER: Swipe-to-Edit**
+   - Deslizar para a direita não deve mais editar
+   - Edição será feita apenas por **toque no card**
+
+2. **MELHORAR: Swipe-to-Delete com Undo Toast**
+   - Usuário arrasta card para a esquerda (swipe-to-delete)
+   - Card sai da tela com animação
+   - SnackBar/Toast aparece: **"Transação excluída"** com botão **"Desfazer"**
+   - **Exclusão NÃO é executada imediatamente**
+   - **Toast NÃO desaparece por timeout** - permanece visível até interação do usuário
+   - Se usuário clicar **"Desfazer"**: card volta para a lista, nenhuma alteração no banco
+   - Se usuário clicar **em qualquer outro lugar da tela**: toast fecha e exclusão é efetivada (remove do banco, reverte saldo/limite)
+
+**Implementação:**
+
+**1. Manter Implementação Atual com `Dismissible`**
+```dart
+Dismissible(
+  key: ValueKey(transaction.id),
+  direction: DismissDirection.endToStart,
+  onDismissed: (direction) {
+    // NÃO deletar imediatamente, apenas mostrar toast com undo
+    _showUndoToast(context, transaction, index);
+  },
+  background: Container(
+    color: Colors.red,
+    alignment: Alignment.centerRight,
+    padding: EdgeInsets.only(right: 16),
+    child: Icon(Icons.delete, color: Colors.white),
+  ),
+  child: TransactionCard(
+    transaction: transaction,
+    onTap: () => _editTransaction(transaction),
+  ),
+)
+```
+
+**2. Toast com Undo (Similar ao Gmail)**
+```dart
+void _showUndoToast(BuildContext context, Transaction transaction, int index) {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+  // Remover da lista local (UI state), mas NÃO do banco ainda
+  setState(() {
+    _transactions.removeAt(index);
+  });
+
+  // SnackBar com ação de Undo (duração muito longa, fecha apenas por interação)
+  scaffoldMessenger.showSnackBar(
+    SnackBar(
+      content: Text('Transação excluída'),
+      action: SnackBarAction(
+        label: 'Desfazer',
+        onPressed: () {
+          // Restaurar na lista local (cancelar exclusão)
+          setState(() {
+            _transactions.insert(index, transaction);
+          });
+        },
+      ),
+      duration: Duration(days: 365), // Duração indefinida, não fecha por timeout
+      behavior: SnackBarBehavior.floating,
+      dismissDirection: DismissDirection.none, // Não permite swipe para fechar
+    ),
+  ).closed.then((reason) {
+    // Executar exclusão apenas se NÃO foi undo
+    if (reason != SnackBarClosedReason.action) {
+      _executeDelete(transaction);
+    }
+  });
+}
+
+// Adicionar GestureDetector na tela para detectar toques fora do toast
+Widget build(BuildContext context) {
+  return GestureDetector(
+    onTap: () {
+      // Fechar SnackBar ao tocar em qualquer lugar da tela
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    },
+    child: Scaffold(
+      // ... resto da tela
+    ),
+  );
+}
+
+Future<void> _executeDelete(Transaction transaction) async {
+  // Deletar do banco
+  await ref.read(transactionRepositoryProvider).delete(transaction.id);
+
+  // Reverter saldo/limite da conta
+  final account = await ref.read(accountRepositoryProvider).getById(transaction.accountId);
+  if (account != null) {
+    if (transaction.isDebit) {
+      await ref.read(accountRepositoryProvider).updateBalance(
+        transaction.accountId,
+        account.balance + transaction.value, // Reverter débito
+      );
+    } else {
+      await ref.read(accountRepositoryProvider).updateCreditUsed(
+        transaction.accountId,
+        account.creditUsed - transaction.value, // Reverter crédito
+      );
+    }
+  }
+}
+```
+
+**3. Estado Local Temporário**
+- Manter uma cópia local da lista de transações no estado do widget
+- Ao fazer swipe-to-delete, remover da lista local mas NÃO do banco
+- Ao clicar "Desfazer", restaurar na lista local
+- Toast fica visível indefinidamente (duração de 365 dias, não fecha por timeout)
+- Adicionar `GestureDetector` na tela para detectar toque em qualquer lugar
+- Ao tocar em qualquer lugar da tela, fechar o toast e executar delete no banco
+
+**Fluxo de Exclusão:**
+1. Usuário arrasta card para esquerda
+2. Card sai da tela com animação
+3. Toast aparece: "Transação excluída" com botão "Desfazer"
+4. Toast permanece visível **indefinidamente** (não fecha por timeout)
+5. Exclusão fica **pendente** (não executada ainda)
+6. **SE** usuário clicar "Desfazer": card volta, toast fecha, nada acontece no banco
+7. **SE** usuário clicar em qualquer outro lugar da tela: toast fecha e exclusão é efetivada
+   - Transaction é removida do banco
+   - Saldo/limite da conta é revertido
+   - Lista é atualizada reativamente
+
+**Definition of Done:**
+- [x] Swipe-to-edit removido completamente
+- [x] Manter implementação atual com `Dismissible` (não adicionar flutter_slidable)
+- [x] Toast com botão "Desfazer" implementado
+- [x] Toast NÃO fecha por timeout (duration indefinido)
+- [x] `GestureDetector` implementado para detectar toque em qualquer lugar da tela
+- [x] Exclusão NÃO executada imediatamente ao swipe
+- [x] Clicar "Desfazer" restaura o card na lista e fecha o toast
+- [x] Clicar em qualquer lugar da tela fecha o toast e executa a exclusão
+- [x] Toque no card abre `ExpenseDetailsBottomSheet` para edição
+- [x] Lógica de reversão de saldo/limite mantida
+- [x] Estado local temporário gerenciado corretamente
+- [x] Testes de widget atualizados
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F8-T4: Feature - Alternar Dashboard/Histórico na Aba Início
+
+**Branch:** `feature/toggle-dashboard-history`
+
+**Descrição:**
+Permitir que o usuário alterne entre a visualização do Dashboard e o Histórico Completo de Transações ao tocar no botão da aba "Início" na navegação inferior, com suporte ao botão voltar do Android.
+
+**Comportamento Desejado:**
+
+1. **Estado Inicial:** Aba "Início" mostra o `DashboardScreen`
+
+2. **Primeiro Toque na Aba:** Alterna para `TransactionsListScreen` (histórico completo)
+
+3. **Segundo Toque na Aba:** Volta para `DashboardScreen`
+
+4. **Botão Voltar do Android:**
+   - Se estiver em `TransactionsListScreen`, voltar para `DashboardScreen`
+   - Se estiver em `DashboardScreen`, sair do app
+
+**Implementação:**
+
+1. **Estado de Toggle no MainScreen:**
+   ```dart
+   @riverpod
+   class DashboardViewState extends _$DashboardViewState {
+     @override
+     DashboardView build() => DashboardView.dashboard;
+
+     void toggle() {
+       state = state == DashboardView.dashboard
+           ? DashboardView.transactions
+           : DashboardView.dashboard;
+     }
+
+     void showDashboard() => state = DashboardView.dashboard;
+   }
+
+   enum DashboardView { dashboard, transactions }
+   ```
+
+2. **Modificar MainScreen:**
+   ```dart
+   // No onTap do BottomNavigationBarItem do índice 0 (Início)
+   void _onTabTapped(int index) {
+     if (index == 0) {
+       // Alternar entre dashboard e histórico
+       ref.read(dashboardViewStateProvider.notifier).toggle();
+     } else {
+       // Outras abas (Recorrências, Contas)
+       setState(() => _selectedIndex = index);
+     }
+   }
+
+   // No body do Scaffold
+   Widget _buildBody() {
+     if (_selectedIndex == 0) {
+       final view = ref.watch(dashboardViewStateProvider);
+       return view == DashboardView.dashboard
+           ? const DashboardScreen()
+           : const TransactionsListScreen();
+     }
+     // ... outras abas
+   }
+   ```
+
+3. **WillPopScope para Botão Voltar:**
+   ```dart
+   WillPopScope(
+     onWillPop: () async {
+       final view = ref.read(dashboardViewStateProvider);
+       if (view == DashboardView.transactions) {
+         ref.read(dashboardViewStateProvider.notifier).showDashboard();
+         return false; // Não sair do app
+       }
+       return true; // Sair do app
+     },
+     child: Scaffold(...),
+   )
+   ```
+
+4. **Indicação Visual:**
+   - Aba "Início" pode mudar ícone conforme estado (opcional)
+   - Dashboard: `Icons.home`
+   - Histórico: `Icons.history` ou `Icons.list`
+
+**Definition of Done:**
+- [x] Provider `DashboardViewState` criado
+- [x] Lógica de toggle implementada no `MainScreen`
+- [x] Tocar na aba "Início" alterna entre Dashboard e Histórico
+- [x] Botão voltar do Android retorna para Dashboard antes de sair
+- [x] `WillPopScope` configurado corretamente
+- [x] Transição suave entre as telas
+- [x] Indicação visual do estado atual (opcional)
+- [x] Testes de widget para a navegação
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F8-T5: Correção - Golden Experience em Permissões de Notificação
+
+**Branch:** `fix/notification-permission-visibility`
+
+**Descrição:**
+Investigar e corrigir o problema que impede o aplicativo "Golden Experience" de aparecer na lista de apps com acesso a notificações nas configurações do Android.
+
+**Problema Reportado:**
+- Nas configurações do sistema Android, em "Acesso às notificações", o app não aparece como opção
+- Isso impede o usuário de conceder permissão para o `flutter_notification_listener`
+- Feature de captura automática de transações fica inutilizável
+
+**Causas Possíveis:**
+
+1. **AndroidManifest.xml incompleto:**
+   - Falta declaração do `NotificationListenerService`
+   - Falta intent-filter correto
+   - Permissões não declaradas
+
+2. **Configuração do Service:**
+   - Service não registrado corretamente
+   - Nome do service incorreto
+   - Falta metadata
+
+**Investigação Necessária:**
+
+1. **Verificar AndroidManifest.xml:**
+   ```xml
+   <service
+       android:name="flutter_notification_listener.NotificationsListenerService"
+       android:label="@string/app_name"
+       android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+       android:exported="true">
+       <intent-filter>
+           <action android:name="android.service.notification.NotificationListenerService" />
+       </intent-filter>
+   </service>
+   ```
+
+2. **Verificar Permissões:**
+   ```xml
+   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+   <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+       tools:ignore="ProtectedPermissions" />
+   ```
+
+3. **Verificar Inicialização do Service:**
+   ```dart
+   // No main.dart
+   await NotificationsListener.initialize();
+   ```
+
+4. **Testar Fluxo de Permissão:**
+   - Abrir configurações via `NotificationsListener.openPermissionSettings()`
+   - Verificar se app aparece na lista
+   - Conceder permissão manualmente
+   - Confirmar se service inicia corretamente
+
+**Correções Esperadas:**
+- App aparece na lista "Acesso às notificações"
+- Usuário consegue ativar/desativar permissão
+- `hasPermission` retorna `true` após concessão
+- Service inicia e escuta notificações corretamente
+
+**Definition of Done:**
+- [x] Causa raiz identificada e documentada
+- [x] `AndroidManifest.xml` corrigido com declarações necessárias
+- [x] Permissões adicionadas corretamente
+- [x] App aparece em Configurações > Acesso às notificações
+- [x] Usuário consegue conceder permissão manualmente
+- [x] Service inicia e funciona após permissão concedida
+- [x] Testes manuais em dispositivo físico/emulador
+- [x] Merge realizado para `develop`
+
+---
+
+### [ ] F8-T6: Melhoria - File Picker para Exportação de Backup
+
+**Branch:** `feature/backup-file-picker`
+
+**Descrição:**
+Adicionar funcionalidade de seleção de pasta de destino ao exportar backup, permitindo que o usuário escolha onde salvar o arquivo JSON em vez de usar um diretório fixo.
+
+**Problema Atual:**
+- Exportação de backup salva automaticamente em diretório fixo (Documents)
+- Usuário não tem controle sobre onde o arquivo é salvo
+- Dificulta organização de backups em pastas específicas
+
+**Solução: File Picker Nativo**
+
+**Package a Adicionar:**
+```yaml
+dependencies:
+  file_picker: ^8.1.6
+```
+
+**Implementação:**
+
+1. **Modificar Método de Exportação:**
+   ```dart
+   Future<void> exportBackup(BuildContext context) async {
+     try {
+       // Gerar JSON do backup
+       final backupData = await _generateBackupJson();
+
+       // Solicitar ao usuário escolher local de salvamento
+       String? outputPath = await FilePicker.platform.saveFile(
+         dialogTitle: 'Salvar Backup',
+         fileName: 'golden_experience_backup_${DateTime.now().millisecondsSinceEpoch}.json',
+         type: FileType.custom,
+         allowedExtensions: ['json'],
+       );
+
+       if (outputPath == null) {
+         // Usuário cancelou
+         return;
+       }
+
+       // Salvar arquivo no caminho escolhido
+       final file = File(outputPath);
+       await file.writeAsString(backupData);
+
+       // Feedback de sucesso com caminho completo
+       if (context.mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(
+             content: Text('Backup salvo em:\n$outputPath'),
+             duration: Duration(seconds: 4),
+           ),
+         );
+       }
+     } catch (e) {
+       // Tratamento de erro
+       if (context.mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text('Erro ao salvar backup: $e')),
+         );
+       }
+     }
+   }
+   ```
+
+2. **UI na Tela de Configurações:**
+   ```dart
+   ListTile(
+     leading: Icon(Icons.upload_file),
+     title: Text('Exportar Backup'),
+     subtitle: Text('Salvar todos os dados em arquivo JSON'),
+     trailing: Icon(Icons.chevron_right),
+     onTap: () => exportBackup(context),
+   )
+   ```
+
+3. **Feedback Visual:**
+   - Dialog de carregamento enquanto gera o JSON
+   - SnackBar com caminho completo do arquivo salvo
+   - Mensagem de erro caso falhe
+
+**Considerações Android:**
+- File picker abre interface nativa do Android (Storage Access Framework)
+- Usuário pode salvar em Downloads, Google Drive, etc.
+- Arquivo fica acessível para compartilhamento
+
+**Definition of Done:**
+- [x] Package `file_picker` adicionado ao `pubspec.yaml`
+- [x] Método de exportação modificado para usar file picker
+- [x] Dialog de seleção de pasta funcional
+- [x] Arquivo salvo no local escolhido pelo usuário
+- [x] Feedback visual com caminho completo do arquivo
+- [x] Tratamento de erro caso salvamento falhe
+- [x] Testes manuais em dispositivo Android
+- [x] Merge realizado para `develop`
+
+---

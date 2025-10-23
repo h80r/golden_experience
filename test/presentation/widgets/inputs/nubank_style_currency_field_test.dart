@@ -424,5 +424,44 @@ void main() {
       // Widget should handle focus state internally
       expect(find.byType(NubankStyleCurrencyField), findsOneWidget);
     });
+
+    testWidgets('initializes with zero value correctly',
+        (WidgetTester tester) async {
+      // This test verifies the fix for the bug where zero values weren't initialized
+      // The fix changed the condition from initialValue > 0 to initialValue >= 0
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: NubankStyleCurrencyField(
+              label: 'Valor',
+              controller: controller,
+              initialValue: 0.0,
+            ),
+          ),
+        ),
+      );
+
+      // The internal controller should have '0' (representing 0 cents)
+      expect(controller.text, '0');
+    });
+
+    testWidgets('initializes with positive value correctly',
+        (WidgetTester tester) async {
+      // This test verifies that positive values still work correctly after the fix
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: NubankStyleCurrencyField(
+              label: 'Valor',
+              controller: controller,
+              initialValue: 50.25,
+            ),
+          ),
+        ),
+      );
+
+      // The internal controller should have '5025' (representing 50.25 in cents)
+      expect(controller.text, '5025');
+    });
   });
 }
