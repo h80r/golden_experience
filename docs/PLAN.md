@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 39
-**Concluídas:** 27 / 39 (69%)
+**Concluídas:** 29 / 39 (74%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -72,7 +72,7 @@ main (develop)
 - **Fase 6 - Segunda Iteração:** 3 / 3 (100%)
 - **Fase 7 - Terceira Iteração:** 2 / 2 (100%)
 - **Fase 8 - Quarta Iteração:** 5 / 6 (83%)
-- **Fase 9 - Quinta Iteração:** 0 / 2 (0%)
+- **Fase 9 - Quinta Iteração:** 2 / 2 (100%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -154,16 +154,16 @@ class SettingsScreen extends ConsumerWidget {
 ```
 
 **Definition of Done:**
-- [ ] Causa raiz do bug identificada e documentada
-- [ ] Valores de salário e reserva carregam corretamente ao abrir a tela
-- [ ] Campos de input exibem os valores formatados corretamente (ex: R$ 5.000,00)
-- [ ] Alterações nos valores são persistidas e recarregam corretamente
-- [ ] Testes de widget atualizados para cobrir o carregamento de valores
-- [ ] Merge realizado para `develop`
+- [x] Causa raiz do bug identificada e documentada
+- [x] Valores de salário e reserva carregam corretamente ao abrir a tela
+- [x] Campos de input exibem os valores formatados corretamente (ex: R$ 5.000,00)
+- [x] Alterações nos valores são persistidas e recarregam corretamente
+- [x] Testes de widget atualizados para cobrir o carregamento de valores
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F9-T2: Melhoria - Padronização do App Bar nas Telas Principais
+### [x] F9-T2: Melhoria - Padronização do App Bar nas Telas Principais
 
 **Branch:** `enhancement/standardize-app-bar`
 
@@ -294,17 +294,17 @@ class AccountsScreen extends ConsumerWidget {
 - **Center Title:** false (alinhado à esquerda)
 
 **Definition of Done:**
-- [ ] Widget `StandardAppBar` criado em `lib/presentation/widgets/common/`
-- [ ] App bar padronizado aplicado na `DashboardScreen`
-- [ ] App bar padronizado aplicado na `RecurringExpensesScreen`
-- [ ] App bar padronizado aplicado na `AccountsScreen`
-- [ ] Botão de configurações funcional em todas as telas
-- [ ] Navegação para `SettingsScreen` funcionando corretamente
-- [ ] Design consistente com as especificações do design system
-- [ ] Ações adicionais (botões de adicionar) preservadas onde necessário
-- [ ] Testes de widget para o `StandardAppBar`
-- [ ] Testes de widget atualizados para as telas modificadas
-- [ ] Merge realizado para `develop`
+- [x] Widget `StandardAppBar` criado em `lib/presentation/widgets/common/`
+- [x] App bar padronizado aplicado na `DashboardScreen`
+- [x] App bar padronizado aplicado na `RecurringExpensesScreen`
+- [x] App bar padronizado aplicado na `AccountsScreen`
+- [x] Botão de configurações funcional em todas as telas
+- [x] Navegação para `SettingsScreen` funcionando corretamente
+- [x] Design consistente com as especificações do design system
+- [x] Ações adicionais (botões de adicionar) preservadas onde necessário
+- [x] Testes de widget para o `StandardAppBar`
+- [x] Testes de widget atualizados para as telas modificadas
+- [~] Merge realizado para `develop`
 
 ---
 

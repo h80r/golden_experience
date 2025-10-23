@@ -12,6 +12,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/buttons/primary_button.dart';
 import '../widgets/buttons/secondary_button.dart';
+import '../widgets/common/standard_app_bar.dart';
 import '../widgets/inputs/nubank_style_currency_field.dart';
 import '../widgets/inputs/reserve_percentage_slider.dart';
 import '../widgets/settings/notification_settings_section.dart';
@@ -34,13 +35,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final backupState = ref.watch(backupProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Configurações'),
-        backgroundColor: AppColors.background,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+      appBar: StandardAppBar(
+        title: 'Configurações',
+        showSettings: false,
       ),
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
@@ -275,7 +272,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // Show file picker dialog for user to select save location
       final outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Salvar Backup',
-        fileName: 'golden_experience_backup_${DateTime.now().millisecondsSinceEpoch}.json',
+        fileName:
+            'golden_experience_backup_${DateTime.now().millisecondsSinceEpoch}.json',
         type: FileType.custom,
         allowedExtensions: ['json'],
         bytes: bytes,
@@ -420,7 +418,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _onMaxReservePercentageChanged(double value) {
-    ref.read(appSettingsFormProvider.notifier)
+    ref
+        .read(appSettingsFormProvider.notifier)
         .updateMaxReserveUsagePercentage(value);
   }
 

@@ -6,6 +6,7 @@ import '../../data/providers/repository_providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
+import '../widgets/common/standard_app_bar.dart';
 import '../widgets/recurring/recurring_expense_form_bottom_sheet.dart';
 
 /// RecurringExpensesScreen - Screen for managing recurring expenses
@@ -18,13 +19,7 @@ class RecurringExpensesScreen extends ConsumerWidget {
         ref.watch(recurringExpenseRepositoryProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Recorrências'),
-        centerTitle: false,
-        elevation: 0,
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
-      ),
+      appBar: const StandardAppBar(title: 'Recorrências'),
       body: StreamBuilder<List<RecurringExpenseModel>>(
         stream: recurringExpenseRepository.watchAll(),
         builder: (context, snapshot) {

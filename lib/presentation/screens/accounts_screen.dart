@@ -7,6 +7,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/accounts/account_form_bottom_sheet.dart';
+import '../widgets/common/standard_app_bar.dart';
 
 /// AccountsScreen - Screen for managing accounts
 class AccountsScreen extends ConsumerWidget {
@@ -17,13 +18,7 @@ class AccountsScreen extends ConsumerWidget {
     final accountRepository = ref.watch(accountRepositoryProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Contas'),
-        centerTitle: false,
-        elevation: 0,
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
-      ),
+      appBar: const StandardAppBar(title: 'Contas'),
       body: StreamBuilder<List<AccountModel>>(
         stream: accountRepository.watchAll(),
         builder: (context, snapshot) {

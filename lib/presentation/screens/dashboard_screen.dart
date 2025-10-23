@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/expense/expense_details_bottom_sheet.dart';
 import '../widgets/dashboard/main_card.dart';
 import '../widgets/dashboard/secondary_card.dart';
+import '../widgets/common/standard_app_bar.dart';
 import '../state/expense_form_notifier.dart';
 import '../../domain/usecases/providers/usecase_providers.dart';
 import '../../data/providers/repository_providers.dart';
 import '../../presentation/theme/app_colors.dart';
 import '../../presentation/theme/app_spacing.dart';
-import 'settings_screen.dart';
 
 /// DashboardScreen - The main dashboard showing financial overview
 class DashboardScreen extends ConsumerWidget {
@@ -128,22 +128,7 @@ class DashboardScreen extends ConsumerWidget {
     final dashboardDataAsync = ref.watch(dashboardDataStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Início'),
-        backgroundColor: AppColors.background,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+      appBar: const StandardAppBar(title: 'Início'),
       backgroundColor: AppColors.background,
       body: dashboardDataAsync.when(
         data: (dashboardData) => SingleChildScrollView(

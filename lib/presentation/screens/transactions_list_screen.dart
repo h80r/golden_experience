@@ -9,6 +9,7 @@ import '../state/dashboard_view_notifier.dart';
 import '../state/expense_form_notifier.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import '../widgets/common/standard_app_bar.dart';
 import '../widgets/expense/expense_details_bottom_sheet.dart';
 import '../widgets/transactions/transaction_card.dart';
 import '../widgets/transactions/transaction_filters_sheet.dart';
@@ -65,45 +66,14 @@ class _TransactionsListScreenState
   Completer<bool>? _pendingDismissCompleter;
 
   @override
-  void initState() {
-    super.initState();
-    // Listen to scroll events to dismiss pending toast
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    // Complete any pending dismiss with true (proceed with deletion)
-    _pendingDismissCompleter?.complete(true);
-    super.dispose();
-  }
-
-  /// Called when user scrolls the list
-  void _onScroll() {
-    if (_pendingDismissCompleter != null && !_pendingDismissCompleter!.isCompleted) {
-      _dismissPendingToast();
-    }
-  }
-
-  /// Dismiss pending toast and trigger deletion
-  void _dismissPendingToast() {
-    if (_pendingDismissCompleter != null && !_pendingDismissCompleter!.isCompleted) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      _pendingDismissCompleter!.complete(true);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final transactionsAsync = ref.watch(transactionsStreamProvider);
     final accountsAsync = ref.watch(accountsStreamProvider);
     final categoriesAsync = ref.watch(categoriesStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Transações'),
-        backgroundColor: AppColors.background,
+      appBar: StandardAppBar(
+        title: 'Transações',
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -111,7 +81,8 @@ class _TransactionsListScreenState
             ref.read(dashboardViewProvider.notifier).showDashboard();
           },
         ),
-        actions: [
+        showSettings: false,
+        additionalActions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () {
@@ -256,7 +227,8 @@ class _TransactionsListScreenState
                               ),
                             ),
                             confirmDismiss: (direction) async {
-                              return await _handleDismissConfirmation(cardData, index);
+                              return await _handleDismissConfirmation(
+                                  cardData, index);
                             },
                             child: TransactionCard(
                               transaction: cardData,
@@ -313,61 +285,28 @@ class _TransactionsListScreenState
     );
   }
 
-  /// Handle dismiss confirmation - called by Dismissible.confirmDismiss
-  /// Returns a Future that resolves to bool based on user action
-  Future<bool> _handleDismissConfirmation(TransactionCardData transaction, int index) async {
-    // Dismiss any existing toast first
-    _dismissPendingToast();
-
-    // Create new completer for this dismissal
-    _pendingDismissCompleter = Completer<bool>();
-
-    // Show undo toast
-    _showUndoToast(transaction);
-
-    // Wait for user decision (undo or confirm)
-    final shouldDelete = await _pendingDismissCompleter!.future;
-
-    // If confirmed, execute deletion
-    if (shouldDelete) {
-      await _executeDelete(transaction);
-    }
-
-    // Reset state
-    _pendingDismissCompleter = null;
-
-    return shouldDelete;
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    // Complete any pending dismiss with true (proceed with deletion)
+    _pendingDismissCompleter?.complete(true);
+    super.dispose();
   }
 
-  /// Show undo toast with action button
-  void _showUndoToast(TransactionCardData transaction) {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
+  @override
+  void initState() {
+    super.initState();
+    // Listen to scroll events to dismiss pending toast
+    _scrollController.addListener(_onScroll);
+  }
 
-    scaffoldMessenger.showSnackBar(
-      SnackBar(
-        content: const Text('Transação excluída'),
-        action: SnackBarAction(
-          label: 'Desfazer',
-          onPressed: () {
-            // Complete with false to keep item in list
-            if (_pendingDismissCompleter != null && !_pendingDismissCompleter!.isCompleted) {
-              _pendingDismissCompleter!.complete(false);
-            }
-          },
-        ),
-        // Duration indefinite - only closes when user interacts elsewhere or clicks action
-        duration: const Duration(days: 365),
-        behavior: SnackBarBehavior.floating,
-        dismissDirection: DismissDirection.none, // Don't allow swipe to close
-      ),
-    ).closed.then((reason) {
-      // Execute deletion only if SnackBar closed NOT by action (undo)
-      if (reason != SnackBarClosedReason.action) {
-        if (_pendingDismissCompleter != null && !_pendingDismissCompleter!.isCompleted) {
-          _pendingDismissCompleter!.complete(true);
-        }
-      }
-    });
+  /// Dismiss pending toast and trigger deletion
+  void _dismissPendingToast() {
+    if (_pendingDismissCompleter != null &&
+        !_pendingDismissCompleter!.isCompleted) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      _pendingDismissCompleter!.complete(true);
+    }
   }
 
   /// Execute the actual deletion from database
@@ -417,6 +356,33 @@ class _TransactionsListScreenState
           end: _customEndDate?.add(const Duration(days: 1)) ?? today
         );
     }
+  }
+
+  /// Handle dismiss confirmation - called by Dismissible.confirmDismiss
+  /// Returns a Future that resolves to bool based on user action
+  Future<bool> _handleDismissConfirmation(
+      TransactionCardData transaction, int index) async {
+    // Dismiss any existing toast first
+    _dismissPendingToast();
+
+    // Create new completer for this dismissal
+    _pendingDismissCompleter = Completer<bool>();
+
+    // Show undo toast
+    _showUndoToast(transaction);
+
+    // Wait for user decision (undo or confirm)
+    final shouldDelete = await _pendingDismissCompleter!.future;
+
+    // If confirmed, execute deletion
+    if (shouldDelete) {
+      await _executeDelete(transaction);
+    }
+
+    // Reset state
+    _pendingDismissCompleter = null;
+
+    return shouldDelete;
   }
 
   void _handleEditTransaction(
@@ -491,6 +457,14 @@ class _TransactionsListScreenState
     );
   }
 
+  /// Called when user scrolls the list
+  void _onScroll() {
+    if (_pendingDismissCompleter != null &&
+        !_pendingDismissCompleter!.isCompleted) {
+      _dismissPendingToast();
+    }
+  }
+
   void _showFiltersSheet(
     List<({int id, String name})> accounts,
     List<({int id, String name})> categories,
@@ -523,5 +497,42 @@ class _TransactionsListScreenState
         },
       ),
     );
+  }
+
+  /// Show undo toast with action button
+  void _showUndoToast(TransactionCardData transaction) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    scaffoldMessenger
+        .showSnackBar(
+          SnackBar(
+            content: const Text('Transação excluída'),
+            action: SnackBarAction(
+              label: 'Desfazer',
+              onPressed: () {
+                // Complete with false to keep item in list
+                if (_pendingDismissCompleter != null &&
+                    !_pendingDismissCompleter!.isCompleted) {
+                  _pendingDismissCompleter!.complete(false);
+                }
+              },
+            ),
+            // Duration indefinite - only closes when user interacts elsewhere or clicks action
+            duration: const Duration(days: 365),
+            behavior: SnackBarBehavior.floating,
+            dismissDirection:
+                DismissDirection.none, // Don't allow swipe to close
+          ),
+        )
+        .closed
+        .then((reason) {
+      // Execute deletion only if SnackBar closed NOT by action (undo)
+      if (reason != SnackBarClosedReason.action) {
+        if (_pendingDismissCompleter != null &&
+            !_pendingDismissCompleter!.isCompleted) {
+          _pendingDismissCompleter!.complete(true);
+        }
+      }
+    });
   }
 }
