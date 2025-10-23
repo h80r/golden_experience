@@ -60,8 +60,8 @@ main (develop)
 
 ## 📊 Progresso Geral
 
-**Total de Tarefas:** 39
-**Concluídas:** 29 / 39 (74%)
+**Total de Tarefas:** 56
+**Concluídas:** 34 / 56 (60%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -73,6 +73,10 @@ main (develop)
 - **Fase 7 - Terceira Iteração:** 2 / 2 (100%)
 - **Fase 8 - Quarta Iteração:** 5 / 6 (83%)
 - **Fase 9 - Quinta Iteração:** 2 / 2 (100%)
+- **Fase 10 - Correções Críticas de UI/UX:** 1 / 6 (16%)
+- **Fase 11 - Padronização e Melhorias de UX:** 0 / 5 (0%)
+- **Fase 12 - Estabilidade e Code Health:** 0 / 4 (0%)
+- **Fase 13 - Gestão Avançada de Contas:** 0 / 6 (0%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -81,240 +85,424 @@ main (develop)
 
 ---
 
-## 🎨 Fase 9: Quinta Iteração - Correções de UX e Padronização Visual
+## 🐛 Fase 10: Correções Críticas de UI/UX
 
-**Objetivo:** Corrigir bugs na tela de configurações e padronizar a interface do aplicativo com um app bar consistente em todas as telas principais.
+**Objetivo:** Corrigir bugs críticos de interface e comportamento que afetam a experiência do usuário no uso diário do aplicativo.
 
-**Status:** 0 / 2 tarefas concluídas
+**Status:** 1 / 6 tarefas concluídas
 
 ---
 
-### [ ] F9-T1: Correção - Exibição de Valores nas Configurações
+### [x] F10-T1: Correção - Reserve Slider Snap to Saved Percentage
 
-**Branch:** `fix/settings-values-display`
+**Branch:** `fix/reserve-slider-snap`
 
 **Descrição:**
-Corrigir o bug que impede a exibição correta dos valores de salário mensal e saldo da reserva inicial na tela de configurações.
+O slider de porcentagem da reserva na página de configurações inicia no 0 quando a página carrega e "encaixa" (snap) no valor correto logo depois, o que é uma experiência de UI ruim. Além disso, é uma experiência ruim ter que apertar o botão de salvar para que o valor seja aplicado.
+
+**Definition of Done:**
+- [x] Slider não pula ao carregar a página de configurações, já inicia no valor salvo
+- [x] Alterações no slider são aplicadas imediatamente sem necessidade de botão salvar
+- [x] Validar que todas as alterações da página de configuração são salvas automaticamente
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F10-T2: Correção - Automatic Capture Switch Persistence
+
+**Branch:** `fix/automatic-capture-switch`
+
+**Descrição:**
+O switch de captura automática de transações na página de configurações não persiste a seleção do usuário.
 
 **Problema Atual:**
-- Ao abrir a tela de configurações, os campos de "Salário Mensal" e "Saldo da Reserva" não exibem os valores salvos
-- Os valores estão persistidos no banco de dados, mas não são carregados corretamente na UI
-- Usuário precisa reinserir os valores cada vez que acessa a tela
+- Usuário ativa/desativa o switch de captura automática
+- Ao sair e retornar à página de configurações, o switch volta ao estado anterior
+- A configuração não está sendo salva no banco de dados ou não está sendo carregada corretamente
 
 **Investigação Necessária:**
+- Verificar se o método `updateSettings()` está sendo chamado ao trocar o switch
+- Confirmar que o valor está sendo persistido na tabela `AppSettings`
+- Verificar se o provider está recarregando o valor correto ao retornar à tela
 
-1. **Verificar Carregamento de Dados:**
-   - Confirmar que `AppSettingsRepository.getSettings()` retorna os valores corretos
-   - Verificar se o provider de settings está sendo observado corretamente
-   - Checar se há algum problema de inicialização do estado do formulário
+**Definition of Done:**
+- [ ] Switch persiste o estado corretamente entre navegações
+- [ ] Valor é salvo no banco de dados imediatamente ao alterar
+- [ ] Provider recarrega o valor correto ao retornar à tela
+- [ ] Testes de integração para verificar persistência
+- [ ] Merge realizado para `develop`
 
-2. **Verificar Widgets de Input:**
-   - Confirmar que os `NubankStyleCurrencyField` estão recebendo o `initialValue` corretamente
-   - Verificar se há algum problema de atualização do `TextEditingController`
-   - Checar se os valores estão sendo formatados corretamente ao carregar
+---
 
-**Possíveis Causas:**
-- Provider não está sendo assistido corretamente na `SettingsScreen`
-- `initialValue` não está sendo passado para os campos de input
-- Conversão de tipos incorreta (double → string formatada)
-- Estado do formulário não está sendo inicializado com os valores do banco
+### [ ] F10-T3: Correção - Credit Limit Visualization Bug
+
+**Branch:** `fix/credit-limit-display`
+
+**Descrição:**
+A visualização do limite de crédito está completamente quebrada quando valores decimais são inseridos (ex: tentativa de inserir 9,17 e 14000,00).
+
+**Problema Atual:**
+- Inserção de valores com vírgula decimal não funciona corretamente
+- Display do limite de crédito mostra valores incorretos ou formatação quebrada
+- Possível problema de parsing entre string formatada e valor numérico
+
+**Investigação Necessária:**
+- Verificar o widget de input usado para limite de crédito
+- Confirmar se está usando `NubankStyleCurrencyField` corretamente
+- Verificar conversão entre display formatado e valor armazenado no banco
+- Checar se há validação adequada para valores decimais
+
+**Definition of Done:**
+- [ ] Valores decimais são aceitos e exibidos corretamente
+- [ ] Formatação de moeda consistente (R$ 14.000,00)
+- [ ] Conversão correta entre UI e banco de dados
+- [ ] Validação de entrada implementada
+- [ ] Testes para diferentes formatos de entrada
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F10-T4: Correção - Duplicate R$ in Transfer Creation/Editing
+
+**Branch:** `fix/duplicate-currency-symbol`
+
+**Descrição:**
+Remove o símbolo R$ duplicado que aparece na tela de criação/edição de transferências.
+
+**Problema Atual:**
+- Símbolo R$ aparece duplicado no campo de valor
+- Pode estar sendo exibido tanto pelo label quanto pelo input field
+- Prejudica a legibilidade e experiência do usuário
 
 **Implementação Esperada:**
+- Remover uma das ocorrências do símbolo R$
+- Manter apenas o símbolo do ícone
+- Garantir consistência com outros campos de moeda no app
 
+**Definition of Done:**
+- [ ] Símbolo R$ aparece apenas uma vez no campo de valor
+- [ ] Consistência visual com outros campos de moeda
+- [ ] Testes de widget atualizados
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F10-T5: Correção - Value Field Disappearing on Save Button Click
+
+**Branch:** `fix/value-field-disappearing`
+
+**Descrição:**
+No momento em que o usuário clica no botão de salvar na aba de notas, o valor inserido desaparece do campo.
+
+**Problema Atual:**
+- Ao clicar em "Salvar" na aba de notas, o valor some
+- Pode estar relacionado a rebuild do widget ou perda de estado
+- Comportamento inconsistente entre as abas
+
+**Investigação Necessária:**
+- Verificar se há rebuild não intencional do widget
+- Confirmar se o estado do valor está sendo mantido entre as abas
+- Verificar se o `TextEditingController` está sendo descartado prematuramente
+- Checar se há algum `setState` que limpa o campo
+
+**Definition of Done:**
+- [ ] Valor permanece visível ao clicar em salvar
+- [ ] Estado do campo é mantido entre mudanças de aba
+- [ ] Não há rebuilds desnecessários que limpam o campo
+- [ ] Testes de widget para verificar persistência do valor
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F10-T6: Correção - Transaction Save Validation for Missing Value
+
+**Branch:** `fix/transaction-value-validation`
+
+**Descrição:**
+O botão de salvar na criação/edição de transações não valida a ausência de valor antes de tentar salvar.
+
+**Problema Atual:**
+- Usuário pode clicar em "Salvar" sem preencher o valor da transação
+- Não há feedback visual de erro
+- Pode causar crash ou salvar transação com valor zero/nulo
+
+**Implementação Esperada:**
+- Adicionar validação obrigatória para o campo de valor
+- Exibir mensagem de erro quando tentar salvar sem valor
+- Desabilitar botão de salvar ou destacar campo em vermelho quando inválido
+- Validação deve ocorrer tanto na aba de detalhes quanto na aba de notas
+
+**Definition of Done:**
+- [ ] Validação de valor obrigatório implementada
+- [ ] Mensagem de erro clara para o usuário
+- [ ] Feedback visual adequado (campo em destaque/botão desabilitado)
+- [ ] Validação funciona em ambas as abas (detalhes e notas)
+- [ ] Testes de validação implementados
+- [ ] Merge realizado para `develop`
+
+---
+
+## 🎨 Fase 11: Padronização e Melhorias de UX
+
+**Objetivo:** Padronizar a formatação de valores monetários e melhorar a experiência do usuário em inputs e seleções.
+
+**Status:** 0 / 5 tarefas concluídas
+
+---
+
+### [ ] F11-T1: Padronização - Monetary Value Formatting Across App
+
+**Branch:** `feature/consistent-monetary-formatting`
+
+**Descrição:**
+Padronizar a formatação de todos os valores monetários no aplicativo para usar o formato brasileiro consistente: R$ 99.990,99
+
+**Problema Atual:**
+- Dashboard exibe: R$ 99990,99
+- Inputs exibem: R$ 99.990,99
+- Falta de consistência visual entre diferentes telas
+- Dificulta leitura de valores grandes
+
+**Implementação Esperada:**
+1. **Criar Utility para Formatação:**
+   - Criar classe `CurrencyFormatter` em `lib/utils/`
+   - Método para formatar valores com separador de milhares e decimais
+   - Método para parsing de string formatada para double
+
+2. **Atualizar Dashboard:**
+   - Aplicar formatação consistente em todos os cards de valor
+   - Saldo disponível, total de gastos, previsão, etc.
+
+3. **Verificar Outros Locais:**
+   - Tela de histórico de transações
+   - Lista de despesas recorrentes
+   - Detalhes de contas
+   - Qualquer outro local que exiba valores monetários
+
+**Exemplo de Implementação:**
 ```dart
-class SettingsScreen extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final settingsAsync = ref.watch(appSettingsProvider);
+class CurrencyFormatter {
+  static final _formatter = NumberFormat.currency(
+    locale: 'pt_BR',
+    symbol: 'R\$',
+    decimalDigits: 2,
+  );
 
-    return settingsAsync.when(
-      data: (settings) => _buildForm(context, settings),
-      loading: () => Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('Erro ao carregar configurações')),
-    );
+  static String format(double value) {
+    return _formatter.format(value);
   }
 
-  Widget _buildForm(BuildContext context, AppSettings settings) {
-    return Column(
-      children: [
-        NubankStyleCurrencyField(
-          label: 'Salário Mensal',
-          initialValue: settings.monthlySalary, // Deve exibir o valor salvo
-          onChanged: (value) => _updateSalary(value),
-        ),
-        NubankStyleCurrencyField(
-          label: 'Saldo da Reserva Inicial',
-          initialValue: settings.reserveBalance, // Deve exibir o valor salvo
-          onChanged: (value) => _updateReserve(value),
-        ),
-      ],
-    );
+  static double? parse(String formattedValue) {
+    try {
+      final cleanValue = formattedValue
+          .replaceAll('R\$', '')
+          .replaceAll('.', '')
+          .replaceAll(',', '.')
+          .trim();
+      return double.parse(cleanValue);
+    } catch (e) {
+      return null;
+    }
   }
 }
 ```
 
 **Definition of Done:**
-- [x] Causa raiz do bug identificada e documentada
-- [x] Valores de salário e reserva carregam corretamente ao abrir a tela
-- [x] Campos de input exibem os valores formatados corretamente (ex: R$ 5.000,00)
-- [x] Alterações nos valores são persistidas e recarregam corretamente
-- [x] Testes de widget atualizados para cobrir o carregamento de valores
-- [x] Merge realizado para `develop`
+- [ ] Classe `CurrencyFormatter` criada com métodos format e parse
+- [ ] Dashboard usa formatação consistente (R$ 99.990,99)
+- [ ] Todas as telas do app exibem valores com o mesmo formato
+- [ ] Testes unitários para `CurrencyFormatter`
+- [ ] Verificação visual em todas as telas principais
+- [ ] Merge realizado para `develop`
 
 ---
 
-### [x] F9-T2: Melhoria - Padronização do App Bar nas Telas Principais
+### [ ] F11-T2: Melhoria - Allow Future Date Selection in Transactions
 
-**Branch:** `enhancement/standardize-app-bar`
+**Branch:** `feature/future-date-transactions`
 
 **Descrição:**
-Padronizar o estilo do app bar em todas as telas principais do aplicativo (Recorrências e Contas), aplicando o mesmo design usado na tela de Início, que inclui um botão de configurações no canto superior direito.
+Permitir que o usuário selecione datas futuras ao criar/editar transações.
 
 **Problema Atual:**
-- A tela de Início (Dashboard) possui um app bar com botão de configurações e design consistente
-- As telas de Recorrências e Contas usam app bars diferentes ou padrões
-- Falta de consistência visual prejudica a experiência do usuário
-- Não há acesso rápido às configurações a partir de todas as telas principais
+- Date picker limita seleção apenas para datas passadas e presente
+- Usuários não podem registrar transações agendadas/futuras
+- Limita casos de uso como planejamento de gastos futuros
 
-**Objetivo:**
-Criar um componente `StandardAppBar` reutilizável que será usado em todas as telas principais, garantindo:
-- Design visual consistente (cores, elevação, tipografia)
-- Botão de configurações sempre visível no canto superior direito
-- Navegação para `SettingsScreen` ao tocar no botão
-- Título personalizado por tela
+**Implementação Esperada:**
+- Remover restrição de data máxima no date picker
+- Permitir seleção de qualquer data futura
+- Considerar adicionar indicador visual para transações futuras
+- Atualizar lógica de dashboard para considerar/excluir transações futuras do cálculo atual
 
-**Implementação:**
+**Decisões de Design:**
+1. Transações futuras devem ser incluídas no cálculo do "quanto posso gastar"?
+   - Opção A: Incluir como gastos planejados
+   - Opção B: Excluir até a data chegar
+   - Opção C: Adicionar toggle nas configurações
 
-**1. Criar Widget Reutilizável:**
+**Definition of Done:**
+- [ ] Date picker aceita datas futuras
+- [ ] Decisão tomada sobre inclusão no cálculo do dashboard
+- [ ] Lógica do dashboard atualizada conforme decisão
+- [ ] Indicador visual para transações futuras (opcional)
+- [ ] Testes para criação de transações futuras
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F11-T3: Melhoria - Auto-Capitalize Text Inputs
+
+**Branch:** `feature/auto-capitalize-inputs`
+
+**Descrição:**
+Forçar a primeira letra em maiúscula em todos os campos de entrada de texto do aplicativo (descrição, notas, etc.).
+
+**Problema Atual:**
+- Usuário digita descrições começando com letra minúscula
+- Falta de padronização na apresentação dos dados
+- Aparência menos profissional
+
+**Implementação Esperada:**
+- Aplicar `TextCapitalization.sentences` em todos os `TextField`/`TextFormField`
+- Atualizar widgets customizados (`CustomTextField`, `NubankStyleTextField`, etc.)
+- Garantir que a capitalização funciona em todos os formulários:
+  - Descrição de transações
+  - Notas de transações
+  - Nome de contas
+  - Nome de categorias
+  - Descrição de despesas recorrentes
+
+**Exemplo:**
 ```dart
-// lib/presentation/widgets/common/standard_app_bar.dart
+TextField(
+  textCapitalization: TextCapitalization.sentences,
+  // ... outros parâmetros
+)
+```
 
-class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  final List<Widget>? additionalActions;
+**Definition of Done:**
+- [ ] Todos os campos de texto usam `TextCapitalization.sentences`
+- [ ] Widgets customizados atualizados para suportar capitalização
+- [ ] Verificação manual em todos os formulários do app
+- [ ] Testes de widget atualizados
+- [ ] Merge realizado para `develop`
 
-  const StandardAppBar({
+---
+
+### [ ] F11-T4: Melhoria - Improve Dropdown UI Consistency
+
+**Branch:** `feature/consistent-dropdown-ui`
+
+**Descrição:**
+Melhorar a interface do dropdown em todo o aplicativo para ter consistência com o design system.
+
+**Problema Atual:**
+- Dropdowns no bottom sheet de transações e resto do app não seguem design consistente
+- Falta de alinhamento visual com os outros inputs do tipo Nubank
+- Experiência de usuário inconsistente
+
+**Implementação Esperada:**
+1. **Criar Widget Customizado:**
+   - Criar `NubankStyleDropdown` em `lib/presentation/widgets/inputs/`
+   - Design consistente com `NubankStyleCurrencyField`
+   - Mesma altura, padding, borda, e estilo de label
+
+2. **Aplicar em Todos os Dropdowns:**
+   - Seleção de conta (bottom sheet de transações)
+   - Seleção de categoria (bottom sheet de transações)
+   - Tipo de transação (receita/despesa/transferência)
+   - Qualquer outro dropdown no app
+
+3. **Design System:**
+   - Altura: 56px (consistente com outros inputs)
+   - Borda: 1px sólida com border radius
+   - Label: Mesmo estilo dos outros inputs
+   - Cor de fundo: Branca
+   - Ícone de seta: Alinhado à direita
+   - Ripple effect ao tocar
+
+**Exemplo de Implementação:**
+```dart
+class NubankStyleDropdown<T> extends StatelessWidget {
+  final String label;
+  final T? value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?>? onChanged;
+  final String? errorText;
+
+  const NubankStyleDropdown({
     Key? key,
-    required this.title,
-    this.additionalActions,
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+    this.errorText,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      title: Text(
-        title,
-        style: AppTypography.h2.copyWith(color: AppColors.textPrimary),
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.borderPrimary),
+        borderRadius: BorderRadius.circular(8),
       ),
-      backgroundColor: AppColors.background,
-      elevation: 0,
-      centerTitle: false,
-      actions: [
-        ...?additionalActions,
-        IconButton(
-          icon: Icon(Icons.settings_outlined, color: AppColors.iconPrimary),
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const SettingsScreen()),
-          ),
-          tooltip: 'Configurações',
+      child: DropdownButtonFormField<T>(
+        value: value,
+        items: items,
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          labelText: label,
+          errorText: errorText,
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
-      ],
-    );
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-}
-```
-
-**2. Aplicar nas Telas Principais:**
-
-**DashboardScreen (já implementado, validar consistência):**
-```dart
-class DashboardScreen extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: StandardAppBar(title: 'Início'),
-      body: _buildDashboardContent(),
-    );
-  }
-}
-```
-
-**RecurringExpensesScreen:**
-```dart
-class RecurringExpensesScreen extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: StandardAppBar(
-        title: 'Recorrências',
-        additionalActions: [
-          // Botão de adicionar recorrência (se necessário)
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => _showAddRecurringExpenseDialog(context),
-          ),
-        ],
       ),
-      body: _buildRecurringExpensesList(),
     );
   }
 }
 ```
-
-**AccountsScreen:**
-```dart
-class AccountsScreen extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: StandardAppBar(
-        title: 'Contas',
-        additionalActions: [
-          // Botão de adicionar conta (se necessário)
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => _showAddAccountDialog(context),
-          ),
-        ],
-      ),
-      body: _buildAccountsList(),
-    );
-  }
-}
-```
-
-**3. Design System (validar consistência):**
-- **Background:** `AppColors.background` (branco ou tom claro)
-- **Título:** `AppTypography.h2` com `AppColors.textPrimary`
-- **Ícones:** `AppColors.iconPrimary`
-- **Elevação:** 0 (flat design)
-- **Center Title:** false (alinhado à esquerda)
 
 **Definition of Done:**
-- [x] Widget `StandardAppBar` criado em `lib/presentation/widgets/common/`
-- [x] App bar padronizado aplicado na `DashboardScreen`
-- [x] App bar padronizado aplicado na `RecurringExpensesScreen`
-- [x] App bar padronizado aplicado na `AccountsScreen`
-- [x] Botão de configurações funcional em todas as telas
-- [x] Navegação para `SettingsScreen` funcionando corretamente
-- [x] Design consistente com as especificações do design system
-- [x] Ações adicionais (botões de adicionar) preservadas onde necessário
-- [x] Testes de widget para o `StandardAppBar`
-- [x] Testes de widget atualizados para as telas modificadas
-- [~] Merge realizado para `develop`
+- [ ] Widget `NubankStyleDropdown` criado
+- [ ] Todos os dropdowns do app utilizam o novo widget
+- [ ] Design consistente com outros inputs Nubank-style
+- [ ] Testes de widget para `NubankStyleDropdown`
+- [ ] Verificação visual em todas as telas com dropdown
+- [ ] Merge realizado para `develop`
 
 ---
 
-## 🏗️ Fase 10: Estabilidade, Code Health e Migração (41 Issues)
+### [ ] F11-T5: Documentation - Phase 11 Summary
+
+**Branch:** `docs/phase-11-summary`
+
+**Descrição:**
+Documentar todas as melhorias de formatação e UX implementadas na Fase 11.
+
+**Conteúdo:**
+- Resumo das padronizações aplicadas
+- Antes/depois de formatação monetária
+- Benefícios para experiência do usuário
+- Screenshots comparativos
+
+**Definition of Done:**
+- [ ] Documentação criada
+- [ ] Screenshots adicionados
+- [ ] Merge realizado para `develop`
+
+---
+
+## 🏗️ Fase 12: Estabilidade e Code Health
 
 **Objetivo:** Corrigir todos os warnings e infos do `flutter analyze`, atualizar pacotes desatualizados, e migrar código obsoleto, garantindo um código **limpo**, **moderno** e **sem alertas**.
 
+**Status:** 0 / 4 tarefas concluídas
+
 ---
 
-### [ ] F10-T1: Atualização Crítica de Dependências (30+ Issues)
+### [ ] F12-T1: Atualização Crítica de Dependências (30+ Issues)
 
 **Descrição:** Atualizar todos os pacotes desatualizados e corrigir referências de dependências ausentes no `pubspec.yaml`, eliminando os avisos de `pub outdated` e `depend_on_referenced_packages`.
 
@@ -327,9 +515,17 @@ class AccountsScreen extends ConsumerWidget {
 2.  Adicionar **path**, **matcher** e **mockito** como dependências apropriadas (`dependencies` ou `dev_dependencies`) no `pubspec.yaml` para resolver as 4 ocorrências de `depend_on_referenced_packages`.
 3.  Executar `flutter pub get` e verificar se novas quebras de código ou warnings surgem.
 
+**Definition of Done:**
+- [ ] Todos os pacotes atualizados para versões compatíveis
+- [ ] Dependências ausentes adicionadas ao `pubspec.yaml`
+- [ ] `flutter pub outdated` não retorna warnings críticos
+- [ ] `flutter analyze` não retorna `depend_on_referenced_packages`
+- [ ] App compila e executa sem erros
+- [ ] Merge realizado para `develop`
+
 ---
 
-### [ ] F10-T2: Migração de APIs Deprecated e Contextos Assíncronos (11 Issues)
+### [ ] F12-T2: Migração de APIs Deprecated e Contextos Assíncronos (11 Issues)
 
 **Descrição:** Substituir APIs obsoletas do Flutter/Dart e resolver problemas de uso do `BuildContext` em contextos assíncronos.
 
@@ -344,9 +540,17 @@ class AccountsScreen extends ConsumerWidget {
 3.  Atualizar todas as 5 chamadas de `setMockMethodCallHandler` nos testes de repositório para a nova API: `TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler`.
 4.  Adicionar verificações de **`if (mounted)`** antes de qualquer uso de `BuildContext` (ex: `Navigator.of(context)`) nas funções assíncronas de `accounts_screen.dart` e `transactions_list_screen.dart`.
 
+**Definition of Done:**
+- [ ] Todas as APIs deprecated substituídas
+- [ ] Contextos assíncronos corrigidos com `if (mounted)`
+- [ ] `flutter analyze` não retorna `deprecated_member_use`
+- [ ] `flutter analyze` não retorna `use_build_context_synchronously`
+- [ ] Testes executam sem warnings
+- [ ] Merge realizado para `develop`
+
 ---
 
-### [ ] F10-T3: Implementação de Logging e Limpeza de Produção (7 Issues)
+### [ ] F12-T3: Implementação de Logging e Limpeza de Produção (7 Issues)
 
 **Descrição:** Remover todas as chamadas de `print()` em código de produção e substituí-las por uma solução de logging adequada para facilitar a depuração.
 
@@ -358,9 +562,16 @@ class AccountsScreen extends ConsumerWidget {
 2.  Substituir todas as 7 chamadas de **`print(...)`** nos dois arquivos de serviço de notificação por chamadas ao logger (ex: `_log.info('...')`).
 3.  Configurar o logger para ser silencioso em builds de produção/release, aderindo à regra de lint.
 
+**Definition of Done:**
+- [ ] Pacote de logging adicionado ao projeto
+- [ ] Todas as chamadas `print()` substituídas
+- [ ] Logger configurado para produção
+- [ ] `flutter analyze` não retorna `avoid_print`
+- [ ] Merge realizado para `develop`
+
 ---
 
-### [ ] F10-T4: Remoção de Código Morto e Alertas de Compilação (10 Issues)
+### [ ] F12-T4: Remoção de Código Morto e Alertas de Compilação (10 Issues)
 
 **Descrição:** Identificar e remover variáveis, campos, métodos e elementos de código não utilizados, e corrigir problemas de sobrescrita.
 
@@ -376,6 +587,288 @@ class AccountsScreen extends ConsumerWidget {
 2.  Remover ou utilizar as 4 variáveis locais não utilizadas nos arquivos de teste (`instance1Id`, `now`, `scaffold`, `tomorrow`, `callCount`, `originalCreate`).
 3.  Remover as declarações não referenciadas `_$LocalDatabase.connect` e `_handleValueChange`.
 4.  Remover a anotação `@override` do método que não sobrescreve em `process_recurring_expenses_usecase_test.dart`.
+
+**Definition of Done:**
+- [ ] Todos os campos e variáveis não utilizados removidos
+- [ ] Elementos mortos removidos
+- [ ] Anotações `@override` incorretas corrigidas
+- [ ] `flutter analyze` não retorna warnings de código não utilizado
+- [ ] Testes continuam passando
+- [ ] Merge realizado para `develop`
+
+---
+
+## ⚙️ Fase 13: Gestão Avançada de Contas e Configurações
+
+**Objetivo:** Aprimorar a gestão de contas, categorias e configurações financeiras com recursos avançados de personalização.
+
+**Status:** 0 / 6 tarefas concluídas
+
+---
+
+### [ ] F13-T1: Correção - Fix New Account Bottom Sheet Behavior
+
+**Branch:** `fix/account-bottom-sheet-keyboard`
+
+**Descrição:**
+Corrigir o comportamento do bottom sheet de nova conta para expandir e contrair adequadamente com e sem teclado, exatamente como o bottom sheet de transações.
+
+**Problema Atual:**
+- Bottom sheet de conta não se ajusta corretamente quando o teclado aparece
+- Campos podem ficar ocultos atrás do teclado
+- Comportamento inconsistente com o bottom sheet de transações
+
+**Implementação Esperada:**
+- Usar `MediaQuery.of(context).viewInsets.bottom` para detectar teclado
+- Aplicar padding inferior dinâmico
+- Bottom sheet deve expandir quando teclado aparece
+- Bottom sheet deve contrair quando teclado desaparece
+- Scroll automático para campo em foco
+
+**Referência:**
+Verificar implementação do `ExpenseDetailsBottomSheet` e aplicar a mesma lógica.
+
+**Definition of Done:**
+- [ ] Bottom sheet ajusta altura corretamente com teclado
+- [ ] Todos os campos acessíveis quando teclado está visível
+- [ ] Scroll automático para campo em foco
+- [ ] Comportamento consistente com bottom sheet de transações
+- [ ] Testes de widget para verificar comportamento
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F13-T2: Melhoria - Collapsible Account Tiles with Click to Expand
+
+**Branch:** `feature/collapsible-account-tiles`
+
+**Descrição:**
+Reduzir o tamanho dos tiles de contas e implementar funcionalidade de click-to-expand para mostrar detalhes.
+
+**Problema Atual:**
+- Tiles de contas ocupam muito espaço vertical
+- Todas as informações sempre visíveis desperdiçam espaço
+- Dificulta visualização quando há muitas contas
+
+**Implementação Esperada:**
+1. **Versão Colapsada (Padrão):**
+   - Nome da conta
+   - Tipo (débito/crédito)
+   - Saldo atual
+   - Ícone de expansão
+
+2. **Versão Expandida (Ao Clicar):**
+   - Todas as informações da versão colapsada
+   - Limite de crédito (se aplicável)
+   - Saldo da fatura (se aplicável)
+   - Data de vencimento (se aplicável)
+   - Botões de ação (editar, excluir)
+
+3. **Animação:**
+   - Transição suave entre estados
+   - Rotação do ícone de expansão
+   - Expansion tile animado
+
+**Exemplo de Implementação:**
+```dart
+ExpansionTile(
+  title: Text(account.name),
+  subtitle: Text('${account.type} - ${CurrencyFormatter.format(account.balance)}'),
+  children: [
+    // Detalhes expandidos
+    if (account.isCredit) ...[
+      ListTile(
+        title: Text('Limite de Crédito'),
+        trailing: Text(CurrencyFormatter.format(account.creditLimit)),
+      ),
+      // ... outros detalhes
+    ],
+    ButtonBar(
+      children: [
+        IconButton(icon: Icon(Icons.edit), onPressed: () => _editAccount(account)),
+        IconButton(icon: Icon(Icons.delete), onPressed: () => _deleteAccount(account)),
+      ],
+    ),
+  ],
+)
+```
+
+**Definition of Done:**
+- [ ] Account tiles colapsados por padrão
+- [ ] Click expande/colapsa tile com animação
+- [ ] Informações essenciais visíveis em modo colapsado
+- [ ] Detalhes completos visíveis em modo expandido
+- [ ] Ícone de expansão rotaciona adequadamente
+- [ ] Testes de widget implementados
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F13-T3: Feature - Default Account Selection
+
+**Branch:** `feature/default-account-selection`
+
+**Descrição:**
+Implementar seleção de conta padrão na página de contas que já venha pré-selecionada no dropdown de criação/edição de transações.
+
+**Implementação Esperada:**
+1. **Adicionar Campo no Banco:**
+   - Adicionar coluna `isDefault` (booleano) na tabela `Accounts`
+   - Apenas uma conta pode ser default por vez
+
+2. **UI na Página de Contas:**
+   - Adicionar ícone de "estrela" ou "favorito" nos tiles de conta
+   - Permitir marcar/desmarcar como conta padrão
+   - Destacar visualmente a conta padrão (ex: ícone dourado)
+
+3. **Integração com Bottom Sheet de Transações:**
+   - Ao abrir bottom sheet, pré-selecionar a conta marcada como default
+   - Se não houver conta default, manter comportamento atual
+
+4. **Regras de Negócio:**
+   - Ao marcar uma conta como default, desmarcar a anterior automaticamente
+   - Não permitir excluir conta marcada como default sem antes marcar outra
+   - Se conta default for excluída, limpar flag de default
+
+**Database Migration:**
+```dart
+// Adicionar ao schema do Drift
+class Accounts extends Table {
+  // ... campos existentes
+  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+}
+```
+
+**Definition of Done:**
+- [ ] Coluna `isDefault` adicionada à tabela Accounts
+- [ ] UI para marcar/desmarcar conta padrão implementada
+- [ ] Apenas uma conta pode ser default por vez
+- [ ] Bottom sheet de transações pré-seleciona conta padrão
+- [ ] Regras de negócio para exclusão implementadas
+- [ ] Testes de integração para seleção de conta padrão
+- [ ] Migration documentada
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F13-T4: Feature - Category Management in Settings
+
+**Branch:** `feature/category-management`
+
+**Descrição:**
+Adicionar seção nas configurações para criação/remoção de categorias e seleção de categoria padrão.
+
+**Implementação Esperada:**
+1. **UI na Settings Screen:**
+   - Nova seção "Gerenciar Categorias"
+   - Lista de categorias existentes
+   - Botão para adicionar nova categoria
+   - Ícone de estrela para marcar categoria padrão
+   - Botão de excluir categoria
+
+2. **Adicionar Campo no Banco:**
+   - Adicionar coluna `isDefault` na tabela `Categories`
+   - Apenas uma categoria pode ser default por vez
+
+3. **Dialog de Nova Categoria:**
+   - Campo de texto para nome da categoria
+   - Seletor de cor/ícone (opcional para MVP)
+   - Botão salvar/cancelar
+
+4. **Regras de Negócio:**
+   - Não permitir excluir categorias que tenham transações vinculadas
+   - Ao marcar categoria como default, desmarcar a anterior
+   - Bottom sheet de transações pré-seleciona categoria default
+
+5. **Categorias Iniciais:**
+   - Criar categorias padrão no primeiro uso:
+     - Alimentação
+     - Transporte
+     - Lazer
+     - Saúde
+     - Educação
+     - Moradia
+     - Outros
+
+**Definition of Done:**
+- [ ] Seção de gerenciamento de categorias na settings
+- [ ] CRUD completo de categorias implementado
+- [ ] Seleção de categoria padrão funcional
+- [ ] Validação de exclusão (categorias com transações)
+- [ ] Categorias iniciais criadas no onboarding
+- [ ] Bottom sheet de transações pré-seleciona categoria padrão
+- [ ] Testes de integração
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F13-T5: Feature - Salary Payment Date Configuration
+
+**Branch:** `feature/salary-payment-date`
+
+**Descrição:**
+Criar seção nas configurações para definir a data mensal em que o salário é recebido.
+
+**Implementação Esperada:**
+1. **Adicionar Campo no Banco:**
+   - Adicionar coluna `salaryPaymentDay` (int 1-31) na tabela `AppSettings`
+   - Valor padrão: dia 1 do mês
+
+2. **UI na Settings Screen:**
+   - Campo "Dia do Recebimento do Salário"
+   - Dropdown ou number picker com dias 1-31
+   - Validação para meses com menos de 31 dias
+
+3. **Uso Futuro:**
+   - Base para funcionalidade de projeção de saldo
+   - Alertas de proximidade do dia do salário
+   - Resetar "quanto posso gastar" baseado nesta data
+
+**Definition of Done:**
+- [ ] Coluna `salaryPaymentDay` adicionada ao banco
+- [ ] UI para seleção do dia implementada
+- [ ] Validação de dias implementada
+- [ ] Valor persistido corretamente
+- [ ] Documentação de uso futuro
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F13-T6: Feature - Credit Payment Date per Account
+
+**Branch:** `feature/credit-payment-date`
+
+**Descrição:**
+Criar seção nas configurações para definir a data de pagamento da fatura de crédito para cada conta de crédito.
+
+**Implementação Esperada:**
+1. **Adicionar Campo no Banco:**
+   - Adicionar coluna `creditPaymentDay` (int 1-31) na tabela `Accounts`
+   - Aplicável apenas para contas de crédito
+
+2. **UI na Account Creation/Editing:**
+   - Mostrar campo "Dia do Vencimento" apenas se `isCredit == true`
+   - Dropdown ou number picker com dias 1-31
+   - Validação de dias
+
+3. **UI na Settings Screen (Alternativa):**
+   - Seção "Datas de Vencimento"
+   - Lista de contas de crédito com seus respectivos dias
+   - Click para editar dia de vencimento
+
+4. **Uso Futuro:**
+   - Alertas de proximidade de vencimento
+   - Cálculo automático de fatura do mês
+   - Projeção de gastos considerando vencimentos
+
+**Definition of Done:**
+- [ ] Coluna `creditPaymentDay` adicionada à tabela Accounts
+- [ ] Campo visível apenas para contas de crédito
+- [ ] UI para edição do dia de vencimento
+- [ ] Validação implementada
+- [ ] Valor persistido corretamente
+- [ ] Documentação de uso futuro
+- [ ] Merge realizado para `develop`
 
 ---
 

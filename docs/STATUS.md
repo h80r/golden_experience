@@ -4,8 +4,8 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F10-T1
-- **current_task_title**: Atualização Crítica de Dependências (30+ Issues)
+- **current_task_id**: F10-T2
+- **current_task_title**: Correção - Automatic Capture Switch Persistence
 - **current_task_status**: PENDING
 
 ## Step Tracking (Only for complex tasks)

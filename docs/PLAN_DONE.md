@@ -1919,3 +1919,230 @@ dependencies:
 - [x] Merge realizado para `develop`
 
 ---
+
+## 🎨 Fase 9: Quinta Iteração - Correções de UX e Padronização Visual
+
+**Objetivo:** Corrigir bugs na tela de configurações e padronizar a interface do aplicativo com um app bar consistente em todas as telas principais.
+
+**Status:** 0 / 2 tarefas concluídas
+
+---
+
+### [ ] F9-T1: Correção - Exibição de Valores nas Configurações
+
+**Branch:** `fix/settings-values-display`
+
+**Descrição:**
+Corrigir o bug que impede a exibição correta dos valores de salário mensal e saldo da reserva inicial na tela de configurações.
+
+**Problema Atual:**
+- Ao abrir a tela de configurações, os campos de "Salário Mensal" e "Saldo da Reserva" não exibem os valores salvos
+- Os valores estão persistidos no banco de dados, mas não são carregados corretamente na UI
+- Usuário precisa reinserir os valores cada vez que acessa a tela
+
+**Investigação Necessária:**
+
+1. **Verificar Carregamento de Dados:**
+   - Confirmar que `AppSettingsRepository.getSettings()` retorna os valores corretos
+   - Verificar se o provider de settings está sendo observado corretamente
+   - Checar se há algum problema de inicialização do estado do formulário
+
+2. **Verificar Widgets de Input:**
+   - Confirmar que os `NubankStyleCurrencyField` estão recebendo o `initialValue` corretamente
+   - Verificar se há algum problema de atualização do `TextEditingController`
+   - Checar se os valores estão sendo formatados corretamente ao carregar
+
+**Possíveis Causas:**
+- Provider não está sendo assistido corretamente na `SettingsScreen`
+- `initialValue` não está sendo passado para os campos de input
+- Conversão de tipos incorreta (double → string formatada)
+- Estado do formulário não está sendo inicializado com os valores do banco
+
+**Implementação Esperada:**
+
+```dart
+class SettingsScreen extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settingsAsync = ref.watch(appSettingsProvider);
+
+    return settingsAsync.when(
+      data: (settings) => _buildForm(context, settings),
+      loading: () => Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Erro ao carregar configurações')),
+    );
+  }
+
+  Widget _buildForm(BuildContext context, AppSettings settings) {
+    return Column(
+      children: [
+        NubankStyleCurrencyField(
+          label: 'Salário Mensal',
+          initialValue: settings.monthlySalary, // Deve exibir o valor salvo
+          onChanged: (value) => _updateSalary(value),
+        ),
+        NubankStyleCurrencyField(
+          label: 'Saldo da Reserva Inicial',
+          initialValue: settings.reserveBalance, // Deve exibir o valor salvo
+          onChanged: (value) => _updateReserve(value),
+        ),
+      ],
+    );
+  }
+}
+```
+
+**Definition of Done:**
+- [x] Causa raiz do bug identificada e documentada
+- [x] Valores de salário e reserva carregam corretamente ao abrir a tela
+- [x] Campos de input exibem os valores formatados corretamente (ex: R$ 5.000,00)
+- [x] Alterações nos valores são persistidas e recarregam corretamente
+- [x] Testes de widget atualizados para cobrir o carregamento de valores
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F9-T2: Melhoria - Padronização do App Bar nas Telas Principais
+
+**Branch:** `enhancement/standardize-app-bar`
+
+**Descrição:**
+Padronizar o estilo do app bar em todas as telas principais do aplicativo (Recorrências e Contas), aplicando o mesmo design usado na tela de Início, que inclui um botão de configurações no canto superior direito.
+
+**Problema Atual:**
+- A tela de Início (Dashboard) possui um app bar com botão de configurações e design consistente
+- As telas de Recorrências e Contas usam app bars diferentes ou padrões
+- Falta de consistência visual prejudica a experiência do usuário
+- Não há acesso rápido às configurações a partir de todas as telas principais
+
+**Objetivo:**
+Criar um componente `StandardAppBar` reutilizável que será usado em todas as telas principais, garantindo:
+- Design visual consistente (cores, elevação, tipografia)
+- Botão de configurações sempre visível no canto superior direito
+- Navegação para `SettingsScreen` ao tocar no botão
+- Título personalizado por tela
+
+**Implementação:**
+
+**1. Criar Widget Reutilizável:**
+```dart
+// lib/presentation/widgets/common/standard_app_bar.dart
+
+class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+  final List<Widget>? additionalActions;
+
+  const StandardAppBar({
+    Key? key,
+    required this.title,
+    this.additionalActions,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: Text(
+        title,
+        style: AppTypography.h2.copyWith(color: AppColors.textPrimary),
+      ),
+      backgroundColor: AppColors.background,
+      elevation: 0,
+      centerTitle: false,
+      actions: [
+        ...?additionalActions,
+        IconButton(
+          icon: Icon(Icons.settings_outlined, color: AppColors.iconPrimary),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const SettingsScreen()),
+          ),
+          tooltip: 'Configurações',
+        ),
+      ],
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+```
+
+**2. Aplicar nas Telas Principais:**
+
+**DashboardScreen (já implementado, validar consistência):**
+```dart
+class DashboardScreen extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: StandardAppBar(title: 'Início'),
+      body: _buildDashboardContent(),
+    );
+  }
+}
+```
+
+**RecurringExpensesScreen:**
+```dart
+class RecurringExpensesScreen extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: StandardAppBar(
+        title: 'Recorrências',
+        additionalActions: [
+          // Botão de adicionar recorrência (se necessário)
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => _showAddRecurringExpenseDialog(context),
+          ),
+        ],
+      ),
+      body: _buildRecurringExpensesList(),
+    );
+  }
+}
+```
+
+**AccountsScreen:**
+```dart
+class AccountsScreen extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: StandardAppBar(
+        title: 'Contas',
+        additionalActions: [
+          // Botão de adicionar conta (se necessário)
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => _showAddAccountDialog(context),
+          ),
+        ],
+      ),
+      body: _buildAccountsList(),
+    );
+  }
+}
+```
+
+**3. Design System (validar consistência):**
+- **Background:** `AppColors.background` (branco ou tom claro)
+- **Título:** `AppTypography.h2` com `AppColors.textPrimary`
+- **Ícones:** `AppColors.iconPrimary`
+- **Elevação:** 0 (flat design)
+- **Center Title:** false (alinhado à esquerda)
+
+**Definition of Done:**
+- [x] Widget `StandardAppBar` criado em `lib/presentation/widgets/common/`
+- [x] App bar padronizado aplicado na `DashboardScreen`
+- [x] App bar padronizado aplicado na `RecurringExpensesScreen`
+- [x] App bar padronizado aplicado na `AccountsScreen`
+- [x] Botão de configurações funcional em todas as telas
+- [x] Navegação para `SettingsScreen` funcionando corretamente
+- [x] Design consistente com as especificações do design system
+- [x] Ações adicionais (botões de adicionar) preservadas onde necessário
+- [x] Testes de widget para o `StandardAppBar`
+- [x] Testes de widget atualizados para as telas modificadas
+- [x] Merge realizado para `develop`
+
+---

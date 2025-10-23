@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -10,8 +11,6 @@ import '../state/app_settings_form_notifier.dart';
 import '../state/backup_notifier.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
-import '../widgets/buttons/primary_button.dart';
-import '../widgets/buttons/secondary_button.dart';
 import '../widgets/common/standard_app_bar.dart';
 import '../widgets/inputs/nubank_style_currency_field.dart';
 import '../widgets/inputs/reserve_percentage_slider.dart';
@@ -28,6 +27,9 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _monthlySalaryController;
   late TextEditingController _reserveBalanceController;
+  bool _isLoading = true;
+  Timer? _monthlySalaryDebounce;
+  Timer? _reserveBalanceDebounce;
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +42,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         showSettings: false,
       ),
       backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Salário Mensal
@@ -72,43 +78,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: AppSpacing.xl),
 
-            // Error message if validation fails
-            if (formState.errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.errorWithOpacity,
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(color: AppColors.error),
-                  ),
-                  child: Text(
-                    formState.errorMessage!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.error,
-                        ),
-                  ),
-                ),
+            // Info message about auto-save
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8.0),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
               ),
-
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: SecondaryButton(
-                    label: 'Cancelar',
-                    onPressed: () => Navigator.of(context).pop(),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: AppColors.primary,
+                    size: 20,
                   ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: PrimaryButton(
-                    label: 'Salvar',
-                    onPressed: _saveSettings,
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      'Suas configurações são salvas automaticamente',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.primary,
+                          ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: AppSpacing.xl),
 
@@ -233,8 +228,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // Notifications Section
             const NotificationSettingsSection(),
           ],
-        ),
-      ),
+              ),
+            ),
     );
   }
 
@@ -242,6 +237,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void dispose() {
     _monthlySalaryController.dispose();
     _reserveBalanceController.dispose();
+    _monthlySalaryDebounce?.cancel();
+    _reserveBalanceDebounce?.cancel();
     super.dispose();
   }
 
@@ -251,9 +248,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     _monthlySalaryController = TextEditingController();
     _reserveBalanceController = TextEditingController();
 
-    // Load existing settings after the frame is built
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadSettings();
+    // Load existing settings immediately in initState to prevent slider snap
+    // We use microtask to ensure it runs before the first frame
+    Future(() async {
+      await _loadSettings();
     });
   }
 
@@ -414,63 +412,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // Update controllers with the internal representation (cents)
       _monthlySalaryController.text = monthlySalaryCents.toString();
       _reserveBalanceController.text = reserveBalanceCents.toString();
+
+      // Mark loading as complete
+      setState(() {
+        _isLoading = false;
+      });
+    } else if (mounted) {
+      // No settings found, just stop loading
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
-  void _onMaxReservePercentageChanged(double value) {
+  Future<void> _onMaxReservePercentageChanged(double value) async {
+    // Update form state
     ref
         .read(appSettingsFormProvider.notifier)
         .updateMaxReserveUsagePercentage(value);
-  }
 
-  void _onMonthlySalaryChanged(double value) {
-    ref.read(appSettingsFormProvider.notifier).updateMonthlySalary(value);
-  }
-
-  void _onReserveBalanceChanged(double value) {
-    ref.read(appSettingsFormProvider.notifier).updateReserveBalance(value);
-  }
-
-  Future<void> _saveSettings() async {
-    final formState = ref.read(appSettingsFormProvider);
-
-    if (!formState.isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            formState.errorMessage ?? 'Erro ao salvar configurações',
-          ),
-          backgroundColor: AppColors.error,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-      return;
-    }
-
+    // Auto-save immediately
     try {
       final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
-
-      // Update each setting individually
-      await Future.wait([
-        appSettingsRepository.updateMonthlySalary(formState.monthlySalary),
-        appSettingsRepository.updateReserveBalance(formState.reserveBalance),
-        appSettingsRepository.updateMaxReserveUsagePercentage(
-          formState.maxReserveUsagePercentage,
-        ),
-      ]);
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Configurações salvas com sucesso!'),
-          backgroundColor: AppColors.success,
-          duration: Duration(seconds: 2),
-        ),
-      );
-
-      // Return to dashboard
-      Navigator.of(context).pop();
+      await appSettingsRepository.updateMaxReserveUsagePercentage(value);
     } catch (e) {
       if (!mounted) return;
 
@@ -478,9 +442,70 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         SnackBar(
           content: Text('Erro ao salvar: $e'),
           backgroundColor: AppColors.error,
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
   }
+
+  void _onMonthlySalaryChanged(double value) {
+    // Update form state immediately for UI feedback
+    ref.read(appSettingsFormProvider.notifier).updateMonthlySalary(value);
+
+    // Cancel previous timer if exists
+    _monthlySalaryDebounce?.cancel();
+
+    // Create new timer for auto-save with 500ms debounce
+    _monthlySalaryDebounce = Timer(const Duration(milliseconds: 500), () {
+      _saveMonthlySalary(value);
+    });
+  }
+
+  Future<void> _saveMonthlySalary(double value) async {
+    try {
+      final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
+      await appSettingsRepository.updateMonthlySalary(value);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao salvar salário: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _onReserveBalanceChanged(double value) {
+    // Update form state immediately for UI feedback
+    ref.read(appSettingsFormProvider.notifier).updateReserveBalance(value);
+
+    // Cancel previous timer if exists
+    _reserveBalanceDebounce?.cancel();
+
+    // Create new timer for auto-save with 500ms debounce
+    _reserveBalanceDebounce = Timer(const Duration(milliseconds: 500), () {
+      _saveReserveBalance(value);
+    });
+  }
+
+  Future<void> _saveReserveBalance(double value) async {
+    try {
+      final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
+      await appSettingsRepository.updateReserveBalance(value);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao salvar reserva: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
 }
