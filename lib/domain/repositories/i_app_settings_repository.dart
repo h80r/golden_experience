@@ -27,6 +27,9 @@ abstract class IAppSettingsRepository {
   /// Updates only the onboarding completion flag
   Future<void> updateHasCompletedOnboarding(bool completed);
 
+  /// Updates only the auto capture enabled flag
+  Future<void> updateIsAutoCaptureEnabled(bool enabled);
+
   /// Initializes settings with default values if they don't exist
   /// Should be called on first app launch
   Future<void> initializeDefaults();

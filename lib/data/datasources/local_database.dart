@@ -55,7 +55,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -98,6 +98,15 @@ class LocalDatabase extends _$LocalDatabase {
 
             // Step 4: Rename new table to original name
             await customStatement('ALTER TABLE accounts_new RENAME TO accounts');
+          }
+
+          // Migration from v2 to v3: Add isAutoCaptureEnabled column to app_settings
+          if (from <= 2) {
+            await customStatement('''
+              ALTER TABLE app_settings
+              ADD COLUMN is_auto_capture_enabled INTEGER NOT NULL DEFAULT 0
+              CHECK ("is_auto_capture_enabled" IN (0, 1))
+            ''');
           }
         },
       );

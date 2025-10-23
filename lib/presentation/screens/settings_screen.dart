@@ -28,6 +28,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _monthlySalaryController;
   late TextEditingController _reserveBalanceController;
   bool _isLoading = true;
+  bool _isAutoCaptureEnabled = false;
   Timer? _monthlySalaryDebounce;
   Timer? _reserveBalanceDebounce;
 
@@ -226,7 +227,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: AppSpacing.md),
 
             // Notifications Section
-            const NotificationSettingsSection(),
+            NotificationSettingsSection(
+              isAutoCaptureEnabled: _isAutoCaptureEnabled,
+              onChanged: _onIsAutoCaptureEnabledChanged,
+            ),
           ],
               ),
             ),
@@ -413,8 +417,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       _monthlySalaryController.text = monthlySalaryCents.toString();
       _reserveBalanceController.text = reserveBalanceCents.toString();
 
-      // Mark loading as complete
+      // Mark loading as complete and set isAutoCaptureEnabled
       setState(() {
+        _isAutoCaptureEnabled = settings.isAutoCaptureEnabled;
         _isLoading = false;
       });
     } else if (mounted) {
@@ -441,6 +446,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Erro ao salvar: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onIsAutoCaptureEnabledChanged(bool value) async {
+    // Update local state immediately for UI feedback
+    setState(() {
+      _isAutoCaptureEnabled = value;
+    });
+
+    // Auto-save immediately
+    try {
+      final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
+      await appSettingsRepository.updateIsAutoCaptureEnabled(value);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao salvar configuração: $e'),
           backgroundColor: AppColors.error,
           duration: const Duration(seconds: 2),
         ),

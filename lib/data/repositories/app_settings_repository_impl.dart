@@ -57,6 +57,13 @@ class AppSettingsRepositoryImpl implements IAppSettingsRepository {
   }
 
   @override
+  Future<void> updateIsAutoCaptureEnabled(bool enabled) async {
+    await (_db.update(_db.appSettings)
+          ..where((s) => s.id.equals(_settingsId)))
+        .write(AppSettingsModelCompanion(isAutoCaptureEnabled: Value(enabled)));
+  }
+
+  @override
   Future<void> initializeDefaults() async {
     final existing = await get();
     if (existing != null) return;
@@ -68,6 +75,7 @@ class AppSettingsRepositoryImpl implements IAppSettingsRepository {
       maxReserveUsagePercentage: 0.0,
       lastRecurringCheck: DateTime.now(),
       hasCompletedOnboarding: Value(false),
+      isAutoCaptureEnabled: Value(false),
     );
 
     await _db.into(_db.appSettings).insert(defaultSettings);

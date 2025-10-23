@@ -17,6 +17,9 @@ class AppSettings extends Table {
   BoolColumn get hasCompletedOnboarding =>
       boolean().withDefault(const Constant(false))();
 
+  BoolColumn get isAutoCaptureEnabled =>
+      boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

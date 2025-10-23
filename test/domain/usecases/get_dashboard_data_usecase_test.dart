@@ -113,6 +113,9 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
   Future<void> updateHasCompletedOnboarding(bool completed) async {}
 
   @override
+  Future<void> updateIsAutoCaptureEnabled(bool enabled) async {}
+
+  @override
   Future<void> initializeDefaults() async {}
 
   @override
@@ -156,6 +159,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -178,6 +182,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -202,6 +207,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -245,6 +251,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -283,6 +290,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -312,6 +320,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -345,6 +354,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -377,6 +387,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -410,6 +421,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -440,6 +452,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -471,6 +484,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -503,6 +517,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -534,6 +549,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -569,6 +585,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -598,6 +615,7 @@ void main() {
             maxReserveUsagePercentage: 0.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -631,6 +649,7 @@ void main() {
             maxReserveUsagePercentage: 100.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -661,6 +680,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -691,6 +711,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -721,6 +742,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -830,6 +852,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -866,6 +889,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -913,6 +937,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 
@@ -945,6 +970,7 @@ void main() {
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
           ),
         );
 

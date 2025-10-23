@@ -9,7 +9,14 @@ import '../../../data/parsers/notification_parser_registry.dart';
 /// Allows users to enable/disable automatic transaction capture from bank notifications
 /// and shows which banks are currently supported.
 class NotificationSettingsSection extends StatefulWidget {
-  const NotificationSettingsSection({super.key});
+  final bool isAutoCaptureEnabled;
+  final ValueChanged<bool> onChanged;
+
+  const NotificationSettingsSection({
+    super.key,
+    required this.isAutoCaptureEnabled,
+    required this.onChanged,
+  });
 
   @override
   State<NotificationSettingsSection> createState() =>
@@ -18,7 +25,6 @@ class NotificationSettingsSection extends StatefulWidget {
 
 class _NotificationSettingsSectionState
     extends State<NotificationSettingsSection> {
-  bool _isAutoCaptureEnabled = false;
   bool _hasPermission = false;
   bool _isLoading = true;
 
@@ -81,11 +87,10 @@ class _NotificationSettingsSectionState
             borderRadius: BorderRadius.circular(8.0),
           ),
           child: SwitchListTile(
-            value: _isAutoCaptureEnabled,
+            value: widget.isAutoCaptureEnabled,
             onChanged: (value) {
-              setState(() {
-                _isAutoCaptureEnabled = value;
-              });
+              // Call the parent callback to update and save
+              widget.onChanged(value);
 
               if (value && !_hasPermission) {
                 // Prompt user to grant permission
@@ -114,7 +119,7 @@ class _NotificationSettingsSectionState
           ),
         ),
 
-        if (!_hasPermission && _isAutoCaptureEnabled) ...[
+        if (!_hasPermission && widget.isAutoCaptureEnabled) ...[
           const SizedBox(height: AppSpacing.md),
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),

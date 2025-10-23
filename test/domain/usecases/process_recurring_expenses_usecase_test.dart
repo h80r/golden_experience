@@ -51,6 +51,7 @@ void main() {
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: todayAtMidnight,
           hasCompletedOnboarding: false,
+          isAutoCaptureEnabled: false,
         );
 
         mockAppSettingsRepository =
@@ -82,6 +83,7 @@ void main() {
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
+          isAutoCaptureEnabled: false,
         );
 
         mockAppSettingsRepository =
@@ -112,6 +114,7 @@ void main() {
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
+          isAutoCaptureEnabled: false,
         );
 
         final debitAccount = AccountModel(
@@ -171,6 +174,7 @@ void main() {
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
+          isAutoCaptureEnabled: false,
         );
 
         final debitAccount = AccountModel(
@@ -236,6 +240,7 @@ void main() {
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: threeDaysAgo,
           hasCompletedOnboarding: false,
+          isAutoCaptureEnabled: false,
         );
 
         final debitAccount = AccountModel(
@@ -304,6 +309,7 @@ void main() {
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
+          isAutoCaptureEnabled: false,
         );
 
         final creditAccount = AccountModel(
@@ -359,6 +365,7 @@ void main() {
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
+          isAutoCaptureEnabled: false,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -402,6 +409,7 @@ void main() {
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
+          isAutoCaptureEnabled: false,
         );
 
         final debitAccount = AccountModel(
@@ -469,6 +477,7 @@ void main() {
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
+          isAutoCaptureEnabled: false,
         );
 
         mockAppSettingsRepository =
@@ -502,6 +511,7 @@ void main() {
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
+          isAutoCaptureEnabled: false,
         );
 
         final debitAccount = AccountModel(
@@ -553,6 +563,7 @@ void main() {
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
+          isAutoCaptureEnabled: false,
         );
 
         final debitAccount = AccountModel(
@@ -685,6 +696,7 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
       maxReserveUsagePercentage: companion.maxReserveUsagePercentage.value,
       lastRecurringCheck: companion.lastRecurringCheck.value,
       hasCompletedOnboarding: companion.hasCompletedOnboarding.value,
+      isAutoCaptureEnabled: companion.isAutoCaptureEnabled.value,
     );
   }
 
@@ -692,6 +704,12 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
   Future<void> updateHasCompletedOnboarding(bool completed) async {
     if (_settings == null) return;
     _settings = _settings!.copyWith(hasCompletedOnboarding: completed);
+  }
+
+  @override
+  Future<void> updateIsAutoCaptureEnabled(bool enabled) async {
+    if (_settings == null) return;
+    _settings = _settings!.copyWith(isAutoCaptureEnabled: enabled);
   }
 
   @override
