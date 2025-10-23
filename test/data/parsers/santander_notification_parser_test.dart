@@ -20,7 +20,8 @@ void main() {
       test('returns true for valid Santander purchase notification', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1167, de R\$ 208,05, em 22/10/25, às 07:58, em aliexpress, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1167, de R\$ 208,05, em 22/10/25, às 07:58, em aliexpress, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -52,7 +53,8 @@ void main() {
       test('parses standard purchase notification', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1167, de R\$ 208,05, em 22/10/25, às 07:58, em aliexpress, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1167, de R\$ 208,05, em 22/10/25, às 07:58, em aliexpress, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -73,7 +75,8 @@ void main() {
       test('parses transaction with large value', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 5678, de R\$ 1.234,56, em 15/11/25, às 14:30, em mercado, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 5678, de R\$ 1.234,56, em 15/11/25, às 14:30, em mercado, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -86,7 +89,8 @@ void main() {
       test('parses transaction with whole value (no cents)', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1234, de R\$ 100,00, em 10/10/25, às 12:00, em loja, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1234, de R\$ 100,00, em 10/10/25, às 12:00, em loja, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -99,7 +103,8 @@ void main() {
       test('parses transaction with single digit value', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 9999, de R\$ 5,00, em 01/01/25, às 09:00, em padaria, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 9999, de R\$ 5,00, em 01/01/25, às 09:00, em padaria, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -112,7 +117,8 @@ void main() {
       test('includes card last 4 digits in description', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 4567, de R\$ 50,00, em 05/09/25, às 18:20, em supermercado, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 4567, de R\$ 50,00, em 05/09/25, às 18:20, em supermercado, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -125,7 +131,8 @@ void main() {
       test('parses transaction with bigText instead of text', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          bigText: 'Compra aprovada! Compra no cartão final 2020, de R\$ 150,00, em 12/12/25, às 20:00, em cinema, aprovada.',
+          bigText:
+              'Compra aprovada! Compra no cartão final 2020, de R\$ 150,00, em 12/12/25, às 20:00, em cinema, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -140,7 +147,8 @@ void main() {
       test('returns null for missing value', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1167, em 22/10/25, às 07:58, em aliexpress, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1167, em 22/10/25, às 07:58, em aliexpress, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -152,7 +160,8 @@ void main() {
       test('returns null for missing date', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1167, de R\$ 208,05, em aliexpress, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1167, de R\$ 208,05, em aliexpress, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -164,7 +173,8 @@ void main() {
       test('returns null for invalid date format', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1167, de R\$ 208,05, em 32/13/25, às 07:58, em aliexpress, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1167, de R\$ 208,05, em 32/13/25, às 07:58, em aliexpress, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -178,7 +188,8 @@ void main() {
       test('correctly parses day and month from notification', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 15/03/25, às 12:00, em teste, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 15/03/25, às 12:00, em teste, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -186,14 +197,15 @@ void main() {
 
         expect(result, isNotNull);
         expect(result!.date.day, 15);
-        expect(result!.date.month, 3);
-        expect(result!.date.year, 2025);
+        expect(result.date.month, 3);
+        expect(result.date.year, 2025);
       });
 
       test('correctly parses hours and minutes', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 15/10/25, às 23:59, em teste, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 15/10/25, às 23:59, em teste, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -201,13 +213,14 @@ void main() {
 
         expect(result, isNotNull);
         expect(result!.date.hour, 23);
-        expect(result!.date.minute, 59);
+        expect(result.date.minute, 59);
       });
 
       test('correctly parses single-digit day', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 5/10/25, às 12:00, em teste, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 5/10/25, às 12:00, em teste, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -222,7 +235,8 @@ void main() {
       test('parses value with thousand separator correctly', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1111, de R\$ 1.234,56, em 10/10/25, às 12:00, em teste, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1111, de R\$ 1.234,56, em 10/10/25, às 12:00, em teste, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -233,7 +247,8 @@ void main() {
       test('parses value without thousand separator', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1111, de R\$ 99,99, em 10/10/25, às 12:00, em teste, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1111, de R\$ 99,99, em 10/10/25, às 12:00, em teste, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -244,7 +259,8 @@ void main() {
       test('parses value with multiple thousand separators', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1111, de R\$ 12.345.678,90, em 10/10/25, às 12:00, em teste, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1111, de R\$ 12.345.678,90, em 10/10/25, às 12:00, em teste, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -257,7 +273,8 @@ void main() {
       test('returned TransactionData has sourceBank set to Santander', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 10/10/25, às 12:00, em teste, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 10/10/25, às 12:00, em teste, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -269,7 +286,8 @@ void main() {
       test('returned TransactionData has null notes', () {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 10/10/25, às 12:00, em teste, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 10/10/25, às 12:00, em teste, aprovada.',
           timestamp: DateTime.now(),
         );
 
@@ -284,7 +302,8 @@ void main() {
         final event = NotificationEvent(
           packageName: 'com.santander.app',
           text: 'Short text without notification',
-          bigText: 'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 10/10/25, às 12:00, em teste, aprovada.',
+          bigText:
+              'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 10/10/25, às 12:00, em teste, aprovada.',
           timestamp: DateTime.now(),
         );
 

@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import '../../data/database/accounts_table.dart';
+
 import '../../data/datasources/local_database.dart';
 import '../repositories/i_account_repository.dart';
 import '../repositories/i_transaction_repository.dart';
@@ -16,17 +16,17 @@ class AddTransactionResult {
     this.transactionId,
   });
 
-  factory AddTransactionResult.success(int transactionId) {
-    return AddTransactionResult(
-      success: true,
-      transactionId: transactionId,
-    );
-  }
-
   factory AddTransactionResult.failure(String errorMessage) {
     return AddTransactionResult(
       success: false,
       errorMessage: errorMessage,
+    );
+  }
+
+  factory AddTransactionResult.success(int transactionId) {
+    return AddTransactionResult(
+      success: true,
+      transactionId: transactionId,
     );
   }
 }
@@ -123,6 +123,39 @@ class AddTransactionUseCase {
     }
   }
 
+  /// Updates the account balance (debit) and/or creditUsed (credit) after a transaction.
+  ///
+  /// For debit accounts: Decreases the balance
+  /// For credit accounts: Increases the creditUsed (amount owed)
+  ///
+  /// Returns true if the update was successful, false otherwise.
+  Future<bool> _updateAccountAfterTransaction({
+    required AccountModel account,
+    required double transactionValue,
+  }) async {
+    try {
+      // Handle debit account update
+      if (account.isDebit) {
+        final newBalance = account.balance - transactionValue;
+        final debitUpdateSuccess =
+            await _accountRepository.updateBalance(account.id, newBalance);
+        if (!debitUpdateSuccess) return false;
+      }
+
+      // Handle credit account update
+      if (account.isCredit) {
+        final newCreditUsed = account.creditUsed + transactionValue;
+        final creditUpdateSuccess = await _accountRepository.updateCreditUsed(
+            account.id, newCreditUsed);
+        if (!creditUpdateSuccess) return false;
+      }
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   /// Validates the input parameters according to business rules.
   ///
   /// Returns null if valid, or an error message if validation fails.
@@ -139,36 +172,5 @@ class AddTransactionUseCase {
     }
 
     return null;
-  }
-
-  /// Updates the account balance (debit) and/or creditUsed (credit) after a transaction.
-  ///
-  /// For debit accounts: Decreases the balance
-  /// For credit accounts: Increases the creditUsed (amount owed)
-  ///
-  /// Returns true if the update was successful, false otherwise.
-  Future<bool> _updateAccountAfterTransaction({
-    required AccountModel account,
-    required double transactionValue,
-  }) async {
-    try {
-      // Handle debit account update
-      if (account.isDebit) {
-        final newBalance = account.balance - transactionValue;
-        final debitUpdateSuccess = await _accountRepository.updateBalance(account.id, newBalance);
-        if (!debitUpdateSuccess) return false;
-      }
-
-      // Handle credit account update
-      if (account.isCredit) {
-        final newCreditUsed = account.creditUsed + transactionValue;
-        final creditUpdateSuccess = await _accountRepository.updateCreditUsed(account.id, newCreditUsed);
-        if (!creditUpdateSuccess) return false;
-      }
-
-      return true;
-    } catch (e) {
-      return false;
-    }
   }
 }

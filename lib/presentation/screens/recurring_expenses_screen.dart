@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/database/recurring_expenses_table.dart';
+
 import '../../data/datasources/local_database.dart';
 import '../../data/providers/repository_providers.dart';
 import '../theme/app_colors.dart';
@@ -14,7 +14,8 @@ class RecurringExpensesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final recurringExpenseRepository = ref.watch(recurringExpenseRepositoryProvider);
+    final recurringExpenseRepository =
+        ref.watch(recurringExpenseRepositoryProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -202,64 +203,8 @@ class RecurringExpensesScreen extends ConsumerWidget {
     );
   }
 
-  void _showRecurringExpenseFormBottomSheet(
-    BuildContext context,
-    RecurringExpenseModel? expense,
-  ) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.radiusLarge),
-        ),
-      ),
-      builder: (context) => RecurringExpenseFormBottomSheet(expense: expense),
-    );
-  }
-
-  void _showDeleteConfirmation(
-    BuildContext context,
-    WidgetRef ref,
-    RecurringExpenseModel expense,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text(
-          'Remover Recorrência',
-          style: AppTypography.headlineSmall,
-        ),
-        content: Text(
-          'Tem certeza que deseja remover "${expense.description}"?',
-          style: AppTypography.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancelar',
-              style: AppTypography.titleMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _handleDeleteRecurringExpense(context, ref, expense);
-            },
-            child: Text(
-              'Remover',
-              style: AppTypography.titleMedium.copyWith(
-                color: AppColors.error,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  String _formatCurrency(double value) {
+    return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',').replaceAll(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), r'$1.')}';
   }
 
   Future<void> _handleDeleteRecurringExpense(
@@ -267,7 +212,8 @@ class RecurringExpensesScreen extends ConsumerWidget {
     WidgetRef ref,
     RecurringExpenseModel expense,
   ) async {
-    final recurringExpenseRepository = ref.read(recurringExpenseRepositoryProvider);
+    final recurringExpenseRepository =
+        ref.read(recurringExpenseRepositoryProvider);
 
     try {
       final success = await recurringExpenseRepository.delete(expense.id);
@@ -316,7 +262,63 @@ class RecurringExpensesScreen extends ConsumerWidget {
     }
   }
 
-  String _formatCurrency(double value) {
-    return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',').replaceAll(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), r'$1.')}';
+  void _showDeleteConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    RecurringExpenseModel expense,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text(
+          'Remover Recorrência',
+          style: AppTypography.headlineSmall,
+        ),
+        content: Text(
+          'Tem certeza que deseja remover "${expense.description}"?',
+          style: AppTypography.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancelar',
+              style: AppTypography.titleMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _handleDeleteRecurringExpense(context, ref, expense);
+            },
+            child: Text(
+              'Remover',
+              style: AppTypography.titleMedium.copyWith(
+                color: AppColors.error,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRecurringExpenseFormBottomSheet(
+    BuildContext context,
+    RecurringExpenseModel? expense,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusLarge),
+        ),
+      ),
+      builder: (context) => RecurringExpenseFormBottomSheet(expense: expense),
+    );
   }
 }

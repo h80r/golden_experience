@@ -1,8 +1,7 @@
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/data/datasources/local_database.dart';
-import 'package:golden_experience/data/database/app_settings_table.dart';
-import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:golden_experience/data/repositories/app_settings_repository_impl.dart';
 import 'package:golden_experience/domain/repositories/i_app_settings_repository.dart';
 

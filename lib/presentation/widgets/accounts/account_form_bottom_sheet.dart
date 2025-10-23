@@ -1,7 +1,7 @@
+import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:drift/drift.dart' as drift;
-import '../../../data/database/accounts_table.dart';
+
 import '../../../data/datasources/local_database.dart';
 import '../../../data/providers/repository_providers.dart';
 import '../../theme/app_colors.dart';
@@ -9,8 +9,8 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
-import '../inputs/custom_text_field.dart';
 import '../inputs/currency_text_field.dart';
+import '../inputs/custom_text_field.dart';
 
 /// AccountFormBottomSheet - Form for creating/editing accounts
 /// Supports dual-type accounts (can be both debit and credit)
@@ -36,38 +36,6 @@ class _AccountFormBottomSheetState
   late bool _isDebit;
   late bool _isCredit;
   bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _formKey = GlobalKey<FormState>();
-    _nameController = TextEditingController(text: widget.account?.name ?? '');
-
-    if (widget.account != null) {
-      _isDebit = widget.account!.isDebit;
-      _isCredit = widget.account!.isCredit;
-      _balanceController = TextEditingController(
-        text: widget.account!.balance.toString(),
-      );
-      _creditLimitController = TextEditingController(
-        text: widget.account!.creditLimit.toString(),
-      );
-    } else {
-      // Default: debit account
-      _isDebit = true;
-      _isCredit = false;
-      _balanceController = TextEditingController();
-      _creditLimitController = TextEditingController();
-    }
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _balanceController.dispose();
-    _creditLimitController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -255,6 +223,38 @@ class _AccountFormBottomSheetState
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _balanceController.dispose();
+    _creditLimitController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _formKey = GlobalKey<FormState>();
+    _nameController = TextEditingController(text: widget.account?.name ?? '');
+
+    if (widget.account != null) {
+      _isDebit = widget.account!.isDebit;
+      _isCredit = widget.account!.isCredit;
+      _balanceController = TextEditingController(
+        text: widget.account!.balance.toString(),
+      );
+      _creditLimitController = TextEditingController(
+        text: widget.account!.creditLimit.toString(),
+      );
+    } else {
+      // Default: debit account
+      _isDebit = true;
+      _isCredit = false;
+      _balanceController = TextEditingController();
+      _creditLimitController = TextEditingController();
+    }
   }
 
   Future<void> _handleSubmit() async {

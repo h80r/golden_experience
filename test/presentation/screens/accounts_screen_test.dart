@@ -1,30 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:golden_experience/data/database/accounts_table.dart';
 import 'package:golden_experience/data/datasources/local_database.dart';
 import 'package:golden_experience/data/providers/repository_providers.dart';
 import 'package:golden_experience/domain/repositories/i_account_repository.dart';
 import 'package:golden_experience/presentation/screens/accounts_screen.dart';
 import 'package:golden_experience/presentation/theme/app_colors.dart';
 import 'package:mockito/mockito.dart';
-
-// Mock classes
-class MockAccountRepository extends Mock implements IAccountRepository {
-  Stream<List<AccountModel>> Function()? _watchAllOverride;
-
-  @override
-  Stream<List<AccountModel>> watchAll() {
-    if (_watchAllOverride != null) {
-      return _watchAllOverride!();
-    }
-    return const Stream.empty();
-  }
-
-  void setWatchAllOverride(Stream<List<AccountModel>> Function() override) {
-    _watchAllOverride = override;
-  }
-}
 
 void main() {
   group('AccountsScreen Widget Tests', () {
@@ -47,7 +29,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify empty state UI
-      expect(find.byIcon(Icons.account_balance_wallet_outlined), findsOneWidget);
+      expect(
+          find.byIcon(Icons.account_balance_wallet_outlined), findsOneWidget);
       expect(find.text('Nenhuma conta cadastrada'), findsOneWidget);
       expect(find.text('Crie uma nova conta para começar'), findsOneWidget);
     });
@@ -189,8 +172,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify FAB exists and has correct colors
-      final fab = tester.widget<FloatingActionButton>(
-          find.byType(FloatingActionButton));
+      final fab = tester
+          .widget<FloatingActionButton>(find.byType(FloatingActionButton));
 
       expect(fab.backgroundColor, equals(AppColors.primary));
       expect(fab.foregroundColor, equals(AppColors.background));
@@ -299,8 +282,7 @@ void main() {
       expect(find.byType(Card), findsOneWidget);
     });
 
-    testWidgets('AppBar displays correct title',
-        (WidgetTester tester) async {
+    testWidgets('AppBar displays correct title', (WidgetTester tester) async {
       final mockRepository = MockAccountRepository();
       mockRepository.setWatchAllOverride(() => Stream.value([]));
 
@@ -358,8 +340,7 @@ void main() {
       expect(find.byType(Card), findsOneWidget);
     });
 
-    testWidgets('Renders loading state correctly',
-        (WidgetTester tester) async {
+    testWidgets('Renders loading state correctly', (WidgetTester tester) async {
       final mockRepository = MockAccountRepository();
       mockRepository.setWatchAllOverride(
           () => Stream.value([])); // Will trigger loading briefly
@@ -463,8 +444,7 @@ void main() {
       expect(appBar.backgroundColor, equals(AppColors.surface));
     });
 
-    testWidgets('Form can be opened and closed',
-        (WidgetTester tester) async {
+    testWidgets('Form can be opened and closed', (WidgetTester tester) async {
       final mockRepository = MockAccountRepository();
       mockRepository.setWatchAllOverride(() => Stream.value([]));
 
@@ -497,4 +477,21 @@ void main() {
       expect(find.text('Nova Conta'), findsNothing);
     });
   });
+}
+
+// Mock classes
+class MockAccountRepository extends Mock implements IAccountRepository {
+  Stream<List<AccountModel>> Function()? _watchAllOverride;
+
+  void setWatchAllOverride(Stream<List<AccountModel>> Function() override) {
+    _watchAllOverride = override;
+  }
+
+  @override
+  Stream<List<AccountModel>> watchAll() {
+    if (_watchAllOverride != null) {
+      return _watchAllOverride!();
+    }
+    return const Stream.empty();
+  }
 }

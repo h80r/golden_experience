@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:golden_experience/presentation/screens/dashboard_screen.dart';
-import 'package:golden_experience/presentation/widgets/dashboard/main_card.dart';
-import 'package:golden_experience/presentation/widgets/dashboard/secondary_card.dart';
-import 'package:golden_experience/presentation/widgets/expense/expense_details_bottom_sheet.dart';
-import 'package:golden_experience/presentation/theme/app_colors.dart';
 import 'package:golden_experience/domain/models/dashboard_data.dart';
 import 'package:golden_experience/domain/usecases/providers/usecase_providers.dart';
+import 'package:golden_experience/presentation/screens/dashboard_screen.dart';
+import 'package:golden_experience/presentation/theme/app_colors.dart';
+import 'package:golden_experience/presentation/widgets/dashboard/main_card.dart';
+import 'package:golden_experience/presentation/widgets/dashboard/secondary_card.dart';
 
 void main() {
   group('DashboardScreen Widget Tests', () {
     /// Creates a mock dashboard data for testing
-    DashboardData _createMockDashboardData() {
+    DashboardData createMockDashboardData() {
       return DashboardData(
         monthlySalary: 5000.0,
         totalSpent: 1234.50,
@@ -31,7 +30,7 @@ void main() {
         ProviderScope(
           overrides: [
             dashboardDataStreamProvider.overrideWith((ref) async* {
-              yield _createMockDashboardData();
+              yield createMockDashboardData();
             }),
           ],
           child: const MaterialApp(
@@ -82,8 +81,8 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      final fab = tester.widget<FloatingActionButton>(
-          find.byType(FloatingActionButton));
+      final fab = tester
+          .widget<FloatingActionButton>(find.byType(FloatingActionButton));
 
       expect(fab.backgroundColor, equals(AppColors.primary));
       expect(fab.foregroundColor, equals(AppColors.background));

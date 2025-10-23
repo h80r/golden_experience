@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golden_experience/presentation/screens/main_screen.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/domain/models/dashboard_data.dart';
 import 'package:golden_experience/domain/usecases/providers/usecase_providers.dart';
+import 'package:golden_experience/presentation/screens/main_screen.dart';
 
 void main() {
   group('MainScreen Navigation Tests', () {
     /// Creates mock dashboard data for testing
-    DashboardData _createMockDashboardData() {
+    DashboardData createMockDashboardData() {
       return DashboardData(
         monthlySalary: 5000.0,
         totalSpent: 1234.50,
@@ -27,7 +27,7 @@ void main() {
         ProviderScope(
           overrides: [
             dashboardDataStreamProvider.overrideWith((ref) async* {
-              yield _createMockDashboardData();
+              yield createMockDashboardData();
             }),
           ],
           child: const MaterialApp(
@@ -52,12 +52,13 @@ void main() {
       expect(find.text('Contas'), findsOneWidget);
     });
 
-    testWidgets('Initial tab is Dashboard (Início)', (WidgetTester tester) async {
+    testWidgets('Initial tab is Dashboard (Início)',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             dashboardDataStreamProvider.overrideWith((ref) async* {
-              yield _createMockDashboardData();
+              yield createMockDashboardData();
             }),
           ],
           child: const MaterialApp(
@@ -78,7 +79,7 @@ void main() {
         ProviderScope(
           overrides: [
             dashboardDataStreamProvider.overrideWith((ref) async* {
-              yield _createMockDashboardData();
+              yield createMockDashboardData();
             }),
           ],
           child: const MaterialApp(
@@ -94,7 +95,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify RecurringExpensesScreen is displayed (check by tab index)
-      final bottomNav = tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+      final bottomNav =
+          tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(bottomNav.currentIndex, equals(1));
     });
 
@@ -104,7 +106,7 @@ void main() {
         ProviderScope(
           overrides: [
             dashboardDataStreamProvider.overrideWith((ref) async* {
-              yield _createMockDashboardData();
+              yield createMockDashboardData();
             }),
           ],
           child: const MaterialApp(
@@ -120,7 +122,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify AccountsScreen is displayed (check by tab index)
-      final bottomNav = tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+      final bottomNav =
+          tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(bottomNav.currentIndex, equals(2));
     });
 
@@ -130,7 +133,7 @@ void main() {
         ProviderScope(
           overrides: [
             dashboardDataStreamProvider.overrideWith((ref) async* {
-              yield _createMockDashboardData();
+              yield createMockDashboardData();
             }),
           ],
           child: const MaterialApp(
@@ -147,13 +150,15 @@ void main() {
       // Go to Recorrências
       await tester.tap(find.byIcon(Icons.repeat));
       await tester.pumpAndSettle();
-      var bottomNav = tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+      var bottomNav =
+          tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(bottomNav.currentIndex, equals(1));
 
       // Go to Contas
       await tester.tap(find.byIcon(Icons.account_balance_wallet));
       await tester.pumpAndSettle();
-      bottomNav = tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
+      bottomNav =
+          tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
       expect(bottomNav.currentIndex, equals(2));
 
       // Back to Dashboard
@@ -168,7 +173,7 @@ void main() {
         ProviderScope(
           overrides: [
             dashboardDataStreamProvider.overrideWith((ref) async* {
-              yield _createMockDashboardData();
+              yield createMockDashboardData();
             }),
           ],
           child: const MaterialApp(
@@ -189,7 +194,7 @@ void main() {
         ProviderScope(
           overrides: [
             dashboardDataStreamProvider.overrideWith((ref) async* {
-              yield _createMockDashboardData();
+              yield createMockDashboardData();
             }),
           ],
           child: const MaterialApp(

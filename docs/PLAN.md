@@ -1433,6 +1433,77 @@ void _registerDefaultParsers() {
 
 ---
 
+## 🏗️ Fase 8: Estabilidade, Code Health e Migração (41 Issues)
+
+**Objetivo:** Corrigir todos os warnings e infos do `flutter analyze`, atualizar pacotes desatualizados, e migrar código obsoleto, garantindo um código **limpo**, **moderno** e **sem alertas**.
+
+---
+
+### [ ] F8-T1: Atualização Crítica de Dependências (30+ Issues)
+
+**Descrição:** Atualizar todos os pacotes desatualizados e corrigir referências de dependências ausentes no `pubspec.yaml`, eliminando os avisos de `pub outdated` e `depend_on_referenced_packages`.
+
+**Issues/Grupo Corrigido:**
+- **30** pacotes com versões incompatíveis/desatualizadas.
+- **4** instâncias de `depend_on_referenced_packages` (lib/data/datasources/local_database.dart, test/domain/usecases/add_transaction_usecase_test.dart, test/domain/usecases/get_dashboard_data_usecase_test.dart, test/presentation/screens/accounts_screen_test.dart, test/presentation/screens/recurring_expenses_screen_test.dart, test/presentation/screens/settings_screen_test.dart).
+
+**Subtarefas:**
+1.  Executar `flutter pub outdated` e atualizar as versões de pacotes principais (como `analyzer`, `mockito`, `share_plus`, `flutter_local_notifications`, etc.) para as versões mais recentes compatíveis com o Flutter/Dart atual.
+2.  Adicionar **path**, **matcher** e **mockito** como dependências apropriadas (`dependencies` ou `dev_dependencies`) no `pubspec.yaml` para resolver as 4 ocorrências de `depend_on_referenced_packages`.
+3.  Executar `flutter pub get` e verificar se novas quebras de código ou warnings surgem.
+
+---
+
+### [ ] F8-T2: Migração de APIs Deprecated e Contextos Assíncronos (11 Issues)
+
+**Descrição:** Substituir APIs obsoletas do Flutter/Dart e resolver problemas de uso do `BuildContext` em contextos assíncronos.
+
+**Issues/Grupo Corrigido:**
+- **4** instâncias de `deprecated_member_use` (Flutter Core: `withOpacity`, `window`, `viewInsets`).
+- **5** instâncias de `deprecated_member_use` (Testes: `setMockMethodCallHandler`).
+- **2** instâncias de `use_build_context_synchronously` (lib/presentation/screens/accounts_screen.dart, lib/presentation/screens/transactions_list_screen.dart).
+
+**Subtarefas:**
+1.  Substituir todas as 3 ocorrências de `.withOpacity()` por métodos alternativos como `.withValues()` ou reescrever a lógica de cores.
+2.  Corrigir o uso de `window.viewInsets` e `window` no teste de dashboard usando `tester.view` ou `tester.platformDispatcher`.
+3.  Atualizar todas as 5 chamadas de `setMockMethodCallHandler` nos testes de repositório para a nova API: `TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler`.
+4.  Adicionar verificações de **`if (mounted)`** antes de qualquer uso de `BuildContext` (ex: `Navigator.of(context)`) nas funções assíncronas de `accounts_screen.dart` e `transactions_list_screen.dart`.
+
+---
+
+### [ ] F8-T3: Implementação de Logging e Limpeza de Produção (7 Issues)
+
+**Descrição:** Remover todas as chamadas de `print()` em código de produção e substituí-las por uma solução de logging adequada para facilitar a depuração.
+
+**Issues/Grupo Corrigido:**
+- **7** instâncias de `avoid_print` (lib/data/services/notification_service.dart, lib/data/services/transaction_notification_service.dart).
+
+**Subtarefas:**
+1.  Adicionar um pacote de logging (ex: `logger`) como `dev_dependency` e criar um wrapper de `LoggerService` ou usar o pacote diretamente.
+2.  Substituir todas as 7 chamadas de **`print(...)`** nos dois arquivos de serviço de notificação por chamadas ao logger (ex: `_log.info('...')`).
+3.  Configurar o logger para ser silencioso em builds de produção/release, aderindo à regra de lint.
+
+---
+
+### [ ] F8-T4: Remoção de Código Morto e Alertas de Compilação (10 Issues)
+
+**Descrição:** Identificar e remover variáveis, campos, métodos e elementos de código não utilizados, e corrigir problemas de sobrescrita.
+
+**Issues/Grupo Corrigido:**
+- **5** instâncias de `unused_field` (lib/presentation/screens/onboarding_screen.dart).
+- **3** instâncias de `unused_local_variable` (test/data/parsers/notification_parser_registry_test.dart, test/domain/usecases/get_dashboard_data_usecase_test.dart, test/domain/usecases/process_recurring_expenses_usecase_test.dart).
+- **2** instâncias de `unused_element` (lib/data/datasources/local_database.g.dart, lib/presentation/widgets/expense/expense_details_bottom_sheet.dart).
+- **1** instância de `override_on_non_overriding_member` (test/domain/usecases/process_recurring_expenses_usecase_test.dart).
+- **1** instância de `unused_local_variable` (test/presentation/screens/accounts_screen_test.dart).
+
+**Subtarefas:**
+1.  Remover os 5 campos não utilizados (`_accountName`, `_accountIsDebit`, etc.) do `onboarding_screen.dart`.
+2.  Remover ou utilizar as 4 variáveis locais não utilizadas nos arquivos de teste (`instance1Id`, `now`, `scaffold`, `tomorrow`, `callCount`, `originalCreate`).
+3.  Remover as declarações não referenciadas `_$LocalDatabase.connect` e `_handleValueChange`.
+4.  Remover a anotação `@override` do método que não sobrescreve em `process_recurring_expenses_usecase_test.dart`.
+
+---
+
 ## 📝 Notas Importantes
 
 ### Boas Práticas Durante o Desenvolvimento

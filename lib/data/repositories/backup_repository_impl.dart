@@ -1,14 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:path_provider/path_provider.dart';
+
 import '../../domain/repositories/i_backup_repository.dart';
 import '../datasources/local_database.dart';
-import '../database/transactions_table.dart';
-import '../database/accounts_table.dart';
-import '../database/categories_table.dart';
-import '../database/recurring_expenses_table.dart';
-import '../database/app_settings_table.dart';
 
 /// Implementation of IBackupRepository using Drift database
 class BackupRepositoryImpl implements IBackupRepository {
@@ -42,6 +39,25 @@ class BackupRepositoryImpl implements IBackupRepository {
       return const JsonEncoder.withIndent('  ').convert(backupData);
     } catch (e) {
       throw Exception('Erro ao exportar dados: $e');
+    }
+  }
+
+  @override
+  Future<String> getDefaultBackupPath() async {
+    try {
+      // Try to get documents directory for more accessible backup
+      final documentsDirectory = await getApplicationDocumentsDirectory();
+      final backupDir = Directory('${documentsDirectory.path}/backups');
+
+      // Create backups directory if it doesn't exist
+      if (!await backupDir.exists()) {
+        await backupDir.create(recursive: true);
+      }
+
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      return '${backupDir.path}/golden_experience_backup_$timestamp.json';
+    } catch (e) {
+      throw Exception('Erro ao determinar local de backup: $e');
     }
   }
 
@@ -94,15 +110,18 @@ class BackupRepositoryImpl implements IBackupRepository {
             final accountTypeStr = accountData['type'] as String;
             isDebit = accountTypeStr == 'debit';
             isCredit = accountTypeStr == 'credit';
-            balance = (accountData['initialBalance'] as num?)?.toDouble() ?? 0.0;
-            creditLimit = (accountData['creditLimit'] as num?)?.toDouble() ?? 0.0;
+            balance =
+                (accountData['initialBalance'] as num?)?.toDouble() ?? 0.0;
+            creditLimit =
+                (accountData['creditLimit'] as num?)?.toDouble() ?? 0.0;
             creditUsed = 0.0;
           } else {
             // New format: dual-type (boolean fields)
             isDebit = (accountData['isDebit'] as bool?) ?? false;
             isCredit = (accountData['isCredit'] as bool?) ?? false;
             balance = (accountData['balance'] as num?)?.toDouble() ?? 0.0;
-            creditLimit = (accountData['creditLimit'] as num?)?.toDouble() ?? 0.0;
+            creditLimit =
+                (accountData['creditLimit'] as num?)?.toDouble() ?? 0.0;
             creditUsed = (accountData['creditUsed'] as num?)?.toDouble() ?? 0.0;
           }
 
@@ -163,36 +182,20 @@ class BackupRepositoryImpl implements IBackupRepository {
           final settingData = settingJson as Map<String, dynamic>;
           final companion = AppSettingsModelCompanion(
             id: Value(settingData['id'] as int),
-            monthlySalary: Value((settingData['monthlySalary'] as num).toDouble()),
-            reserveBalance: Value((settingData['reserveBalance'] as num).toDouble()),
-            maxReserveUsagePercentage: Value((settingData['maxReserveUsagePercentage'] as num).toDouble()),
-            lastRecurringCheck: Value(DateTime.parse(settingData['lastRecurringCheck'] as String)),
+            monthlySalary:
+                Value((settingData['monthlySalary'] as num).toDouble()),
+            reserveBalance:
+                Value((settingData['reserveBalance'] as num).toDouble()),
+            maxReserveUsagePercentage: Value(
+                (settingData['maxReserveUsagePercentage'] as num).toDouble()),
+            lastRecurringCheck: Value(
+                DateTime.parse(settingData['lastRecurringCheck'] as String)),
           );
           await _db.into(_db.appSettings).insert(companion);
         }
       }
     } catch (e) {
       throw Exception('Erro ao importar dados: $e');
-    }
-  }
-
-  @override
-  Future<String> getDefaultBackupPath() async {
-    try {
-      // Try to get documents directory for more accessible backup
-      final documentsDirectory = await getApplicationDocumentsDirectory();
-      final backupDir =
-          Directory('${documentsDirectory.path}/backups');
-
-      // Create backups directory if it doesn't exist
-      if (!await backupDir.exists()) {
-        await backupDir.create(recursive: true);
-      }
-
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      return '${backupDir.path}/golden_experience_backup_$timestamp.json';
-    } catch (e) {
-      throw Exception('Erro ao determinar local de backup: $e');
     }
   }
 }

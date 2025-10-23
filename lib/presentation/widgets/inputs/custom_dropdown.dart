@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -33,30 +34,9 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
   late bool _isFocused;
 
   @override
-  void initState() {
-    super.initState();
-    _focusNode = FocusNode();
-    _isFocused = false;
-    _focusNode.addListener(_handleFocusChange);
-  }
-
-  @override
-  void dispose() {
-    _focusNode.removeListener(_handleFocusChange);
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  void _handleFocusChange() {
-    setState(() {
-      _isFocused = _focusNode.hasFocus;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
-      value: widget.value,
+      initialValue: widget.value,
       items: widget.items,
       onChanged: widget.isEnabled ? widget.onChanged : null,
       validator: widget.validator,
@@ -72,7 +52,8 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
         prefixIcon: widget.prefixIcon != null
             ? Icon(
                 widget.prefixIcon,
-                color: _isFocused ? AppColors.secondary : AppColors.textTertiary,
+                color:
+                    _isFocused ? AppColors.secondary : AppColors.textTertiary,
               )
             : null,
         border: OutlineInputBorder(
@@ -111,11 +92,31 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
           ),
         ),
         filled: true,
-        fillColor: widget.isEnabled
-            ? AppColors.surfaceVariant
-            : AppColors.surface,
+        fillColor:
+            widget.isEnabled ? AppColors.surfaceVariant : AppColors.surface,
         contentPadding: const EdgeInsets.all(AppSpacing.md),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _isFocused = false;
+    _focusNode.addListener(_handleFocusChange);
+  }
+
+  void _handleFocusChange() {
+    setState(() {
+      _isFocused = _focusNode.hasFocus;
+    });
   }
 }

@@ -1,68 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:golden_experience/data/database/recurring_expenses_table.dart';
-import 'package:golden_experience/data/database/accounts_table.dart';
-import 'package:golden_experience/data/database/categories_table.dart';
 import 'package:golden_experience/data/datasources/local_database.dart';
 import 'package:golden_experience/data/providers/repository_providers.dart';
-import 'package:golden_experience/domain/repositories/i_recurring_expense_repository.dart';
 import 'package:golden_experience/domain/repositories/i_account_repository.dart';
 import 'package:golden_experience/domain/repositories/i_category_repository.dart';
+import 'package:golden_experience/domain/repositories/i_recurring_expense_repository.dart';
 import 'package:golden_experience/presentation/screens/recurring_expenses_screen.dart';
 import 'package:golden_experience/presentation/theme/app_colors.dart';
 import 'package:mockito/mockito.dart';
-
-// Mock classes
-class MockRecurringExpenseRepository extends Mock
-    implements IRecurringExpenseRepository {
-  Stream<List<RecurringExpenseModel>> Function()? _watchAllOverride;
-
-  @override
-  Stream<List<RecurringExpenseModel>> watchAll() {
-    if (_watchAllOverride != null) {
-      return _watchAllOverride!();
-    }
-    return const Stream.empty();
-  }
-
-  void setWatchAllOverride(
-      Stream<List<RecurringExpenseModel>> Function() override) {
-    _watchAllOverride = override;
-  }
-}
-
-class MockAccountRepository extends Mock implements IAccountRepository {
-  Stream<List<AccountModel>> Function()? _watchAllOverride;
-
-  @override
-  Stream<List<AccountModel>> watchAll() {
-    if (_watchAllOverride != null) {
-      return _watchAllOverride!();
-    }
-    return const Stream.empty();
-  }
-
-  void setWatchAllOverride(Stream<List<AccountModel>> Function() override) {
-    _watchAllOverride = override;
-  }
-}
-
-class MockCategoryRepository extends Mock implements ICategoryRepository {
-  Stream<List<CategoryModel>> Function()? _watchAllOverride;
-
-  @override
-  Stream<List<CategoryModel>> watchAll() {
-    if (_watchAllOverride != null) {
-      return _watchAllOverride!();
-    }
-    return const Stream.empty();
-  }
-
-  void setWatchAllOverride(Stream<List<CategoryModel>> Function() override) {
-    _watchAllOverride = override;
-  }
-}
 
 void main() {
   group('RecurringExpensesScreen Widget Tests', () {
@@ -74,7 +20,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recurringExpenseRepositoryProvider.overrideWithValue(mockRepository),
+            recurringExpenseRepositoryProvider
+                .overrideWithValue(mockRepository),
           ],
           child: const MaterialApp(
             home: RecurringExpensesScreen(),
@@ -87,7 +34,8 @@ void main() {
       // Verify empty state UI
       expect(find.byIcon(Icons.schedule_outlined), findsOneWidget);
       expect(find.text('Nenhuma recorrência cadastrada'), findsOneWidget);
-      expect(find.text('Crie uma nova recorrência para começar'), findsOneWidget);
+      expect(
+          find.text('Crie uma nova recorrência para começar'), findsOneWidget);
     });
 
     testWidgets('Renders list of recurring expenses when data is available',
@@ -117,7 +65,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recurringExpenseRepositoryProvider.overrideWithValue(mockRepository),
+            recurringExpenseRepositoryProvider
+                .overrideWithValue(mockRepository),
           ],
           child: const MaterialApp(
             home: RecurringExpensesScreen(),
@@ -158,7 +107,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recurringExpenseRepositoryProvider.overrideWithValue(mockRepository),
+            recurringExpenseRepositoryProvider
+                .overrideWithValue(mockRepository),
           ],
           child: const MaterialApp(
             home: RecurringExpensesScreen(),
@@ -180,7 +130,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recurringExpenseRepositoryProvider.overrideWithValue(mockRepository),
+            recurringExpenseRepositoryProvider
+                .overrideWithValue(mockRepository),
           ],
           child: const MaterialApp(
             home: RecurringExpensesScreen(),
@@ -191,23 +142,23 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify FAB exists and has correct colors
-      final fab = tester.widget<FloatingActionButton>(
-          find.byType(FloatingActionButton));
+      final fab = tester
+          .widget<FloatingActionButton>(find.byType(FloatingActionButton));
 
       expect(fab.backgroundColor, equals(AppColors.primary));
       expect(fab.foregroundColor, equals(AppColors.background));
       expect(find.byIcon(Icons.add), findsOneWidget);
     });
 
-    testWidgets('AppBar displays correct title',
-        (WidgetTester tester) async {
+    testWidgets('AppBar displays correct title', (WidgetTester tester) async {
       final mockRepository = MockRecurringExpenseRepository();
       mockRepository.setWatchAllOverride(() => Stream.value([]));
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recurringExpenseRepositoryProvider.overrideWithValue(mockRepository),
+            recurringExpenseRepositoryProvider
+                .overrideWithValue(mockRepository),
           ],
           child: const MaterialApp(
             home: RecurringExpensesScreen(),
@@ -240,7 +191,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recurringExpenseRepositoryProvider.overrideWithValue(mockRepository),
+            recurringExpenseRepositoryProvider
+                .overrideWithValue(mockRepository),
           ],
           child: const MaterialApp(
             home: RecurringExpensesScreen(),
@@ -256,15 +208,15 @@ void main() {
       expect(find.byType(Card), findsOneWidget);
     });
 
-    testWidgets('Renders loading state correctly',
-        (WidgetTester tester) async {
+    testWidgets('Renders loading state correctly', (WidgetTester tester) async {
       final mockRepository = MockRecurringExpenseRepository();
       mockRepository.setWatchAllOverride(() => Stream.value([]));
 
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recurringExpenseRepositoryProvider.overrideWithValue(mockRepository),
+            recurringExpenseRepositoryProvider
+                .overrideWithValue(mockRepository),
           ],
           child: const MaterialApp(
             home: RecurringExpensesScreen(),
@@ -311,7 +263,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recurringExpenseRepositoryProvider.overrideWithValue(mockRepository),
+            recurringExpenseRepositoryProvider
+                .overrideWithValue(mockRepository),
           ],
           child: const MaterialApp(
             home: RecurringExpensesScreen(),
@@ -344,7 +297,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recurringExpenseRepositoryProvider.overrideWithValue(mockRepository),
+            recurringExpenseRepositoryProvider
+                .overrideWithValue(mockRepository),
           ],
           child: const MaterialApp(
             home: RecurringExpensesScreen(),
@@ -378,7 +332,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            recurringExpenseRepositoryProvider.overrideWithValue(mockRepository),
+            recurringExpenseRepositoryProvider
+                .overrideWithValue(mockRepository),
           ],
           child: const MaterialApp(
             home: RecurringExpensesScreen(),
@@ -392,4 +347,55 @@ void main() {
       expect(find.text('Dia 25'), findsOneWidget);
     });
   });
+}
+
+class MockAccountRepository extends Mock implements IAccountRepository {
+  Stream<List<AccountModel>> Function()? _watchAllOverride;
+
+  void setWatchAllOverride(Stream<List<AccountModel>> Function() override) {
+    _watchAllOverride = override;
+  }
+
+  @override
+  Stream<List<AccountModel>> watchAll() {
+    if (_watchAllOverride != null) {
+      return _watchAllOverride!();
+    }
+    return const Stream.empty();
+  }
+}
+
+class MockCategoryRepository extends Mock implements ICategoryRepository {
+  Stream<List<CategoryModel>> Function()? _watchAllOverride;
+
+  void setWatchAllOverride(Stream<List<CategoryModel>> Function() override) {
+    _watchAllOverride = override;
+  }
+
+  @override
+  Stream<List<CategoryModel>> watchAll() {
+    if (_watchAllOverride != null) {
+      return _watchAllOverride!();
+    }
+    return const Stream.empty();
+  }
+}
+
+// Mock classes
+class MockRecurringExpenseRepository extends Mock
+    implements IRecurringExpenseRepository {
+  Stream<List<RecurringExpenseModel>> Function()? _watchAllOverride;
+
+  void setWatchAllOverride(
+      Stream<List<RecurringExpenseModel>> Function() override) {
+    _watchAllOverride = override;
+  }
+
+  @override
+  Stream<List<RecurringExpenseModel>> watchAll() {
+    if (_watchAllOverride != null) {
+      return _watchAllOverride!();
+    }
+    return const Stream.empty();
+  }
 }

@@ -1,10 +1,10 @@
 import 'package:drift/drift.dart';
-import '../../data/database/accounts_table.dart';
+
 import '../../data/datasources/local_database.dart';
-import '../repositories/i_recurring_expense_repository.dart';
-import '../repositories/i_app_settings_repository.dart';
-import '../repositories/i_transaction_repository.dart';
 import '../repositories/i_account_repository.dart';
+import '../repositories/i_app_settings_repository.dart';
+import '../repositories/i_recurring_expense_repository.dart';
+import '../repositories/i_transaction_repository.dart';
 
 /// Result of processing recurring expenses
 class ProcessRecurringExpensesResult {
@@ -20,6 +20,15 @@ class ProcessRecurringExpensesResult {
     this.errorMessage,
   });
 
+  factory ProcessRecurringExpensesResult.failure(String errorMessage) {
+    return ProcessRecurringExpensesResult(
+      success: false,
+      processedCount: 0,
+      createdTransactionIds: [],
+      errorMessage: errorMessage,
+    );
+  }
+
   factory ProcessRecurringExpensesResult.success({
     required int processedCount,
     required List<int> createdTransactionIds,
@@ -28,15 +37,6 @@ class ProcessRecurringExpensesResult {
       success: true,
       processedCount: processedCount,
       createdTransactionIds: createdTransactionIds,
-    );
-  }
-
-  factory ProcessRecurringExpensesResult.failure(String errorMessage) {
-    return ProcessRecurringExpensesResult(
-      success: false,
-      processedCount: 0,
-      createdTransactionIds: [],
-      errorMessage: errorMessage,
     );
   }
 }
@@ -97,7 +97,8 @@ class ProcessRecurringExpensesUseCase {
         startDate = settings.lastRecurringCheck
             .add(const Duration(days: 1))
             .copyWith(hour: 0, minute: 0, second: 0, millisecond: 0);
-      } else if (settings.lastRecurringCheck.isAtSameMomentAs(todayAtMidnight)) {
+      } else if (settings.lastRecurringCheck
+          .isAtSameMomentAs(todayAtMidnight)) {
         // Already processed today
         return ProcessRecurringExpensesResult.success(
           processedCount: 0,

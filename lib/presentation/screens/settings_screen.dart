@@ -1,18 +1,19 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:io';
-import 'package:file_picker/file_picker.dart';
+
+import '../../data/providers/repository_providers.dart';
+import '../state/app_settings_form_notifier.dart';
+import '../state/backup_notifier.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/buttons/primary_button.dart';
 import '../widgets/buttons/secondary_button.dart';
-import '../widgets/inputs/custom_text_field.dart';
 import '../widgets/inputs/currency_text_field.dart';
 import '../widgets/inputs/reserve_percentage_slider.dart';
 import '../widgets/settings/notification_settings_section.dart';
-import '../state/app_settings_form_notifier.dart';
-import '../state/backup_notifier.dart';
-import '../../data/providers/repository_providers.dart';
 
 /// SettingsScreen - Configuration screen for app-wide financial settings
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -25,227 +26,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _monthlySalaryController;
   late TextEditingController _reserveBalanceController;
-
-  @override
-  void initState() {
-    super.initState();
-    _monthlySalaryController = TextEditingController();
-    _reserveBalanceController = TextEditingController();
-
-    // Load existing settings
-    _loadSettings();
-  }
-
-  @override
-  void dispose() {
-    _monthlySalaryController.dispose();
-    _reserveBalanceController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadSettings() async {
-    final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
-    final settings = await appSettingsRepository.get();
-
-    if (settings != null && mounted) {
-      _monthlySalaryController.text = settings.monthlySalary.toString();
-      _reserveBalanceController.text = settings.reserveBalance.toString();
-
-      ref.read(appSettingsFormProvider.notifier).setFromExisting(
-            monthlySalary: settings.monthlySalary,
-            reserveBalance: settings.reserveBalance,
-            maxReserveUsagePercentage: settings.maxReserveUsagePercentage,
-          );
-    }
-  }
-
-  void _onMonthlySalaryChanged(double value) {
-    ref.read(appSettingsFormProvider.notifier).updateMonthlySalary(value);
-  }
-
-  void _onReserveBalanceChanged(double value) {
-    ref.read(appSettingsFormProvider.notifier).updateReserveBalance(value);
-  }
-
-  void _onMaxReservePercentageChanged(double value) {
-    ref.read(appSettingsFormProvider.notifier)
-        .updateMaxReserveUsagePercentage(value);
-  }
-
-  Future<void> _saveSettings() async {
-    final formState = ref.read(appSettingsFormProvider);
-
-    if (!formState.isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            formState.errorMessage ?? 'Erro ao salvar configurações',
-          ),
-          backgroundColor: AppColors.error,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-      return;
-    }
-
-    try {
-      final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
-
-      // Update each setting individually
-      await Future.wait([
-        appSettingsRepository.updateMonthlySalary(formState.monthlySalary),
-        appSettingsRepository.updateReserveBalance(formState.reserveBalance),
-        appSettingsRepository.updateMaxReserveUsagePercentage(
-          formState.maxReserveUsagePercentage,
-        ),
-      ]);
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Configurações salvas com sucesso!'),
-          backgroundColor: AppColors.success,
-          duration: Duration(seconds: 2),
-        ),
-      );
-
-      // Return to dashboard
-      Navigator.of(context).pop();
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao salvar: $e'),
-          backgroundColor: AppColors.error,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
-  }
-
-  Future<void> _exportBackup() async {
-    final backupNotifier = ref.read(backupProvider.notifier);
-    backupNotifier.setLoading(true);
-
-    try {
-      final backupRepository = ref.read(backupRepositoryProvider);
-      final jsonData = await backupRepository.exportToJson();
-      final backupPath = await backupRepository.getDefaultBackupPath();
-
-      // Write the JSON to file
-      final file = File(backupPath);
-      await file.writeAsString(jsonData);
-
-      if (!mounted) return;
-
-      backupNotifier.setSuccess('Backup exportado com sucesso!\n$backupPath');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Backup exportado com sucesso!'),
-          backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      backupNotifier.setError('Erro ao exportar: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao exportar: $e'),
-          backgroundColor: AppColors.error,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    } finally {
-      backupNotifier.setLoading(false);
-    }
-  }
-
-  Future<void> _importBackup() async {
-    final backupNotifier = ref.read(backupProvider.notifier);
-
-    try {
-      // Pick a file
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['json'],
-      );
-
-      if (result == null || result.files.isEmpty) {
-        return; // User cancelled
-      }
-
-      final filePath = result.files.first.path;
-      if (filePath == null) {
-        throw Exception('Caminho do arquivo não encontrado');
-      }
-
-      backupNotifier.setLoading(true);
-
-      // Read file content
-      final file = File(filePath);
-      final jsonData = await file.readAsString();
-
-      // Show confirmation dialog
-      if (!mounted) return;
-
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Confirmar Importação'),
-          content: const Text(
-            'Isso substituirá todos os dados atuais pelo backup. Deseja continuar?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Importar'),
-            ),
-          ],
-        ),
-      );
-
-      if (confirmed != true) {
-        backupNotifier.setLoading(false);
-        return;
-      }
-
-      // Import data
-      final backupRepository = ref.read(backupRepositoryProvider);
-      await backupRepository.importFromJson(jsonData);
-
-      if (!mounted) return;
-
-      backupNotifier.setSuccess('Backup importado com sucesso!');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Backup importado com sucesso!'),
-          backgroundColor: AppColors.success,
-          duration: Duration(seconds: 3),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      backupNotifier.setError('Erro ao importar: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao importar: $e'),
-          backgroundColor: AppColors.error,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    } finally {
-      backupNotifier.setLoading(false);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -458,5 +238,226 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _monthlySalaryController.dispose();
+    _reserveBalanceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _monthlySalaryController = TextEditingController();
+    _reserveBalanceController = TextEditingController();
+
+    // Load existing settings
+    _loadSettings();
+  }
+
+  Future<void> _exportBackup() async {
+    final backupNotifier = ref.read(backupProvider.notifier);
+    backupNotifier.setLoading(true);
+
+    try {
+      final backupRepository = ref.read(backupRepositoryProvider);
+      final jsonData = await backupRepository.exportToJson();
+      final backupPath = await backupRepository.getDefaultBackupPath();
+
+      // Write the JSON to file
+      final file = File(backupPath);
+      await file.writeAsString(jsonData);
+
+      if (!mounted) return;
+
+      backupNotifier.setSuccess('Backup exportado com sucesso!\n$backupPath');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Backup exportado com sucesso!'),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      backupNotifier.setError('Erro ao exportar: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao exportar: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      backupNotifier.setLoading(false);
+    }
+  }
+
+  Future<void> _importBackup() async {
+    final backupNotifier = ref.read(backupProvider.notifier);
+
+    try {
+      // Pick a file
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result == null || result.files.isEmpty) {
+        return; // User cancelled
+      }
+
+      final filePath = result.files.first.path;
+      if (filePath == null) {
+        throw Exception('Caminho do arquivo não encontrado');
+      }
+
+      backupNotifier.setLoading(true);
+
+      // Read file content
+      final file = File(filePath);
+      final jsonData = await file.readAsString();
+
+      // Show confirmation dialog
+      if (!mounted) return;
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Confirmar Importação'),
+          content: const Text(
+            'Isso substituirá todos os dados atuais pelo backup. Deseja continuar?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Importar'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed != true) {
+        backupNotifier.setLoading(false);
+        return;
+      }
+
+      // Import data
+      final backupRepository = ref.read(backupRepositoryProvider);
+      await backupRepository.importFromJson(jsonData);
+
+      if (!mounted) return;
+
+      backupNotifier.setSuccess('Backup importado com sucesso!');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Backup importado com sucesso!'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      backupNotifier.setError('Erro ao importar: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao importar: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      backupNotifier.setLoading(false);
+    }
+  }
+
+  Future<void> _loadSettings() async {
+    final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
+    final settings = await appSettingsRepository.get();
+
+    if (settings != null && mounted) {
+      _monthlySalaryController.text = settings.monthlySalary.toString();
+      _reserveBalanceController.text = settings.reserveBalance.toString();
+
+      ref.read(appSettingsFormProvider.notifier).setFromExisting(
+            monthlySalary: settings.monthlySalary,
+            reserveBalance: settings.reserveBalance,
+            maxReserveUsagePercentage: settings.maxReserveUsagePercentage,
+          );
+    }
+  }
+
+  void _onMaxReservePercentageChanged(double value) {
+    ref.read(appSettingsFormProvider.notifier)
+        .updateMaxReserveUsagePercentage(value);
+  }
+
+  void _onMonthlySalaryChanged(double value) {
+    ref.read(appSettingsFormProvider.notifier).updateMonthlySalary(value);
+  }
+
+  void _onReserveBalanceChanged(double value) {
+    ref.read(appSettingsFormProvider.notifier).updateReserveBalance(value);
+  }
+
+  Future<void> _saveSettings() async {
+    final formState = ref.read(appSettingsFormProvider);
+
+    if (!formState.isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            formState.errorMessage ?? 'Erro ao salvar configurações',
+          ),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    try {
+      final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
+
+      // Update each setting individually
+      await Future.wait([
+        appSettingsRepository.updateMonthlySalary(formState.monthlySalary),
+        appSettingsRepository.updateReserveBalance(formState.reserveBalance),
+        appSettingsRepository.updateMaxReserveUsagePercentage(
+          formState.maxReserveUsagePercentage,
+        ),
+      ]);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Configurações salvas com sucesso!'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Return to dashboard
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao salvar: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }

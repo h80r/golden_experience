@@ -1,9 +1,7 @@
+import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:drift/drift.dart' as drift;
-import '../../../data/database/recurring_expenses_table.dart';
-import '../../../data/database/categories_table.dart';
-import '../../../data/database/accounts_table.dart';
+
 import '../../../data/datasources/local_database.dart';
 import '../../../data/providers/repository_providers.dart';
 import '../../theme/app_colors.dart';
@@ -11,9 +9,9 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
-import '../inputs/custom_text_field.dart';
 import '../inputs/currency_text_field.dart';
 import '../inputs/custom_dropdown.dart';
+import '../inputs/custom_text_field.dart';
 
 /// RecurringExpenseFormBottomSheet - Form for creating/editing recurring expenses
 class RecurringExpenseFormBottomSheet extends ConsumerStatefulWidget {
@@ -38,30 +36,6 @@ class _RecurringExpenseFormBottomSheetState
   late int? _selectedAccountId;
   late int? _selectedCategoryId;
   bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _formKey = GlobalKey<FormState>();
-    _descriptionController =
-        TextEditingController(text: widget.expense?.description ?? '');
-    _valueController = TextEditingController(
-      text: widget.expense?.value.toString() ?? '',
-    );
-    _chargeDayController = TextEditingController(
-      text: widget.expense?.chargeDay.toString() ?? '',
-    );
-    _selectedAccountId = widget.expense?.accountId;
-    _selectedCategoryId = widget.expense?.categoryId;
-  }
-
-  @override
-  void dispose() {
-    _descriptionController.dispose();
-    _valueController.dispose();
-    _chargeDayController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -268,6 +242,30 @@ class _RecurringExpenseFormBottomSheetState
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    _valueController.dispose();
+    _chargeDayController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _formKey = GlobalKey<FormState>();
+    _descriptionController =
+        TextEditingController(text: widget.expense?.description ?? '');
+    _valueController = TextEditingController(
+      text: widget.expense?.value.toString() ?? '',
+    );
+    _chargeDayController = TextEditingController(
+      text: widget.expense?.chargeDay.toString() ?? '',
+    );
+    _selectedAccountId = widget.expense?.accountId;
+    _selectedCategoryId = widget.expense?.categoryId;
   }
 
   Future<void> _handleSubmit() async {

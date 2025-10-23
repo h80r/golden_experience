@@ -1,8 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/data/datasources/local_database.dart';
-import 'package:golden_experience/data/database/categories_table.dart';
-import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:golden_experience/data/repositories/category_repository_impl.dart';
 import 'package:golden_experience/domain/repositories/i_category_repository.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/database/accounts_table.dart';
+
 import '../../data/datasources/local_database.dart';
 import '../../data/providers/repository_providers.dart';
 import '../theme/app_colors.dart';
@@ -274,61 +274,8 @@ class AccountsScreen extends ConsumerWidget {
     );
   }
 
-  void _showAccountFormBottomSheet(BuildContext context, AccountModel? account) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.radiusLarge),
-        ),
-      ),
-      builder: (context) => AccountFormBottomSheet(account: account),
-    );
-  }
-
-  void _showDeleteConfirmation(
-    BuildContext context,
-    WidgetRef ref,
-    AccountModel account,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text(
-          'Remover Conta',
-          style: AppTypography.headlineSmall,
-        ),
-        content: Text(
-          'Tem certeza que deseja remover "${account.name}"?',
-          style: AppTypography.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancelar',
-              style: AppTypography.titleMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _handleDeleteAccount(context, ref, account);
-            },
-            child: Text(
-              'Remover',
-              style: AppTypography.titleMedium.copyWith(
-                color: AppColors.error,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  String _formatCurrency(double value) {
+    return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',').replaceAll(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), r'$1.')}';
   }
 
   Future<void> _handleDeleteAccount(
@@ -386,7 +333,61 @@ class AccountsScreen extends ConsumerWidget {
     }
   }
 
-  String _formatCurrency(double value) {
-    return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',').replaceAll(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), r'$1.')}';
+  void _showAccountFormBottomSheet(
+      BuildContext context, AccountModel? account) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusLarge),
+        ),
+      ),
+      builder: (context) => AccountFormBottomSheet(account: account),
+    );
+  }
+
+  void _showDeleteConfirmation(
+    BuildContext context,
+    WidgetRef ref,
+    AccountModel account,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text(
+          'Remover Conta',
+          style: AppTypography.headlineSmall,
+        ),
+        content: Text(
+          'Tem certeza que deseja remover "${account.name}"?',
+          style: AppTypography.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancelar',
+              style: AppTypography.titleMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _handleDeleteAccount(context, ref, account);
+            },
+            child: Text(
+              'Remover',
+              style: AppTypography.titleMedium.copyWith(
+                color: AppColors.error,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

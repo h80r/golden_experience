@@ -1,10 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/data/datasources/local_database.dart';
-import 'package:golden_experience/data/database/transactions_table.dart';
 import 'package:golden_experience/data/repositories/transaction_repository_impl.dart';
 import 'package:golden_experience/domain/repositories/i_transaction_repository.dart';
-import 'package:drift/drift.dart' hide isNull, isNotNull;
 
 void main() {
   late ITransactionRepository repository;
