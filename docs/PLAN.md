@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 37
-**Concluídas:** 21 / 37 (57%)
+**Concluídas:** 25 / 37 (68%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -71,7 +71,7 @@ main (develop)
 - **Fase 5 - Primeira Iteração:** 5 / 5 (100%)
 - **Fase 6 - Segunda Iteração:** 3 / 3 (100%)
 - **Fase 7 - Terceira Iteração:** 2 / 2 (100%)
-- **Fase 8 - Quarta Iteração:** 1 / 6 (17%)
+- **Fase 8 - Quarta Iteração:** 4 / 6 (67%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -1438,7 +1438,7 @@ void _registerDefaultParsers() {
 
 **Objetivo:** Corrigir bugs críticos no sistema de input numérico, melhorar a experiência de uso do bottom sheet de transações e refinar interações da lista de transações.
 
-**Status:** 1 / 6 tarefas concluídas
+**Status:** 3 / 6 tarefas concluídas
 
 ---
 
@@ -1572,16 +1572,16 @@ Dividir o `ExpenseDetailsBottomSheet` em duas páginas navegáveis para resolver
 - [x] Todos os campos visíveis mesmo com teclado aberto
 - [x] Componente continua funcionando para criação E edição
 - [x] Testes de widget atualizados
-- [~] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F8-T3: Melhoria - Swipe-to-Delete com Confirmação
+### [x] F8-T3: Melhoria - Swipe-to-Delete com Undo no Toast
 
 **Branch:** `enhancement/slidable-delete`
 
 **Descrição:**
-Remover a ação de swipe-to-edit e melhorar o swipe-to-delete com comportamento de confirmação visual, onde o usuário arrasta o card para revelar um botão de delete que precisa ser clicado para confirmar.
+Remover a ação de swipe-to-edit e melhorar o swipe-to-delete com padrão de "Undo" no toast de sucesso (similar ao Gmail), onde a exclusão só é efetivada após o usuário interagir em outro lugar da tela.
 
 **Mudanças de Comportamento:**
 
@@ -1589,32 +1589,31 @@ Remover a ação de swipe-to-edit e melhorar o swipe-to-delete com comportamento
    - Deslizar para a direita não deve mais editar
    - Edição será feita apenas por **toque no card**
 
-2. **MELHORAR: Swipe-to-Delete**
-   - Arrastar card para a esquerda
-   - Card desliza revelando um **botão vermelho de delete** por baixo
-   - Card **trava** quando o botão está totalmente visível (não sai da tela)
-   - Usuário **clica no botão** para confirmar exclusão
-   - **Só então** o card completa a animação de sair da tela
-   - Card é removido da lista
+2. **MELHORAR: Swipe-to-Delete com Undo Toast**
+   - Usuário arrasta card para a esquerda (swipe-to-delete)
+   - Card sai da tela com animação
+   - SnackBar/Toast aparece: **"Transação excluída"** com botão **"Desfazer"**
+   - **Exclusão NÃO é executada imediatamente**
+   - **Toast NÃO desaparece por timeout** - permanece visível até interação do usuário
+   - Se usuário clicar **"Desfazer"**: card volta para a lista, nenhuma alteração no banco
+   - Se usuário clicar **em qualquer outro lugar da tela**: toast fecha e exclusão é efetivada (remove do banco, reverte saldo/limite)
 
 **Implementação:**
 
-**Opção 1: Package `flutter_slidable`** (Recomendado)
+**1. Manter Implementação Atual com `Dismissible`**
 ```dart
-Slidable(
+Dismissible(
   key: ValueKey(transaction.id),
-  endActionPane: ActionPane(
-    motion: const DrawerMotion(),
-    extentRatio: 0.25,
-    children: [
-      SlidableAction(
-        onPressed: (context) => _confirmDelete(transaction),
-        backgroundColor: Colors.red,
-        foregroundColor: Colors.white,
-        icon: Icons.delete,
-        label: 'Excluir',
-      ),
-    ],
+  direction: DismissDirection.endToStart,
+  onDismissed: (direction) {
+    // NÃO deletar imediatamente, apenas mostrar toast com undo
+    _showUndoToast(context, transaction, index);
+  },
+  background: Container(
+    color: Colors.red,
+    alignment: Alignment.centerRight,
+    padding: EdgeInsets.only(right: 16),
+    child: Icon(Icons.delete, color: Colors.white),
   ),
   child: TransactionCard(
     transaction: transaction,
@@ -1623,46 +1622,110 @@ Slidable(
 )
 ```
 
-**Opção 2: Custom com `Dismissible`**
+**2. Toast com Undo (Similar ao Gmail)**
 ```dart
-Dismissible(
-  key: ValueKey(transaction.id),
-  direction: DismissDirection.endToStart,
-  confirmDismiss: (direction) async {
-    // Não remove automaticamente, apenas revela botão
-    return false;
-  },
-  background: Container(
-    color: Colors.red,
-    alignment: Alignment.centerRight,
-    child: IconButton(
-      icon: Icon(Icons.delete, color: Colors.white),
-      onPressed: () => _confirmDelete(transaction),
+void _showUndoToast(BuildContext context, Transaction transaction, int index) {
+  final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+  // Remover da lista local (UI state), mas NÃO do banco ainda
+  setState(() {
+    _transactions.removeAt(index);
+  });
+
+  // SnackBar com ação de Undo (duração muito longa, fecha apenas por interação)
+  scaffoldMessenger.showSnackBar(
+    SnackBar(
+      content: Text('Transação excluída'),
+      action: SnackBarAction(
+        label: 'Desfazer',
+        onPressed: () {
+          // Restaurar na lista local (cancelar exclusão)
+          setState(() {
+            _transactions.insert(index, transaction);
+          });
+        },
+      ),
+      duration: Duration(days: 365), // Duração indefinida, não fecha por timeout
+      behavior: SnackBarBehavior.floating,
+      dismissDirection: DismissDirection.none, // Não permite swipe para fechar
     ),
-  ),
-  child: TransactionCard(...),
-)
+  ).closed.then((reason) {
+    // Executar exclusão apenas se NÃO foi undo
+    if (reason != SnackBarClosedReason.action) {
+      _executeDelete(transaction);
+    }
+  });
+}
+
+// Adicionar GestureDetector na tela para detectar toques fora do toast
+Widget build(BuildContext context) {
+  return GestureDetector(
+    onTap: () {
+      // Fechar SnackBar ao tocar em qualquer lugar da tela
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    },
+    child: Scaffold(
+      // ... resto da tela
+    ),
+  );
+}
+
+Future<void> _executeDelete(Transaction transaction) async {
+  // Deletar do banco
+  await ref.read(transactionRepositoryProvider).delete(transaction.id);
+
+  // Reverter saldo/limite da conta
+  final account = await ref.read(accountRepositoryProvider).getById(transaction.accountId);
+  if (account != null) {
+    if (transaction.isDebit) {
+      await ref.read(accountRepositoryProvider).updateBalance(
+        transaction.accountId,
+        account.balance + transaction.value, // Reverter débito
+      );
+    } else {
+      await ref.read(accountRepositoryProvider).updateCreditUsed(
+        transaction.accountId,
+        account.creditUsed - transaction.value, // Reverter crédito
+      );
+    }
+  }
+}
 ```
+
+**3. Estado Local Temporário**
+- Manter uma cópia local da lista de transações no estado do widget
+- Ao fazer swipe-to-delete, remover da lista local mas NÃO do banco
+- Ao clicar "Desfazer", restaurar na lista local
+- Toast fica visível indefinidamente (duração de 365 dias, não fecha por timeout)
+- Adicionar `GestureDetector` na tela para detectar toque em qualquer lugar
+- Ao tocar em qualquer lugar da tela, fechar o toast e executar delete no banco
 
 **Fluxo de Exclusão:**
 1. Usuário arrasta card para esquerda
-2. Botão vermelho de delete aparece
-3. Usuário clica no botão
-4. Card completa animação de sair
-5. Transaction é removida do banco
-6. Saldo/limite da conta é revertido
-7. Lista é atualizada reativamente
+2. Card sai da tela com animação
+3. Toast aparece: "Transação excluída" com botão "Desfazer"
+4. Toast permanece visível **indefinidamente** (não fecha por timeout)
+5. Exclusão fica **pendente** (não executada ainda)
+6. **SE** usuário clicar "Desfazer": card volta, toast fecha, nada acontece no banco
+7. **SE** usuário clicar em qualquer outro lugar da tela: toast fecha e exclusão é efetivada
+   - Transaction é removida do banco
+   - Saldo/limite da conta é revertido
+   - Lista é atualizada reativamente
 
 **Definition of Done:**
-- [ ] Swipe-to-edit removido completamente
-- [ ] Swipe-to-delete implementado com botão de confirmação
-- [ ] Card trava quando botão está visível (não sai automaticamente)
-- [ ] Animação completa só após clicar no botão
-- [ ] Toque no card abre `ExpenseDetailsBottomSheet` para edição
-- [ ] Lógica de reversão de saldo/limite mantida
-- [ ] Package `flutter_slidable` adicionado (se escolhido)
-- [ ] Testes de widget atualizados
-- [ ] Merge realizado para `develop`
+- [x] Swipe-to-edit removido completamente
+- [x] Manter implementação atual com `Dismissible` (não adicionar flutter_slidable)
+- [x] Toast com botão "Desfazer" implementado
+- [x] Toast NÃO fecha por timeout (duration indefinido)
+- [x] `GestureDetector` implementado para detectar toque em qualquer lugar da tela
+- [x] Exclusão NÃO executada imediatamente ao swipe
+- [x] Clicar "Desfazer" restaura o card na lista e fecha o toast
+- [x] Clicar em qualquer lugar da tela fecha o toast e executa a exclusão
+- [x] Toque no card abre `ExpenseDetailsBottomSheet` para edição
+- [x] Lógica de reversão de saldo/limite mantida
+- [x] Estado local temporário gerenciado corretamente
+- [x] Testes de widget atualizados
+- [x] Merge realizado para `develop`
 
 ---
 
