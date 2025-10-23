@@ -143,11 +143,23 @@ class BackupRepositoryImpl implements IBackupRepository {
         final transactions = tables['transactions'] as List;
         for (final transactionJson in transactions) {
           final transactionData = transactionJson as Map<String, dynamic>;
+
+          // Parse date - handle both int (milliseconds) and String (ISO8601)
+          DateTime date;
+          final dateValue = transactionData['date'];
+          if (dateValue is int) {
+            date = DateTime.fromMillisecondsSinceEpoch(dateValue);
+          } else if (dateValue is String) {
+            date = DateTime.parse(dateValue);
+          } else {
+            date = DateTime.now();
+          }
+
           final companion = TransactionModelCompanion(
             id: Value(transactionData['id'] as int),
             value: Value((transactionData['value'] as num).toDouble()),
             description: Value(transactionData['description'] as String),
-            date: Value(DateTime.parse(transactionData['date'] as String)),
+            date: Value(date),
             notes: transactionData['notes'] != null
                 ? Value(transactionData['notes'] as String)
                 : const Value.absent(),
@@ -180,6 +192,18 @@ class BackupRepositoryImpl implements IBackupRepository {
         final appSettings = tables['appSettings'] as List;
         for (final settingJson in appSettings) {
           final settingData = settingJson as Map<String, dynamic>;
+
+          // Parse lastRecurringCheck - handle both int (milliseconds) and String (ISO8601)
+          DateTime lastRecurringCheck;
+          final lastRecurringCheckValue = settingData['lastRecurringCheck'];
+          if (lastRecurringCheckValue is int) {
+            lastRecurringCheck = DateTime.fromMillisecondsSinceEpoch(lastRecurringCheckValue);
+          } else if (lastRecurringCheckValue is String) {
+            lastRecurringCheck = DateTime.parse(lastRecurringCheckValue);
+          } else {
+            lastRecurringCheck = DateTime.now();
+          }
+
           final companion = AppSettingsModelCompanion(
             id: Value(settingData['id'] as int),
             monthlySalary:
@@ -188,8 +212,9 @@ class BackupRepositoryImpl implements IBackupRepository {
                 Value((settingData['reserveBalance'] as num).toDouble()),
             maxReserveUsagePercentage: Value(
                 (settingData['maxReserveUsagePercentage'] as num).toDouble()),
-            lastRecurringCheck: Value(
-                DateTime.parse(settingData['lastRecurringCheck'] as String)),
+            lastRecurringCheck: Value(lastRecurringCheck),
+            hasCompletedOnboarding: Value(
+                (settingData['hasCompletedOnboarding'] as bool?) ?? true),
           );
           await _db.into(_db.appSettings).insert(companion);
         }

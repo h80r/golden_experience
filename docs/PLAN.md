@@ -546,7 +546,7 @@ Investigar e corrigir o problema que impede o aplicativo "Golden Experience" de 
 - [x] Usuário consegue conceder permissão manualmente
 - [x] Service inicia e funciona após permissão concedida
 - [x] Testes manuais em dispositivo físico/emulador
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
@@ -638,14 +638,14 @@ dependencies:
 - Arquivo fica acessível para compartilhamento
 
 **Definition of Done:**
-- [ ] Package `file_picker` adicionado ao `pubspec.yaml`
-- [ ] Método de exportação modificado para usar file picker
-- [ ] Dialog de seleção de pasta funcional
-- [ ] Arquivo salvo no local escolhido pelo usuário
-- [ ] Feedback visual com caminho completo do arquivo
-- [ ] Tratamento de erro caso salvamento falhe
-- [ ] Testes manuais em dispositivo Android
-- [ ] Merge realizado para `develop`
+- [x] Package `file_picker` adicionado ao `pubspec.yaml`
+- [x] Método de exportação modificado para usar file picker
+- [x] Dialog de seleção de pasta funcional
+- [x] Arquivo salvo no local escolhido pelo usuário
+- [x] Feedback visual com caminho completo do arquivo
+- [x] Tratamento de erro caso salvamento falhe
+- [x] Testes manuais em dispositivo Android
+- [~] Merge realizado para `develop`
 
 ---
 

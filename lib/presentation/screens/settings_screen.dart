@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -262,22 +263,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     backupNotifier.setLoading(true);
 
     try {
+      // Generate backup JSON
       final backupRepository = ref.read(backupRepositoryProvider);
       final jsonData = await backupRepository.exportToJson();
-      final backupPath = await backupRepository.getDefaultBackupPath();
 
-      // Write the JSON to file
-      final file = File(backupPath);
-      await file.writeAsString(jsonData);
+      // Convert JSON string to bytes for mobile platforms
+      final bytes = utf8.encode(jsonData);
+
+      // Show file picker dialog for user to select save location
+      final outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Salvar Backup',
+        fileName: 'golden_experience_backup_${DateTime.now().millisecondsSinceEpoch}.json',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        bytes: bytes,
+      );
+
+      if (outputPath == null) {
+        // User cancelled the dialog
+        backupNotifier.setLoading(false);
+        return;
+      }
 
       if (!mounted) return;
 
-      backupNotifier.setSuccess('Backup exportado com sucesso!\n$backupPath');
+      backupNotifier.setSuccess('Backup salvo com sucesso!');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Backup exportado com sucesso!'),
           backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 3),
+          duration: Duration(seconds: 3),
         ),
       );
     } catch (e) {
