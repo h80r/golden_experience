@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
+import '../../../core/utils/text_formatters.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -175,13 +175,7 @@ class _NubankStyleCurrencyFieldState extends State<NubankStyleCurrencyField> {
   /// Format cents value for display (R$ X.XXX,XX)
   String _formatDisplay(double value) {
     if (value == 0.0) return '0,00';
-
-    final formatter = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: '',
-      decimalDigits: 2,
-    );
-    return formatter.format(value);
+    return formatCurrency(value, '');
   }
 
   void _handleExternalChange() {

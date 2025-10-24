@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/utils/text_formatters.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -55,11 +57,10 @@ class MainCard extends StatelessWidget {
             )
           else
             Text(
-              'R\$ ${remainingBudget.toStringAsFixed(2).replaceAll('.', ',')}',
+              formatCurrency(remainingBudget, 'R\$'),
               style: AppTypography.displayLarge.copyWith(
-                color: remainingBudget >= 0
-                    ? AppColors.primary
-                    : AppColors.error,
+                color:
+                    remainingBudget >= 0 ? AppColors.primary : AppColors.error,
               ),
             ),
           const SizedBox(height: AppSpacing.lg),
@@ -74,7 +75,8 @@ class MainCard extends StatelessWidget {
             child: isLoading
                 ? const SizedBox.expand()
                 : ClipRRect(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.radiusMedium),
                     child: LinearProgressIndicator(
                       value: (reserveUsagePercentage / 100).clamp(0.0, 1.0),
                       backgroundColor: Colors.transparent,

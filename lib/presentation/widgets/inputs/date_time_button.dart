@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
+import '../../../core/utils/text_formatters.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -20,9 +20,7 @@ class DateTimeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Format: "23/10" (day/month)
-    final dateFormat = DateFormat('dd/MM');
-    final formattedDate = dateFormat.format(selectedDateTime);
+    final formattedDate = formatDate(selectedDateTime);
 
     return GestureDetector(
       onTap: () => _selectDateTime(context),

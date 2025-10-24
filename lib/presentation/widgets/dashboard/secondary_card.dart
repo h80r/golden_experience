@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/utils/text_formatters.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -127,7 +128,7 @@ class _FinancialRow extends StatelessWidget {
           style: AppTypography.bodyMedium,
         ),
         Text(
-          'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',')}',
+          formatCurrency(value, 'R\$'),
           style: textStyle,
         ),
       ],

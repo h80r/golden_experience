@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
+import '../../core/utils/text_formatters.dart';
 import '../../data/datasources/local_database.dart';
 import '../../data/providers/repository_providers.dart';
 import '../theme/app_colors.dart';
@@ -192,7 +192,7 @@ class AccountsScreen extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    _formatCurrency(account.balance),
+                    formatCurrency(account.balance),
                     style: AppTypography.displaySmall,
                   ),
                   if (account.isCredit) const SizedBox(height: AppSpacing.lg),
@@ -210,19 +210,19 @@ class AccountsScreen extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    _formatCurrency(account.creditLimit),
+                    formatCurrency(account.creditLimit),
                     style: AppTypography.displaySmall,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Utilizado: ${_formatCurrency(account.creditUsed)}',
+                    'Utilizado: ${formatCurrency(account.creditUsed)}',
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'Disponível: ${_formatCurrency(account.creditLimit - account.creditUsed)}',
+                    'Disponível: ${formatCurrency(account.creditLimit - account.creditUsed)}',
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -268,15 +268,6 @@ class AccountsScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _formatCurrency(double value) {
-    final formatter = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$ ',
-      decimalDigits: 2,
-    );
-    return formatter.format(value);
   }
 
   Future<void> _handleDeleteAccount(

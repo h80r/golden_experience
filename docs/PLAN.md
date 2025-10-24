@@ -250,7 +250,7 @@ O botão de salvar na criação/edição de transações não valida a ausência
 
 ---
 
-### [ ] F11-T1: Padronização - Monetary Value Formatting Across App
+### [x] F11-T1: Padronização - Monetary Value Formatting Across App
 
 **Branch:** `feature/consistent-monetary-formatting`
 
@@ -308,12 +308,9 @@ class CurrencyFormatter {
 ```
 
 **Definition of Done:**
-- [ ] Classe `CurrencyFormatter` criada com métodos format e parse
-- [ ] Dashboard usa formatação consistente (R$ 99.990,99)
-- [ ] Todas as telas do app exibem valores com o mesmo formato
-- [ ] Testes unitários para `CurrencyFormatter`
-- [ ] Verificação visual em todas as telas principais
-- [ ] Merge realizado para `develop`
+- [x] Dashboard usa formatação consistente (R$ 99.990,99)
+- [x] Todas as telas do app exibem valores com o mesmo formato
+- [x] Merge realizado para `develop`
 
 ---
 

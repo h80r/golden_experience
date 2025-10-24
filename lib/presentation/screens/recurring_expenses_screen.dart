@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
+import '../../core/utils/text_formatters.dart';
 import '../../data/datasources/local_database.dart';
 import '../../data/providers/repository_providers.dart';
 import '../theme/app_colors.dart';
@@ -149,7 +149,7 @@ class RecurringExpensesScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      _formatCurrency(expense.value),
+                      formatCurrency(expense.value),
                       style: AppTypography.displaySmall,
                     ),
                     const SizedBox(height: AppSpacing.xs),
@@ -197,15 +197,6 @@ class RecurringExpensesScreen extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _formatCurrency(double value) {
-    final formatter = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$ ',
-      decimalDigits: 2,
-    );
-    return formatter.format(value);
   }
 
   Future<void> _handleDeleteRecurringExpense(

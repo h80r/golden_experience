@@ -1,9 +1,94 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+
+import '../../../core/utils/text_formatters.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+
+/// Custom TextInputFormatter for currency input
+/// Accepts comma as decimal separator and formats with thousand separators
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // If empty, return as is
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Remove all non-numeric characters except comma and period
+    String cleaned = newValue.text.replaceAll(RegExp(r'[^0-9,.]'), '');
+
+    // Find the LAST comma or period (treat as decimal separator)
+    int lastSeparatorIndex = -1;
+    for (int i = cleaned.length - 1; i >= 0; i--) {
+      if (cleaned[i] == ',' || cleaned[i] == '.') {
+        lastSeparatorIndex = i;
+        break;
+      }
+    }
+
+    String integerPart;
+    String decimalPart;
+    bool hasDecimalSeparator = false;
+
+    if (lastSeparatorIndex != -1) {
+      // Extract integer and decimal parts
+      integerPart = cleaned
+          .substring(0, lastSeparatorIndex)
+          .replaceAll(RegExp(r'[,.]'), '');
+      decimalPart = cleaned
+          .substring(lastSeparatorIndex + 1)
+          .replaceAll(RegExp(r'[,.]'), '');
+      hasDecimalSeparator = true;
+    } else {
+      // No decimal separator
+      integerPart = cleaned.replaceAll(RegExp(r'[,.]'), '');
+      decimalPart = '';
+      hasDecimalSeparator = false;
+    }
+
+    // Format with thousand separators
+    String formatted =
+        _formatWithSeparators(integerPart, decimalPart, hasDecimalSeparator);
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+
+  /// Add thousand separators to currency string
+  String _formatWithSeparators(
+      String integerPart, String decimalPart, bool hasDecimalSeparator) {
+    // Handle empty integer part
+    if (integerPart.isEmpty) {
+      integerPart = '0';
+    }
+
+    // Add thousand separators to integer part
+    String formatted = '';
+    int count = 0;
+    for (int i = integerPart.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        formatted = '.$formatted';
+        count = 0;
+      }
+      formatted = integerPart[i] + formatted;
+      count++;
+    }
+
+    // Combine with decimal part (preserve comma even if empty)
+    if (hasDecimalSeparator) {
+      formatted = '$formatted,$decimalPart';
+    }
+
+    return formatted;
+  }
+}
 
 /// Custom text field for currency input with Brazilian locale support
 /// Accepts comma (,) as decimal separator and formats with thousand separators
@@ -41,74 +126,6 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
   late FocusNode _focusNode;
   late bool _isFocused;
   late TextEditingController _controller;
-  final _currencyFormatter = NumberFormat.currency(
-    locale: 'pt_BR',
-    symbol: 'R\$ ',
-    decimalDigits: 2,
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode = widget.focusNode ?? FocusNode();
-    _isFocused = false;
-    _focusNode.addListener(_handleFocusChange);
-
-    // Initialize controller with initial value if provided
-    _controller = widget.controller ?? TextEditingController();
-    if (widget.initialValue != null && widget.initialValue! > 0) {
-      _controller.text = _formatCurrency(widget.initialValue!);
-    }
-  }
-
-  @override
-  void dispose() {
-    _focusNode.removeListener(_handleFocusChange);
-    if (widget.focusNode == null) {
-      _focusNode.dispose();
-    }
-    if (widget.controller == null) {
-      _controller.dispose();
-    }
-    super.dispose();
-  }
-
-  void _handleFocusChange() {
-    setState(() {
-      _isFocused = _focusNode.hasFocus;
-    });
-  }
-
-  /// Format value to currency string
-  String _formatCurrency(double value) {
-    return _currencyFormatter.format(value);
-  }
-
-  /// Convert formatted currency string to double
-  /// Handles both comma and period as decimal separator
-  double? _parseValue(String value) {
-    if (value.isEmpty) return null;
-
-    // Remove currency symbol and spaces
-    String cleaned = value.replaceAll('R\$ ', '').trim();
-
-    // Replace comma with period for parsing
-    cleaned = cleaned.replaceAll('.', ''); // Remove thousand separators
-    cleaned = cleaned.replaceAll(',', '.'); // Convert comma to period
-
-    try {
-      return double.parse(cleaned);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  void _onChanged(String value) {
-    final parsedValue = _parseValue(value);
-    if (parsedValue != null && widget.onChanged != null) {
-      widget.onChanged!(parsedValue);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -189,89 +206,68 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
           ),
         ),
         filled: true,
-        fillColor: widget.isEnabled
-            ? AppColors.surfaceVariant
-            : AppColors.surface,
+        fillColor:
+            widget.isEnabled ? AppColors.surfaceVariant : AppColors.surface,
         contentPadding: const EdgeInsets.all(AppSpacing.md),
       ),
     );
   }
-}
 
-/// Custom TextInputFormatter for currency input
-/// Accepts comma as decimal separator and formats with thousand separators
-class CurrencyInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    // If empty, return as is
-    if (newValue.text.isEmpty) {
-      return newValue;
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
     }
-
-    // Remove all non-numeric characters except comma and period
-    String cleaned = newValue.text.replaceAll(RegExp(r'[^0-9,.]'), '');
-
-    // Find the LAST comma or period (treat as decimal separator)
-    int lastSeparatorIndex = -1;
-    for (int i = cleaned.length - 1; i >= 0; i--) {
-      if (cleaned[i] == ',' || cleaned[i] == '.') {
-        lastSeparatorIndex = i;
-        break;
-      }
+    if (widget.controller == null) {
+      _controller.dispose();
     }
-
-    String integerPart;
-    String decimalPart;
-    bool hasDecimalSeparator = false;
-
-    if (lastSeparatorIndex != -1) {
-      // Extract integer and decimal parts
-      integerPart = cleaned.substring(0, lastSeparatorIndex).replaceAll(RegExp(r'[,.]'), '');
-      decimalPart = cleaned.substring(lastSeparatorIndex + 1).replaceAll(RegExp(r'[,.]'), '');
-      hasDecimalSeparator = true;
-    } else {
-      // No decimal separator
-      integerPart = cleaned.replaceAll(RegExp(r'[,.]'), '');
-      decimalPart = '';
-      hasDecimalSeparator = false;
-    }
-
-    // Format with thousand separators
-    String formatted = _formatWithSeparators(integerPart, decimalPart, hasDecimalSeparator);
-
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
+    super.dispose();
   }
 
-  /// Add thousand separators to currency string
-  String _formatWithSeparators(String integerPart, String decimalPart, bool hasDecimalSeparator) {
-    // Handle empty integer part
-    if (integerPart.isEmpty) {
-      integerPart = '0';
-    }
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = widget.focusNode ?? FocusNode();
+    _isFocused = false;
+    _focusNode.addListener(_handleFocusChange);
 
-    // Add thousand separators to integer part
-    String formatted = '';
-    int count = 0;
-    for (int i = integerPart.length - 1; i >= 0; i--) {
-      if (count == 3) {
-        formatted = '.$formatted';
-        count = 0;
-      }
-      formatted = integerPart[i] + formatted;
-      count++;
+    // Initialize controller with initial value if provided
+    _controller = widget.controller ?? TextEditingController();
+    if (widget.initialValue != null && widget.initialValue! > 0) {
+      _controller.text = formatCurrency(widget.initialValue!);
     }
+  }
 
-    // Combine with decimal part (preserve comma even if empty)
-    if (hasDecimalSeparator) {
-      formatted = '$formatted,$decimalPart';
+  void _handleFocusChange() {
+    setState(() {
+      _isFocused = _focusNode.hasFocus;
+    });
+  }
+
+  void _onChanged(String value) {
+    final parsedValue = _parseValue(value);
+    if (parsedValue != null && widget.onChanged != null) {
+      widget.onChanged!(parsedValue);
     }
+  }
 
-    return formatted;
+  /// Convert formatted currency string to double
+  /// Handles both comma and period as decimal separator
+  double? _parseValue(String value) {
+    if (value.isEmpty) return null;
+
+    // Remove currency symbol and spaces
+    String cleaned = value.replaceAll('R\$ ', '').trim();
+
+    // Replace comma with period for parsing
+    cleaned = cleaned.replaceAll('.', ''); // Remove thousand separators
+    cleaned = cleaned.replaceAll(',', '.'); // Convert comma to period
+
+    try {
+      return double.parse(cleaned);
+    } catch (e) {
+      return null;
+    }
   }
 }
