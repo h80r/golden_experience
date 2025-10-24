@@ -233,6 +233,17 @@ class _AccountFormBottomSheetState
     super.dispose();
   }
 
+  /// Parse cents value (stored as digits in controller) to double
+  double _parseCentsToDouble(String centsText) {
+    if (centsText.isEmpty) return 0.0;
+    try {
+      final cents = int.parse(centsText);
+      return cents / 100.0;
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -242,12 +253,9 @@ class _AccountFormBottomSheetState
     if (widget.account != null) {
       _isDebit = widget.account!.isDebit;
       _isCredit = widget.account!.isCredit;
-      _balanceController = TextEditingController(
-        text: widget.account!.balance.toString(),
-      );
-      _creditLimitController = TextEditingController(
-        text: widget.account!.creditLimit.toString(),
-      );
+      // Initialize empty controllers - NubankStyleCurrencyField handles initialValue internally
+      _balanceController = TextEditingController();
+      _creditLimitController = TextEditingController();
     } else {
       // Default: debit account
       _isDebit = true;
@@ -283,8 +291,10 @@ class _AccountFormBottomSheetState
     try {
       final accountRepository = ref.read(accountRepositoryProvider);
       final name = _nameController.text;
-      final balance = _isDebit ? double.parse(_balanceController.text) : 0.0;
-      final creditLimit = _isCredit ? double.parse(_creditLimitController.text) : 0.0;
+
+      // Parse cents from controllers (NubankStyleCurrencyField stores cents as digits)
+      final balance = _isDebit ? _parseCentsToDouble(_balanceController.text) : 0.0;
+      final creditLimit = _isCredit ? _parseCentsToDouble(_creditLimitController.text) : 0.0;
 
       if (widget.account != null) {
         // Update existing account

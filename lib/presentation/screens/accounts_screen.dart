@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../data/datasources/local_database.dart';
 import '../../data/providers/repository_providers.dart';
@@ -270,7 +271,12 @@ class AccountsScreen extends ConsumerWidget {
   }
 
   String _formatCurrency(double value) {
-    return 'R\$ ${value.toStringAsFixed(2).replaceAll('.', ',').replaceAll(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), r'$1.')}';
+    final formatter = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: 'R\$ ',
+      decimalDigits: 2,
+    );
+    return formatter.format(value);
   }
 
   Future<void> _handleDeleteAccount(

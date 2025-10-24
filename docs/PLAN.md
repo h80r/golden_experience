@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 56
-**Concluídas:** 34 / 56 (60%)
+**Concluídas:** 35 / 56 (62%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -73,7 +73,7 @@ main (develop)
 - **Fase 7 - Terceira Iteração:** 2 / 2 (100%)
 - **Fase 8 - Quarta Iteração:** 5 / 6 (83%)
 - **Fase 9 - Quinta Iteração:** 2 / 2 (100%)
-- **Fase 10 - Correções Críticas de UI/UX:** 1 / 6 (16%)
+- **Fase 10 - Correções Críticas de UI/UX:** 2 / 6 (33%)
 - **Fase 11 - Padronização e Melhorias de UX:** 0 / 5 (0%)
 - **Fase 12 - Estabilidade e Code Health:** 0 / 4 (0%)
 - **Fase 13 - Gestão Avançada de Contas:** 0 / 6 (0%)
@@ -89,7 +89,7 @@ main (develop)
 
 **Objetivo:** Corrigir bugs críticos de interface e comportamento que afetam a experiência do usuário no uso diário do aplicativo.
 
-**Status:** 1 / 6 tarefas concluídas
+**Status:** 2 / 6 tarefas concluídas
 
 ---
 
@@ -134,7 +134,7 @@ O switch de captura automática de transações na página de configurações n�
 
 ---
 
-### [ ] F10-T3: Correção - Credit Limit Visualization Bug
+### [x] F10-T3: Correção - Credit Limit Visualization Bug
 
 **Branch:** `fix/credit-limit-display`
 
@@ -153,11 +153,11 @@ A visualização do limite de crédito está completamente quebrada quando valor
 - Checar se há validação adequada para valores decimais
 
 **Definition of Done:**
-- [ ] Valores decimais são aceitos e exibidos corretamente
-- [ ] Formatação de moeda consistente (R$ 14.000,00)
-- [ ] Conversão correta entre UI e banco de dados
-- [ ] Validação de entrada implementada
-- [ ] Testes para diferentes formatos de entrada
+- [x] Valores decimais são aceitos e exibidos corretamente
+- [x] Formatação de moeda consistente (R$ 14.000,00)
+- [x] Conversão correta entre UI e banco de dados
+- [x] Validação de entrada implementada
+- [x] Testes para diferentes formatos de entrada
 - [ ] Merge realizado para `develop`
 
 ---
