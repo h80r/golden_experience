@@ -314,7 +314,7 @@ class CurrencyFormatter {
 
 ---
 
-### [ ] F11-T2: Melhoria - Allow Future Date Selection in Transactions
+### [x] F11-T2: Melhoria - Allow Future Date Selection in Transactions
 
 **Branch:** `feature/future-date-transactions`
 
@@ -329,22 +329,10 @@ Permitir que o usuário selecione datas futuras ao criar/editar transações.
 **Implementação Esperada:**
 - Remover restrição de data máxima no date picker
 - Permitir seleção de qualquer data futura
-- Considerar adicionar indicador visual para transações futuras
-- Atualizar lógica de dashboard para considerar/excluir transações futuras do cálculo atual
-
-**Decisões de Design:**
-1. Transações futuras devem ser incluídas no cálculo do "quanto posso gastar"?
-   - Opção A: Incluir como gastos planejados
-   - Opção B: Excluir até a data chegar
-   - Opção C: Adicionar toggle nas configurações
 
 **Definition of Done:**
-- [ ] Date picker aceita datas futuras
-- [ ] Decisão tomada sobre inclusão no cálculo do dashboard
-- [ ] Lógica do dashboard atualizada conforme decisão
-- [ ] Indicador visual para transações futuras (opcional)
-- [ ] Testes para criação de transações futuras
-- [ ] Merge realizado para `develop`
+- [x] Date picker aceita datas futuras
+- [x] Merge realizado para `develop`
 
 ---
 

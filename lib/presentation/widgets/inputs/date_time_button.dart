@@ -80,7 +80,7 @@ class DateTimeButton extends StatelessWidget {
       context: context,
       initialDate: selectedDateTime,
       firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
+      lastDate: DateTime(3000),
     );
 
     if (pickedDate != null && context.mounted) {

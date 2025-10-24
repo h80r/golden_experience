@@ -55,3 +55,6 @@ windows/flutter/generated_*
 
 # Database files
 *.db
+
+# Environment files
+.env.local
