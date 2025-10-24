@@ -104,11 +104,11 @@ O slider de porcentagem da reserva na página de configurações inicia no 0 qua
 - [x] Slider não pula ao carregar a página de configurações, já inicia no valor salvo
 - [x] Alterações no slider são aplicadas imediatamente sem necessidade de botão salvar
 - [x] Validar que todas as alterações da página de configuração são salvas automaticamente
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F10-T2: Correção - Automatic Capture Switch Persistence
+### [x] F10-T2: Correção - Automatic Capture Switch Persistence
 
 **Branch:** `fix/automatic-capture-switch`
 
@@ -126,11 +126,11 @@ O switch de captura automática de transações na página de configurações n�
 - Verificar se o provider está recarregando o valor correto ao retornar à tela
 
 **Definition of Done:**
-- [ ] Switch persiste o estado corretamente entre navegações
-- [ ] Valor é salvo no banco de dados imediatamente ao alterar
-- [ ] Provider recarrega o valor correto ao retornar à tela
-- [ ] Testes de integração para verificar persistência
-- [ ] Merge realizado para `develop`
+- [x] Switch persiste o estado corretamente entre navegações
+- [x] Valor é salvo no banco de dados imediatamente ao alterar
+- [x] Provider recarrega o valor correto ao retornar à tela
+- [x] Testes de integração para verificar persistência
+- [x] Merge realizado para `develop`
 
 ---
 
@@ -158,11 +158,11 @@ A visualização do limite de crédito está completamente quebrada quando valor
 - [x] Conversão correta entre UI e banco de dados
 - [x] Validação de entrada implementada
 - [x] Testes para diferentes formatos de entrada
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F10-T4: Correção - Duplicate R$ in Transfer Creation/Editing
+### [x] F10-T4: Correção - Duplicate R$ in Transfer Creation/Editing
 
 **Branch:** `fix/duplicate-currency-symbol`
 
@@ -180,10 +180,10 @@ Remove o símbolo R$ duplicado que aparece na tela de criação/edição de tran
 - Garantir consistência com outros campos de moeda no app
 
 **Definition of Done:**
-- [ ] Símbolo R$ aparece apenas uma vez no campo de valor
-- [ ] Consistência visual com outros campos de moeda
-- [ ] Testes de widget atualizados
-- [ ] Merge realizado para `develop`
+- [x] Símbolo R$ aparece apenas uma vez no campo de valor
+- [x] Consistência visual com outros campos de moeda
+- [x] Testes de widget atualizados
+- [~] Merge realizado para `develop`
 
 ---
 

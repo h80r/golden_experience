@@ -9,8 +9,8 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
-import '../inputs/nubank_style_currency_field.dart';
 import '../inputs/custom_text_field.dart';
+import '../inputs/nubank_style_currency_field.dart';
 
 /// AccountFormBottomSheet - Form for creating/editing accounts
 /// Supports dual-type accounts (can be both debit and credit)
@@ -159,7 +159,7 @@ class _AccountFormBottomSheetState
                   children: [
                     NubankStyleCurrencyField(
                       label: 'Saldo Inicial (Débito)',
-                      hint: 'R\$ 0,00',
+                      hint: '0,00',
                       controller: _balanceController,
                       initialValue: widget.account?.balance ?? 0.0,
                       onChanged: (value) {
@@ -182,7 +182,7 @@ class _AccountFormBottomSheetState
                   children: [
                     NubankStyleCurrencyField(
                       label: 'Limite de Crédito',
-                      hint: 'R\$ 0,00',
+                      hint: '0,00',
                       controller: _creditLimitController,
                       initialValue: widget.account?.creditLimit ?? 0.0,
                       onChanged: (value) {
@@ -231,17 +231,6 @@ class _AccountFormBottomSheetState
     _balanceController.dispose();
     _creditLimitController.dispose();
     super.dispose();
-  }
-
-  /// Parse cents value (stored as digits in controller) to double
-  double _parseCentsToDouble(String centsText) {
-    if (centsText.isEmpty) return 0.0;
-    try {
-      final cents = int.parse(centsText);
-      return cents / 100.0;
-    } catch (e) {
-      return 0.0;
-    }
   }
 
   @override
@@ -293,8 +282,10 @@ class _AccountFormBottomSheetState
       final name = _nameController.text;
 
       // Parse cents from controllers (NubankStyleCurrencyField stores cents as digits)
-      final balance = _isDebit ? _parseCentsToDouble(_balanceController.text) : 0.0;
-      final creditLimit = _isCredit ? _parseCentsToDouble(_creditLimitController.text) : 0.0;
+      final balance =
+          _isDebit ? _parseCentsToDouble(_balanceController.text) : 0.0;
+      final creditLimit =
+          _isCredit ? _parseCentsToDouble(_creditLimitController.text) : 0.0;
 
       if (widget.account != null) {
         // Update existing account
@@ -395,6 +386,17 @@ class _AccountFormBottomSheetState
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  /// Parse cents value (stored as digits in controller) to double
+  double _parseCentsToDouble(String centsText) {
+    if (centsText.isEmpty) return 0.0;
+    try {
+      final cents = int.parse(centsText);
+      return cents / 100.0;
+    } catch (e) {
+      return 0.0;
     }
   }
 }

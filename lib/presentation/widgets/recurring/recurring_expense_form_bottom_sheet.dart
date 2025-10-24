@@ -9,9 +9,9 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
-import '../inputs/nubank_style_currency_field.dart';
 import '../inputs/custom_dropdown.dart';
 import '../inputs/custom_text_field.dart';
+import '../inputs/nubank_style_currency_field.dart';
 
 /// RecurringExpenseFormBottomSheet - Form for creating/editing recurring expenses
 class RecurringExpenseFormBottomSheet extends ConsumerStatefulWidget {
@@ -93,7 +93,7 @@ class _RecurringExpenseFormBottomSheetState
               // Value Field
               NubankStyleCurrencyField(
                 label: 'Valor',
-                hint: 'R\$ 0,00',
+                hint: '0,00',
                 controller: _valueController,
                 initialValue: widget.expense?.value ?? 0.0,
                 onChanged: (value) {

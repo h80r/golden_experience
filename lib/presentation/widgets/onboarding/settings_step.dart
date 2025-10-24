@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../data/repositories/app_settings_repository_impl.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
 import '../inputs/nubank_style_currency_field.dart';
 import '../inputs/reserve_percentage_slider.dart';
-import '../../../data/repositories/app_settings_repository_impl.dart';
 
 /// Settings step - Configure salary, reserve, and percentage
 class SettingsStep extends ConsumerStatefulWidget {
@@ -30,6 +31,121 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
   double _reservePercentage = 50.0;
   bool _isLoading = false;
   String? _errorMessage;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: AppSpacing.xl),
+          // Header
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Configure suas finanças',
+                  style: AppTypography.headlineMedium.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Esses valores são usados para calcular quanto você pode gastar',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: AppSpacing.xl),
+          // Error message
+          if (_errorMessage != null)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              child: Container(
+                padding: EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: Colors.red.withAlpha((0.1 * 255).toInt()),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _errorMessage!,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: Colors.red,
+                  ),
+                ),
+              ),
+            ),
+          if (_errorMessage != null) SizedBox(height: AppSpacing.md),
+          // Form fields
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+            child: Column(
+              children: [
+                // Salary field
+                NubankStyleCurrencyField(
+                  label: 'Salário Mensal',
+                  hint: '0,00',
+                  controller: _salaryController,
+                  isEnabled: !_isLoading,
+                ),
+                SizedBox(height: AppSpacing.xl),
+                // Reserve balance field
+                NubankStyleCurrencyField(
+                  label: 'Saldo da Reserva',
+                  hint: '0,00',
+                  controller: _reserveController,
+                  isEnabled: !_isLoading,
+                ),
+                SizedBox(height: AppSpacing.xl),
+                // Reserve percentage slider
+                ReservePercentageSlider(
+                  value: _reservePercentage,
+                  onChanged: (newValue) {
+                    setState(() {
+                      _reservePercentage = newValue;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: AppSpacing.xxl),
+          // Buttons
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+            child: Column(
+              children: [
+                PrimaryButton(
+                  label: _isLoading ? 'Salvando...' : 'Próximo',
+                  onPressed: _isLoading ? () {} : _saveSettings,
+                  isEnabled: !_isLoading,
+                ),
+                SizedBox(height: AppSpacing.md),
+                SecondaryButton(
+                  label: 'Voltar',
+                  onPressed: _isLoading ? () {} : widget.onBack,
+                  isEnabled: !_isLoading,
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: AppSpacing.xl),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _salaryController.dispose();
+    _reserveController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -89,7 +205,8 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
       final reserve = reserveCents / 100.0;
 
       if (salary <= 0 || reserve < 0) {
-        throw Exception('Salário deve ser maior que 0 e reserva não pode ser negativa');
+        throw Exception(
+            'Salário deve ser maior que 0 e reserva não pode ser negativa');
       }
 
       final repository = AppSettingsRepositoryImpl();
@@ -113,120 +230,5 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
         });
       }
     }
-  }
-
-  @override
-  void dispose() {
-    _salaryController.dispose();
-    _reserveController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: AppSpacing.xl),
-          // Header
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Configure suas finanças',
-                  style: AppTypography.headlineMedium.copyWith(
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.sm),
-                Text(
-                  'Esses valores são usados para calcular quanto você pode gastar',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: AppSpacing.xl),
-          // Error message
-          if (_errorMessage != null)
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-              child: Container(
-                padding: EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: Colors.red.withAlpha((0.1 * 255).toInt()),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _errorMessage!,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: Colors.red,
-                  ),
-                ),
-              ),
-            ),
-          if (_errorMessage != null) SizedBox(height: AppSpacing.md),
-          // Form fields
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-            child: Column(
-              children: [
-                // Salary field
-                NubankStyleCurrencyField(
-                  label: 'Salário Mensal',
-                  hint: 'R\$ 0,00',
-                  controller: _salaryController,
-                  isEnabled: !_isLoading,
-                ),
-                SizedBox(height: AppSpacing.xl),
-                // Reserve balance field
-                NubankStyleCurrencyField(
-                  label: 'Saldo da Reserva',
-                  hint: 'R\$ 0,00',
-                  controller: _reserveController,
-                  isEnabled: !_isLoading,
-                ),
-                SizedBox(height: AppSpacing.xl),
-                // Reserve percentage slider
-                ReservePercentageSlider(
-                  value: _reservePercentage,
-                  onChanged: (newValue) {
-                    setState(() {
-                      _reservePercentage = newValue;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: AppSpacing.xxl),
-          // Buttons
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-            child: Column(
-              children: [
-                PrimaryButton(
-                  label: _isLoading ? 'Salvando...' : 'Próximo',
-                  onPressed: _isLoading ? () {} : _saveSettings,
-                  isEnabled: !_isLoading,
-                ),
-                SizedBox(height: AppSpacing.md),
-                SecondaryButton(
-                  label: 'Voltar',
-                  onPressed: _isLoading ? () {} : widget.onBack,
-                  isEnabled: !_isLoading,
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: AppSpacing.xl),
-        ],
-      ),
-    );
   }
 }

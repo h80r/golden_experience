@@ -299,7 +299,7 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                   flex: 3,
                   child: NubankStyleCurrencyField(
                     label: 'Valor',
-                    hint: 'R\$ 0,00',
+                    hint: '0,00',
                     controller: _valueController,
                     focusNode: _valueFocusNode,
                     textInputAction: TextInputAction.next,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
@@ -48,96 +49,6 @@ class _NubankStyleCurrencyFieldState extends State<NubankStyleCurrencyField> {
   late TextEditingController _controller;
   late TextEditingController _displayController;
   bool _isFocused = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode = widget.focusNode ?? FocusNode();
-    _focusNode.addListener(_handleFocusChange);
-
-    _controller = widget.controller ?? TextEditingController();
-    _displayController = TextEditingController();
-
-    // Initialize with initial value if provided (including zero values)
-    if (widget.initialValue != null && widget.initialValue! >= 0) {
-      final cents = (widget.initialValue! * 100).toInt();
-      _controller.text = cents.toString();
-      _updateDisplay();
-    }
-
-    // Listen to controller changes from outside
-    _controller.addListener(_handleExternalChange);
-  }
-
-  @override
-  void dispose() {
-    _focusNode.removeListener(_handleFocusChange);
-    if (widget.focusNode == null) {
-      _focusNode.dispose();
-    }
-    _displayController.dispose();
-    if (widget.controller == null) {
-      _controller.dispose();
-    }
-    super.dispose();
-  }
-
-  void _handleFocusChange() {
-    setState(() {
-      _isFocused = _focusNode.hasFocus;
-    });
-  }
-
-  void _handleExternalChange() {
-    if (mounted) {
-      _updateDisplay();
-    }
-  }
-
-  /// Update display based on internal cents value
-  void _updateDisplay() {
-    final cents = _parseInternalValue(_controller.text);
-    _displayController.text = _formatDisplay(cents);
-  }
-
-  /// Parse internal representation (cents as int) to double value
-  double _parseInternalValue(String internalValue) {
-    if (internalValue.isEmpty) return 0.0;
-    try {
-      final cents = int.parse(internalValue);
-      return cents / 100.0;
-    } catch (e) {
-      return 0.0;
-    }
-  }
-
-  /// Format cents value for display (R$ X.XXX,XX)
-  String _formatDisplay(double value) {
-    if (value == 0.0) return 'R\$ 0,00';
-
-    final formatter = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$ ',
-      decimalDigits: 2,
-    );
-    return formatter.format(value);
-  }
-
-  /// Handle input change - only accepts digits
-  void _onTextChanged(String value) {
-    // Remove all non-digit characters
-    final digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
-
-    // Update internal controller with digits only
-    _controller.text = digitsOnly;
-
-    // Update display
-    _updateDisplay();
-
-    // Notify parent of value change (always notify, even if empty/zero)
-    final numValue = _parseInternalValue(digitsOnly);
-    widget.onChanged?.call(numValue);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -221,11 +132,100 @@ class _NubankStyleCurrencyFieldState extends State<NubankStyleCurrencyField> {
           ),
         ),
         filled: true,
-        fillColor: widget.isEnabled
-            ? AppColors.surfaceVariant
-            : AppColors.surface,
+        fillColor:
+            widget.isEnabled ? AppColors.surfaceVariant : AppColors.surface,
         contentPadding: const EdgeInsets.all(AppSpacing.md),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    }
+    _displayController.dispose();
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = widget.focusNode ?? FocusNode();
+    _focusNode.addListener(_handleFocusChange);
+
+    _controller = widget.controller ?? TextEditingController();
+    _displayController = TextEditingController();
+
+    // Initialize with initial value if provided (including zero values)
+    if (widget.initialValue != null && widget.initialValue! >= 0) {
+      final cents = (widget.initialValue! * 100).toInt();
+      _controller.text = cents.toString();
+      _updateDisplay();
+    }
+
+    // Listen to controller changes from outside
+    _controller.addListener(_handleExternalChange);
+  }
+
+  /// Format cents value for display (R$ X.XXX,XX)
+  String _formatDisplay(double value) {
+    if (value == 0.0) return '0,00';
+
+    final formatter = NumberFormat.currency(
+      locale: 'pt_BR',
+      symbol: '',
+      decimalDigits: 2,
+    );
+    return formatter.format(value);
+  }
+
+  void _handleExternalChange() {
+    if (mounted) {
+      _updateDisplay();
+    }
+  }
+
+  void _handleFocusChange() {
+    setState(() {
+      _isFocused = _focusNode.hasFocus;
+    });
+  }
+
+  /// Handle input change - only accepts digits
+  void _onTextChanged(String value) {
+    // Remove all non-digit characters
+    final digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
+
+    // Update internal controller with digits only
+    _controller.text = digitsOnly;
+
+    // Update display
+    _updateDisplay();
+
+    // Notify parent of value change (always notify, even if empty/zero)
+    final numValue = _parseInternalValue(digitsOnly);
+    widget.onChanged?.call(numValue);
+  }
+
+  /// Parse internal representation (cents as int) to double value
+  double _parseInternalValue(String internalValue) {
+    if (internalValue.isEmpty) return 0.0;
+    try {
+      final cents = int.parse(internalValue);
+      return cents / 100.0;
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
+  /// Update display based on internal cents value
+  void _updateDisplay() {
+    final cents = _parseInternalValue(_controller.text);
+    _displayController.text = _formatDisplay(cents);
   }
 }

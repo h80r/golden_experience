@@ -1,15 +1,16 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:drift/drift.dart' show Value;
+
+import '../../../data/datasources/local_database.dart';
+import '../../../data/repositories/account_repository_impl.dart';
 import '../../theme/app_colors.dart';
-import '../../theme/app_typography.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
 import '../inputs/custom_text_field.dart';
 import '../inputs/nubank_style_currency_field.dart';
-import '../../../data/repositories/account_repository_impl.dart';
-import '../../../data/datasources/local_database.dart';
 
 /// Account creation step of the onboarding flow
 class AccountStep extends ConsumerStatefulWidget {
@@ -37,90 +38,6 @@ class _AccountStepState extends ConsumerState<AccountStep> {
   bool _isCredit = false;
   bool _isLoading = false;
   String? _errorMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController();
-    _balanceController = TextEditingController();
-    _creditLimitController = TextEditingController();
-  }
-
-  Future<void> _createAccount() async {
-    // Validate inputs
-    if (_nameController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Nome da conta é obrigatório';
-      });
-      return;
-    }
-
-    if (!_isDebit && !_isCredit) {
-      setState(() {
-        _errorMessage = 'Selecione pelo menos um tipo de conta';
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      // NubankStyleCurrencyField uses internal representation (cents)
-      final balanceCents = int.tryParse(_balanceController.text) ?? 0;
-      final creditLimitCents = int.tryParse(_creditLimitController.text) ?? 0;
-
-      final balance = balanceCents / 100.0;
-      final creditLimit = creditLimitCents / 100.0;
-
-      if (balance < 0 || creditLimit < 0) {
-        throw Exception('Valores não podem ser negativos');
-      }
-
-      final repository = AccountRepositoryImpl();
-      final newAccount = AccountModelCompanion.insert(
-        name: _nameController.text,
-        isDebit: Value(_isDebit),
-        isCredit: Value(_isCredit),
-        balance: Value(balance),
-        creditLimit: Value(creditLimit),
-        creditUsed: Value(0.0),
-      );
-
-      await repository.create(newAccount);
-
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        widget.onAccountDataChanged(
-          _nameController.text,
-          _isDebit,
-          _isCredit,
-          balance,
-          creditLimit,
-        );
-        widget.onContinue();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = 'Erro ao criar conta: $e';
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _balanceController.dispose();
-    _creditLimitController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -254,7 +171,7 @@ class _AccountStepState extends ConsumerState<AccountStep> {
                 if (_isDebit) ...[
                   NubankStyleCurrencyField(
                     label: 'Saldo Inicial',
-                    hint: 'R\$ 0,00',
+                    hint: '0,00',
                     controller: _balanceController,
                     isEnabled: !_isLoading,
                   ),
@@ -264,7 +181,7 @@ class _AccountStepState extends ConsumerState<AccountStep> {
                 if (_isCredit) ...[
                   NubankStyleCurrencyField(
                     label: 'Limite de Crédito',
-                    hint: 'R\$ 0,00',
+                    hint: '0,00',
                     controller: _creditLimitController,
                     isEnabled: !_isLoading,
                   ),
@@ -297,5 +214,89 @@ class _AccountStepState extends ConsumerState<AccountStep> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _balanceController.dispose();
+    _creditLimitController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+    _balanceController = TextEditingController();
+    _creditLimitController = TextEditingController();
+  }
+
+  Future<void> _createAccount() async {
+    // Validate inputs
+    if (_nameController.text.isEmpty) {
+      setState(() {
+        _errorMessage = 'Nome da conta é obrigatório';
+      });
+      return;
+    }
+
+    if (!_isDebit && !_isCredit) {
+      setState(() {
+        _errorMessage = 'Selecione pelo menos um tipo de conta';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // NubankStyleCurrencyField uses internal representation (cents)
+      final balanceCents = int.tryParse(_balanceController.text) ?? 0;
+      final creditLimitCents = int.tryParse(_creditLimitController.text) ?? 0;
+
+      final balance = balanceCents / 100.0;
+      final creditLimit = creditLimitCents / 100.0;
+
+      if (balance < 0 || creditLimit < 0) {
+        throw Exception('Valores não podem ser negativos');
+      }
+
+      final repository = AccountRepositoryImpl();
+      final newAccount = AccountModelCompanion.insert(
+        name: _nameController.text,
+        isDebit: Value(_isDebit),
+        isCredit: Value(_isCredit),
+        balance: Value(balance),
+        creditLimit: Value(creditLimit),
+        creditUsed: Value(0.0),
+      );
+
+      await repository.create(newAccount);
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        widget.onAccountDataChanged(
+          _nameController.text,
+          _isDebit,
+          _isCredit,
+          balance,
+          creditLimit,
+        );
+        widget.onContinue();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Erro ao criar conta: $e';
+        });
+      }
+    }
   }
 }

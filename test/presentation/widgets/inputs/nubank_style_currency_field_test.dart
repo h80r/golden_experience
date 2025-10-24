@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/presentation/widgets/inputs/nubank_style_currency_field.dart';
-import 'package:golden_experience/presentation/theme/app_colors.dart';
 
 void main() {
   group('NubankStyleCurrencyField', () {
@@ -21,7 +20,7 @@ void main() {
           home: Scaffold(
             body: NubankStyleCurrencyField(
               label: 'Valor',
-              hint: 'R\$ 0,00',
+              hint: '0,00',
               controller: controller,
             ),
           ),
