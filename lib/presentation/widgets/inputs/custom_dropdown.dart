@@ -41,6 +41,9 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
       onChanged: widget.isEnabled ? widget.onChanged : null,
       validator: widget.validator,
       focusNode: _focusNode,
+      dropdownColor: AppColors.surfaceVariant,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+      elevation: 4,
       style: AppTypography.bodyMedium.copyWith(
         color: AppColors.textPrimary,
       ),

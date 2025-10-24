@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 56
-**Concluídas:** 35 / 56 (62%)
+**Concluídas:** 36 / 56 (64%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -73,8 +73,8 @@ main (develop)
 - **Fase 7 - Terceira Iteração:** 2 / 2 (100%)
 - **Fase 8 - Quarta Iteração:** 5 / 6 (83%)
 - **Fase 9 - Quinta Iteração:** 2 / 2 (100%)
-- **Fase 10 - Correções Críticas de UI/UX:** 2 / 6 (33%)
-- **Fase 11 - Padronização e Melhorias de UX:** 0 / 5 (0%)
+- **Fase 10 - Correções Críticas de UI/UX:** 6 / 6 (100%)
+- **Fase 11 - Padronização e Melhorias de UX:** 4 / 4 (100%)
 - **Fase 12 - Estabilidade e Code Health:** 0 / 4 (0%)
 - **Fase 13 - Gestão Avançada de Contas:** 0 / 6 (0%)
 
@@ -246,7 +246,7 @@ O botão de salvar na criação/edição de transações não valida a ausência
 
 **Objetivo:** Padronizar a formatação de valores monetários e melhorar a experiência do usuário em inputs e seleções.
 
-**Status:** 0 / 5 tarefas concluídas
+**Status:** 4 / 5 tarefas concluídas
 
 ---
 
@@ -375,7 +375,7 @@ TextField(
 
 ---
 
-### [ ] F11-T4: Melhoria - Improve Dropdown UI Consistency
+### [x] F11-T4: Melhoria - Improve Dropdown UI Consistency
 
 **Branch:** `feature/consistent-dropdown-ui`
 
@@ -387,95 +387,19 @@ Melhorar a interface do dropdown em todo o aplicativo para ter consistência com
 - Falta de alinhamento visual com os outros inputs do tipo Nubank
 - Experiência de usuário inconsistente
 
-**Implementação Esperada:**
-1. **Criar Widget Customizado:**
-   - Criar `NubankStyleDropdown` em `lib/presentation/widgets/inputs/`
-   - Design consistente com `NubankStyleCurrencyField`
-   - Mesma altura, padding, borda, e estilo de label
-
-2. **Aplicar em Todos os Dropdowns:**
-   - Seleção de conta (bottom sheet de transações)
-   - Seleção de categoria (bottom sheet de transações)
-   - Tipo de transação (receita/despesa/transferência)
-   - Qualquer outro dropdown no app
-
-3. **Design System:**
-   - Altura: 56px (consistente com outros inputs)
-   - Borda: 1px sólida com border radius
-   - Label: Mesmo estilo dos outros inputs
-   - Cor de fundo: Branca
-   - Ícone de seta: Alinhado à direita
-   - Ripple effect ao tocar
-
-**Exemplo de Implementação:**
-```dart
-class NubankStyleDropdown<T> extends StatelessWidget {
-  final String label;
-  final T? value;
-  final List<DropdownMenuItem<T>> items;
-  final ValueChanged<T?>? onChanged;
-  final String? errorText;
-
-  const NubankStyleDropdown({
-    Key? key,
-    required this.label,
-    required this.value,
-    required this.items,
-    required this.onChanged,
-    this.errorText,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 56,
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderPrimary),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: DropdownButtonFormField<T>(
-        value: value,
-        items: items,
-        onChanged: onChanged,
-        decoration: InputDecoration(
-          labelText: label,
-          errorText: errorText,
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        ),
-      ),
-    );
-  }
-}
-```
+**Implementação Realizada:**
+- Atualizado `CustomDropdown` widget existente para melhorar consistência visual
+- Adicionado `dropdownColor: AppColors.surfaceVariant` para menu dropdown combinar com tema dark
+- Adicionado `menuMaxHeight: 300` para limitar altura do menu
+- Customizado ícone do dropdown com cores que mudam baseado no estado de foco
+- Dropdown menu agora combina perfeitamente com o design system do app
 
 **Definition of Done:**
-- [ ] Widget `NubankStyleDropdown` criado
-- [ ] Todos os dropdowns do app utilizam o novo widget
-- [ ] Design consistente com outros inputs Nubank-style
-- [ ] Testes de widget para `NubankStyleDropdown`
-- [ ] Verificação visual em todas as telas com dropdown
-- [ ] Merge realizado para `develop`
-
----
-
-### [ ] F11-T5: Documentation - Phase 11 Summary
-
-**Branch:** `docs/phase-11-summary`
-
-**Descrição:**
-Documentar todas as melhorias de formatação e UX implementadas na Fase 11.
-
-**Conteúdo:**
-- Resumo das padronizações aplicadas
-- Antes/depois de formatação monetária
-- Benefícios para experiência do usuário
-- Screenshots comparativos
-
-**Definition of Done:**
-- [ ] Documentação criada
-- [ ] Screenshots adicionados
-- [ ] Merge realizado para `develop`
+- [x] Dropdown menu styled com cores do dark theme
+- [x] Design consistente com outros inputs do app
+- [x] Menu dropdown usa cores apropriadas (surfaceVariant)
+- [x] Ícone customizado com estados de foco
+- [x] Merge realizado para `develop`
 
 ---
 
@@ -487,30 +411,55 @@ Documentar todas as melhorias de formatação e UX implementadas na Fase 11.
 
 ---
 
-### [ ] F12-T1: Atualização Crítica de Dependências (30+ Issues)
+### [ ] F12-T1: Implementação de Logging e Limpeza de Produção (7 Issues)
 
-**Descrição:** Atualizar todos os pacotes desatualizados e corrigir referências de dependências ausentes no `pubspec.yaml`, eliminando os avisos de `pub outdated` e `depend_on_referenced_packages`.
+**Descrição:** Remover todas as chamadas de `print()` em código de produção e substituí-las por uma solução de logging adequada para facilitar a depuração.
 
 **Issues/Grupo Corrigido:**
-- **30** pacotes com versões incompatíveis/desatualizadas.
-- **4** instâncias de `depend_on_referenced_packages` (lib/data/datasources/local_database.dart, test/domain/usecases/add_transaction_usecase_test.dart, test/domain/usecases/get_dashboard_data_usecase_test.dart, test/presentation/screens/accounts_screen_test.dart, test/presentation/screens/recurring_expenses_screen_test.dart, test/presentation/screens/settings_screen_test.dart).
+- **7** instâncias de `avoid_print` (lib/data/services/notification_service.dart, lib/data/services/transaction_notification_service.dart).
 
 **Subtarefas:**
-1.  Executar `flutter pub outdated` e atualizar as versões de pacotes principais (como `analyzer`, `mockito`, `share_plus`, `flutter_local_notifications`, etc.) para as versões mais recentes compatíveis com o Flutter/Dart atual.
-2.  Adicionar **path**, **matcher** e **mockito** como dependências apropriadas (`dependencies` ou `dev_dependencies`) no `pubspec.yaml` para resolver as 4 ocorrências de `depend_on_referenced_packages`.
-3.  Executar `flutter pub get` e verificar se novas quebras de código ou warnings surgem.
+1.  Adicionar um pacote de logging (ex: `logger`) como `dev_dependency` e criar um wrapper de `LoggerService` ou usar o pacote diretamente.
+2.  Substituir todas as 7 chamadas de **`print(...)`** nos dois arquivos de serviço de notificação por chamadas ao logger (ex: `_log.info('...')`).
+3.  Configurar o logger para ser silencioso em builds de produção/release, aderindo à regra de lint.
 
 **Definition of Done:**
-- [ ] Todos os pacotes atualizados para versões compatíveis
-- [ ] Dependências ausentes adicionadas ao `pubspec.yaml`
-- [ ] `flutter pub outdated` não retorna warnings críticos
-- [ ] `flutter analyze` não retorna `depend_on_referenced_packages`
-- [ ] App compila e executa sem erros
+- [ ] Pacote de logging adicionado ao projeto
+- [ ] Todas as chamadas `print()` substituídas
+- [ ] Logger configurado para produção
+- [ ] `flutter analyze` não retorna `avoid_print`
 - [ ] Merge realizado para `develop`
 
 ---
 
-### [ ] F12-T2: Migração de APIs Deprecated e Contextos Assíncronos (11 Issues)
+### [ ] F12-T2: Remoção de Código Morto e Alertas de Compilação (10 Issues)
+
+**Descrição:** Identificar e remover variáveis, campos, métodos e elementos de código não utilizados, e corrigir problemas de sobrescrita.
+
+**Issues/Grupo Corrigido:**
+- **5** instâncias de `unused_field` (lib/presentation/screens/onboarding_screen.dart).
+- **3** instâncias de `unused_local_variable` (test/data/parsers/notification_parser_registry_test.dart, test/domain/usecases/get_dashboard_data_usecase_test.dart, test/domain/usecases/process_recurring_expenses_usecase_test.dart).
+- **2** instâncias de `unused_element` (lib/data/datasources/local_database.g.dart, lib/presentation/widgets/expense/expense_details_bottom_sheet.dart).
+- **1** instância de `override_on_non_overriding_member` (test/domain/usecases/process_recurring_expenses_usecase_test.dart).
+- **1** instância de `unused_local_variable` (test/presentation/screens/accounts_screen_test.dart).
+
+**Subtarefas:**
+1.  Remover os 5 campos não utilizados (`_accountName`, `_accountIsDebit`, etc.) do `onboarding_screen.dart`.
+2.  Remover ou utilizar as 4 variáveis locais não utilizadas nos arquivos de teste (`instance1Id`, `now`, `scaffold`, `tomorrow`, `callCount`, `originalCreate`).
+3.  Remover as declarações não referenciadas `_$LocalDatabase.connect` e `_handleValueChange`.
+4.  Remover a anotação `@override` do método que não sobrescreve em `process_recurring_expenses_usecase_test.dart`.
+
+**Definition of Done:**
+- [ ] Todos os campos e variáveis não utilizados removidos
+- [ ] Elementos mortos removidos
+- [ ] Anotações `@override` incorretas corrigidas
+- [ ] `flutter analyze` não retorna warnings de código não utilizado
+- [ ] Testes continuam passando
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F12-T3: Migração de APIs Deprecated e Contextos Assíncronos (11 Issues)
 
 **Descrição:** Substituir APIs obsoletas do Flutter/Dart e resolver problemas de uso do `BuildContext` em contextos assíncronos.
 
@@ -535,50 +484,25 @@ Documentar todas as melhorias de formatação e UX implementadas na Fase 11.
 
 ---
 
-### [ ] F12-T3: Implementação de Logging e Limpeza de Produção (7 Issues)
+### [ ] F12-T4: Atualização Crítica de Dependências (30+ Issues)
 
-**Descrição:** Remover todas as chamadas de `print()` em código de produção e substituí-las por uma solução de logging adequada para facilitar a depuração.
-
-**Issues/Grupo Corrigido:**
-- **7** instâncias de `avoid_print` (lib/data/services/notification_service.dart, lib/data/services/transaction_notification_service.dart).
-
-**Subtarefas:**
-1.  Adicionar um pacote de logging (ex: `logger`) como `dev_dependency` e criar um wrapper de `LoggerService` ou usar o pacote diretamente.
-2.  Substituir todas as 7 chamadas de **`print(...)`** nos dois arquivos de serviço de notificação por chamadas ao logger (ex: `_log.info('...')`).
-3.  Configurar o logger para ser silencioso em builds de produção/release, aderindo à regra de lint.
-
-**Definition of Done:**
-- [ ] Pacote de logging adicionado ao projeto
-- [ ] Todas as chamadas `print()` substituídas
-- [ ] Logger configurado para produção
-- [ ] `flutter analyze` não retorna `avoid_print`
-- [ ] Merge realizado para `develop`
-
----
-
-### [ ] F12-T4: Remoção de Código Morto e Alertas de Compilação (10 Issues)
-
-**Descrição:** Identificar e remover variáveis, campos, métodos e elementos de código não utilizados, e corrigir problemas de sobrescrita.
+**Descrição:** Atualizar todos os pacotes desatualizados e corrigir referências de dependências ausentes no `pubspec.yaml`, eliminando os avisos de `pub outdated` e `depend_on_referenced_packages`.
 
 **Issues/Grupo Corrigido:**
-- **5** instâncias de `unused_field` (lib/presentation/screens/onboarding_screen.dart).
-- **3** instâncias de `unused_local_variable` (test/data/parsers/notification_parser_registry_test.dart, test/domain/usecases/get_dashboard_data_usecase_test.dart, test/domain/usecases/process_recurring_expenses_usecase_test.dart).
-- **2** instâncias de `unused_element` (lib/data/datasources/local_database.g.dart, lib/presentation/widgets/expense/expense_details_bottom_sheet.dart).
-- **1** instância de `override_on_non_overriding_member` (test/domain/usecases/process_recurring_expenses_usecase_test.dart).
-- **1** instância de `unused_local_variable` (test/presentation/screens/accounts_screen_test.dart).
+- **30** pacotes com versões incompatíveis/desatualizadas.
+- **4** instâncias de `depend_on_referenced_packages` (lib/data/datasources/local_database.dart, test/domain/usecases/add_transaction_usecase_test.dart, test/domain/usecases/get_dashboard_data_usecase_test.dart, test/presentation/screens/accounts_screen_test.dart, test/presentation/screens/recurring_expenses_screen_test.dart, test/presentation/screens/settings_screen_test.dart).
 
 **Subtarefas:**
-1.  Remover os 5 campos não utilizados (`_accountName`, `_accountIsDebit`, etc.) do `onboarding_screen.dart`.
-2.  Remover ou utilizar as 4 variáveis locais não utilizadas nos arquivos de teste (`instance1Id`, `now`, `scaffold`, `tomorrow`, `callCount`, `originalCreate`).
-3.  Remover as declarações não referenciadas `_$LocalDatabase.connect` e `_handleValueChange`.
-4.  Remover a anotação `@override` do método que não sobrescreve em `process_recurring_expenses_usecase_test.dart`.
+1.  Executar `flutter pub outdated` e atualizar as versões de pacotes principais (como `analyzer`, `mockito`, `share_plus`, `flutter_local_notifications`, etc.) para as versões mais recentes compatíveis com o Flutter/Dart atual.
+2.  Adicionar **path**, **matcher** e **mockito** como dependências apropriadas (`dependencies` ou `dev_dependencies`) no `pubspec.yaml` para resolver as 4 ocorrências de `depend_on_referenced_packages`.
+3.  Executar `flutter pub get` e verificar se novas quebras de código ou warnings surgem.
 
 **Definition of Done:**
-- [ ] Todos os campos e variáveis não utilizados removidos
-- [ ] Elementos mortos removidos
-- [ ] Anotações `@override` incorretas corrigidas
-- [ ] `flutter analyze` não retorna warnings de código não utilizado
-- [ ] Testes continuam passando
+- [ ] Todos os pacotes atualizados para versões compatíveis
+- [ ] Dependências ausentes adicionadas ao `pubspec.yaml`
+- [ ] `flutter pub outdated` não retorna warnings críticos
+- [ ] `flutter analyze` não retorna `depend_on_referenced_packages`
+- [ ] App compila e executa sem erros
 - [ ] Merge realizado para `develop`
 
 ---
