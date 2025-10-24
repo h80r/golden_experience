@@ -65,6 +65,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       obscureText: widget.obscureText,
       focusNode: _focusNode,
       textAlignVertical: widget.textAlignVertical,
+      textCapitalization: TextCapitalization.sentences,
       style: AppTypography.bodyMedium.copyWith(
         color: AppColors.textPrimary,
       ),

@@ -336,7 +336,7 @@ Permitir que o usuário selecione datas futuras ao criar/editar transações.
 
 ---
 
-### [ ] F11-T3: Melhoria - Auto-Capitalize Text Inputs
+### [x] F11-T3: Melhoria - Auto-Capitalize Text Inputs
 
 **Branch:** `feature/auto-capitalize-inputs`
 
@@ -367,11 +367,11 @@ TextField(
 ```
 
 **Definition of Done:**
-- [ ] Todos os campos de texto usam `TextCapitalization.sentences`
-- [ ] Widgets customizados atualizados para suportar capitalização
-- [ ] Verificação manual em todos os formulários do app
+- [x] Todos os campos de texto usam `TextCapitalization.sentences`
+- [x] Widgets customizados atualizados para suportar capitalização
+- [x] Verificação manual em todos os formulários do app
 - [ ] Testes de widget atualizados
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
