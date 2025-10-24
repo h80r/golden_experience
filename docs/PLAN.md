@@ -183,11 +183,11 @@ Remove o símbolo R$ duplicado que aparece na tela de criação/edição de tran
 - [x] Símbolo R$ aparece apenas uma vez no campo de valor
 - [x] Consistência visual com outros campos de moeda
 - [x] Testes de widget atualizados
-- [~] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F10-T5: Correção - Value Field Disappearing on Save Button Click
+### [x] F10-T5: Correção - Value Field Disappearing on Save Button Click
 
 **Branch:** `fix/value-field-disappearing`
 
@@ -206,15 +206,15 @@ No momento em que o usuário clica no botão de salvar na aba de notas, o valor 
 - Checar se há algum `setState` que limpa o campo
 
 **Definition of Done:**
-- [ ] Valor permanece visível ao clicar em salvar
-- [ ] Estado do campo é mantido entre mudanças de aba
-- [ ] Não há rebuilds desnecessários que limpam o campo
-- [ ] Testes de widget para verificar persistência do valor
-- [ ] Merge realizado para `develop`
+- [x] Valor permanece visível ao clicar em salvar
+- [x] Estado do campo é mantido entre mudanças de aba
+- [x] Não há rebuilds desnecessários que limpam o campo
+- [x] Testes de widget para verificar persistência do valor
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F10-T6: Correção - Transaction Save Validation for Missing Value
+### [x] F10-T6: Correção - Transaction Save Validation for Missing Value
 
 **Branch:** `fix/transaction-value-validation`
 
@@ -233,12 +233,12 @@ O botão de salvar na criação/edição de transações não valida a ausência
 - Validação deve ocorrer tanto na aba de detalhes quanto na aba de notas
 
 **Definition of Done:**
-- [ ] Validação de valor obrigatório implementada
-- [ ] Mensagem de erro clara para o usuário
-- [ ] Feedback visual adequado (campo em destaque/botão desabilitado)
-- [ ] Validação funciona em ambas as abas (detalhes e notas)
-- [ ] Testes de validação implementados
-- [ ] Merge realizado para `develop`
+- [x] Validação de valor obrigatório implementada
+- [x] Mensagem de erro clara para o usuário
+- [x] Feedback visual adequado (campo em destaque/botão desabilitado)
+- [x] Validação funciona em ambas as abas (detalhes e notas)
+- [x] Testes de validação implementados
+- [x] Merge realizado para `develop`
 
 ---
 

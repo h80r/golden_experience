@@ -586,8 +586,8 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
   }
 
   /// Go back to page 1
-  void _goToPreviousPage() {
-    _pageController.previousPage(
+  Future<void> _goToPreviousPage() async {
+    return _pageController.previousPage(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
@@ -595,6 +595,11 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
 
   /// Handle save action - validates page 1 fields since save button is on both pages
   void _handleSave() {
+    if (_formKeyPage1.currentState == null) {
+      _goToPreviousPage().then((_) => _formKeyPage1.currentState?.validate());
+      return;
+    }
+
     // Always validate page 1 fields (required fields are there)
     if (!_formKeyPage1.currentState!.validate()) {
       // If validation fails and we're on page 2, go back to page 1 to show errors
