@@ -32,196 +32,273 @@ class _AccountFormBottomSheetState
   late TextEditingController _nameController;
   late TextEditingController _balanceController;
   late TextEditingController _creditLimitController;
+  late DraggableScrollableController _sheetController;
   late GlobalKey<FormState> _formKey;
   late bool _isDebit;
   late bool _isCredit;
   bool _isLoading = false;
+  double _lastKeyboardHeight = 0.0;
 
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.account != null;
 
-    return Scaffold(
-      backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(
-          isEditing ? 'Editar Conta' : 'Nova Conta',
-          style: AppTypography.headlineLarge,
-        ),
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.lg),
-            child: Center(
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Icon(
-                  Icons.close,
-                  color: AppColors.textSecondary,
-                ),
-              ),
+    // Detect keyboard height to auto-expand sheet
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    // Auto-expand when keyboard opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (keyboardHeight > 0 && _lastKeyboardHeight == 0) {
+        // Keyboard just opened - expand to 85%
+        if (_sheetController.isAttached && mounted) {
+          _sheetController.animateTo(
+            0.9,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      } else if (keyboardHeight == 0 && _lastKeyboardHeight > 0) {
+        // Keyboard just closed - return to 55%
+        if (_sheetController.isAttached && mounted) {
+          _sheetController.animateTo(
+            0.55,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      }
+      _lastKeyboardHeight = keyboardHeight;
+    });
+
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.55,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      controller: _sheetController,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(AppSpacing.radiusLarge),
+              topRight: Radius.circular(AppSpacing.radiusLarge),
             ),
           ),
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Account Name Field
-              CustomTextField(
-                label: 'Nome da Conta',
-                hint: 'Ex: Conta Corrente, Cartão de Crédito',
-                controller: _nameController,
-                prefixIcon: Icons.account_balance,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira o nome da conta';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Account Type Selection (Checkboxes)
-              Text(
-                'Tipo de Conta',
-                style: AppTypography.bodyLarge.copyWith(
-                  fontWeight: FontWeight.bold,
+              // Handle and Header
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.md,
+                  horizontal: AppSpacing.lg,
                 ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              // Debit Checkbox
-              CheckboxListTile(
-                title: Text(
-                  'Débito (Conta Corrente)',
-                  style: AppTypography.bodyMedium,
-                ),
-                subtitle: Text(
-                  'Conta com saldo e limite de débito',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(AppSpacing.radiusLarge),
+                    topRight: Radius.circular(AppSpacing.radiusLarge),
                   ),
                 ),
-                value: _isDebit,
-                onChanged: (value) {
-                  setState(() {
-                    _isDebit = value ?? false;
-                  });
-                },
-                controlAffinity: ListTileControlAffinity.leading,
-              ),
-
-              // Credit Checkbox
-              CheckboxListTile(
-                title: Text(
-                  'Crédito (Cartão de Crédito)',
-                  style: AppTypography.bodyMedium,
-                ),
-                subtitle: Text(
-                  'Conta com limite de crédito',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                value: _isCredit,
-                onChanged: (value) {
-                  setState(() {
-                    _isCredit = value ?? false;
-                  });
-                },
-                controlAffinity: ListTileControlAffinity.leading,
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Validation: at least one type must be selected
-              if (!_isDebit && !_isCredit)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: Text(
-                    'Selecione pelo menos um tipo de conta',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.error,
-                    ),
-                  ),
-                ),
-
-              // Debit Balance Field
-              if (_isDebit)
-                Column(
+                child: Column(
                   children: [
-                    NubankStyleCurrencyField(
-                      label: 'Saldo Inicial (Débito)',
-                      hint: '0,00',
-                      controller: _balanceController,
-                      initialValue: widget.account?.balance ?? 0.0,
-                      onChanged: (value) {
-                        // Value is already converted by widget
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, insira um valor';
-                        }
-                        return null;
-                      },
+                    // Drag handle
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: AppColors.textTertiary,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-                    const SizedBox(height: AppSpacing.lg),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            isEditing ? 'Editar Conta' : 'Nova Conta',
+                            style: AppTypography.headlineLarge,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Icon(
+                            Icons.close,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
+              ),
+              // Form Content
+              Expanded(
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Account Name Field
+                        CustomTextField(
+                          label: 'Nome da Conta',
+                          hint: 'Ex: Conta Corrente, Cartão de Crédito',
+                          controller: _nameController,
+                          prefixIcon: Icons.account_balance,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, insira o nome da conta';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
 
-              // Credit Limit Field
-              if (_isCredit)
-                Column(
-                  children: [
-                    NubankStyleCurrencyField(
-                      label: 'Limite de Crédito',
-                      hint: '0,00',
-                      controller: _creditLimitController,
-                      initialValue: widget.account?.creditLimit ?? 0.0,
-                      onChanged: (value) {
-                        // Value is already converted by widget
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, insira um limite';
-                        }
-                        return null;
-                      },
+                        // Account Type Selection (Checkboxes)
+                        Text(
+                          'Tipo de Conta',
+                          style: AppTypography.bodyLarge.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+
+                        // Debit Checkbox
+                        CheckboxListTile(
+                          title: Text(
+                            'Débito (Conta Corrente)',
+                            style: AppTypography.bodyMedium,
+                          ),
+                          subtitle: Text(
+                            'Conta com saldo e limite de débito',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          value: _isDebit,
+                          onChanged: (value) {
+                            setState(() {
+                              _isDebit = value ?? false;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+
+                        // Credit Checkbox
+                        CheckboxListTile(
+                          title: Text(
+                            'Crédito (Cartão de Crédito)',
+                            style: AppTypography.bodyMedium,
+                          ),
+                          subtitle: Text(
+                            'Conta com limite de crédito',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          value: _isCredit,
+                          onChanged: (value) {
+                            setState(() {
+                              _isCredit = value ?? false;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+
+                        const SizedBox(height: AppSpacing.lg),
+
+                        // Validation: at least one type must be selected
+                        if (!_isDebit && !_isCredit)
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(bottom: AppSpacing.md),
+                            child: Text(
+                              'Selecione pelo menos um tipo de conta',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.error,
+                              ),
+                            ),
+                          ),
+
+                        // Debit Balance Field
+                        if (_isDebit)
+                          Column(
+                            children: [
+                              NubankStyleCurrencyField(
+                                label: 'Saldo Inicial (Débito)',
+                                hint: '0,00',
+                                controller: _balanceController,
+                                initialValue: widget.account?.balance ?? 0.0,
+                                onChanged: (value) {
+                                  // Value is already converted by widget
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Por favor, insira um valor';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: AppSpacing.lg),
+                            ],
+                          ),
+
+                        // Credit Limit Field
+                        if (_isCredit)
+                          Column(
+                            children: [
+                              NubankStyleCurrencyField(
+                                label: 'Limite de Crédito',
+                                hint: '0,00',
+                                controller: _creditLimitController,
+                                initialValue:
+                                    widget.account?.creditLimit ?? 0.0,
+                                onChanged: (value) {
+                                  // Value is already converted by widget
+                                },
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Por favor, insira um limite';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: AppSpacing.lg),
+                            ],
+                          ),
+
+                        // Action Buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SecondaryButton(
+                                label: 'Cancelar',
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.lg),
+                            Expanded(
+                              child: PrimaryButton(
+                                label: isEditing ? 'Atualizar' : 'Criar',
+                                isLoading: _isLoading,
+                                onPressed: _handleSubmit,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-                  ],
+                  ),
                 ),
-
-              // Action Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: SecondaryButton(
-                      label: 'Cancelar',
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.lg),
-                  Expanded(
-                    child: PrimaryButton(
-                      label: isEditing ? 'Atualizar' : 'Criar',
-                      isLoading: _isLoading,
-                      onPressed: _handleSubmit,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -230,6 +307,7 @@ class _AccountFormBottomSheetState
     _nameController.dispose();
     _balanceController.dispose();
     _creditLimitController.dispose();
+    _sheetController.dispose();
     super.dispose();
   }
 
@@ -237,6 +315,7 @@ class _AccountFormBottomSheetState
   void initState() {
     super.initState();
     _formKey = GlobalKey<FormState>();
+    _sheetController = DraggableScrollableController();
     _nameController = TextEditingController(text: widget.account?.name ?? '');
 
     if (widget.account != null) {
