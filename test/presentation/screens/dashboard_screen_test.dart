@@ -370,7 +370,7 @@ void main() {
 
       // Render and measure that layout completes without errors
       expect(find.byType(DashboardScreen), findsOneWidget);
-      expect(tester.binding.window.viewInsets.bottom, equals(0.0));
+      expect(tester.view.viewInsets.bottom, equals(0.0));
     });
 
     testWidgets('Displays loading state when stream is loading',

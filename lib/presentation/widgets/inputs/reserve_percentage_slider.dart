@@ -67,7 +67,7 @@ class ReservePercentageSlider extends StatelessWidget {
               enabledThumbRadius: 14.0,
               elevation: 4.0,
             ),
-            overlayColor: AppColors.primary.withOpacity(0.3),
+            overlayColor: AppColors.primary.withValues(alpha: 0.3),
             overlayShape: const RoundSliderOverlayShape(
               overlayRadius: 20.0,
             ),

@@ -320,7 +320,6 @@ class _TransactionsListScreenState
     if (!mounted) return;
 
     if (!result.success) {
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result.errorMessage ?? 'Erro ao deletar transação'),

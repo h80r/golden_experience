@@ -296,6 +296,8 @@ class AccountsScreen extends ConsumerWidget {
       } else {
         final success = await accountRepository.delete(account.id);
 
+        if (!context.mounted) return;
+
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

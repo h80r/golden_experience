@@ -41,7 +41,7 @@ class _CalculatorButton extends StatelessWidget {
 
     if (isAction) {
       // Action buttons (Clear, Backspace) - Red error color
-      backgroundColor = AppColors.error.withOpacity(0.15);
+      backgroundColor = AppColors.error.withValues(alpha: 0.15);
       textColor = AppColors.error;
       borderColor = AppColors.error;
     } else if (isOperator) {

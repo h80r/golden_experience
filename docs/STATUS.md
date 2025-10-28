@@ -4,8 +4,8 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F12-T3
-- **current_task_title**: Migração de APIs Deprecated e Contextos Assíncronos (11 Issues)
+- **current_task_id**: F13-T1
+- **current_task_title**: Correção - Fix New Account Bottom Sheet Behavior
 - **current_task_status**: PENDING
 
 ## Step Tracking (Only for complex tasks)

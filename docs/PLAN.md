@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 56
-**Concluídas:** 36 / 56 (64%)
+**Concluídas:** 37 / 56 (66%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -75,7 +75,7 @@ main (develop)
 - **Fase 9 - Quinta Iteração:** 2 / 2 (100%)
 - **Fase 10 - Correções Críticas de UI/UX:** 6 / 6 (100%)
 - **Fase 11 - Padronização e Melhorias de UX:** 4 / 4 (100%)
-- **Fase 12 - Estabilidade e Code Health:** 1 / 4 (25%)
+- **Fase 12 - Estabilidade e Code Health:** 3 / 3 (100%)
 - **Fase 13 - Gestão Avançada de Contas:** 0 / 6 (0%)
 
 ### Legenda de Status
@@ -459,7 +459,9 @@ Melhorar a interface do dropdown em todo o aplicativo para ter consistência com
 
 ---
 
-### [ ] F12-T3: Migração de APIs Deprecated e Contextos Assíncronos (11 Issues)
+### [x] F12-T3: Migração de APIs Deprecated e Contextos Assíncronos (11 Issues)
+
+**Branch:** `chore/deprecated-api-migration`
 
 **Descrição:** Substituir APIs obsoletas do Flutter/Dart e resolver problemas de uso do `BuildContext` em contextos assíncronos.
 
@@ -475,34 +477,11 @@ Melhorar a interface do dropdown em todo o aplicativo para ter consistência com
 4.  Adicionar verificações de **`if (mounted)`** antes de qualquer uso de `BuildContext` (ex: `Navigator.of(context)`) nas funções assíncronas de `accounts_screen.dart` e `transactions_list_screen.dart`.
 
 **Definition of Done:**
-- [ ] Todas as APIs deprecated substituídas
-- [ ] Contextos assíncronos corrigidos com `if (mounted)`
-- [ ] `flutter analyze` não retorna `deprecated_member_use`
-- [ ] `flutter analyze` não retorna `use_build_context_synchronously`
-- [ ] Testes executam sem warnings
-- [ ] Merge realizado para `develop`
-
----
-
-### [ ] F12-T4: Atualização Crítica de Dependências (30+ Issues)
-
-**Descrição:** Atualizar todos os pacotes desatualizados e corrigir referências de dependências ausentes no `pubspec.yaml`, eliminando os avisos de `pub outdated` e `depend_on_referenced_packages`.
-
-**Issues/Grupo Corrigido:**
-- **30** pacotes com versões incompatíveis/desatualizadas.
-- **4** instâncias de `depend_on_referenced_packages` (lib/data/datasources/local_database.dart, test/domain/usecases/add_transaction_usecase_test.dart, test/domain/usecases/get_dashboard_data_usecase_test.dart, test/presentation/screens/accounts_screen_test.dart, test/presentation/screens/recurring_expenses_screen_test.dart, test/presentation/screens/settings_screen_test.dart).
-
-**Subtarefas:**
-1.  Executar `flutter pub outdated` e atualizar as versões de pacotes principais (como `analyzer`, `mockito`, `share_plus`, `flutter_local_notifications`, etc.) para as versões mais recentes compatíveis com o Flutter/Dart atual.
-2.  Adicionar **path**, **matcher** e **mockito** como dependências apropriadas (`dependencies` ou `dev_dependencies`) no `pubspec.yaml` para resolver as 4 ocorrências de `depend_on_referenced_packages`.
-3.  Executar `flutter pub get` e verificar se novas quebras de código ou warnings surgem.
-
-**Definition of Done:**
-- [ ] Todos os pacotes atualizados para versões compatíveis
-- [ ] Dependências ausentes adicionadas ao `pubspec.yaml`
-- [ ] `flutter pub outdated` não retorna warnings críticos
-- [ ] `flutter analyze` não retorna `depend_on_referenced_packages`
-- [ ] App compila e executa sem erros
+- [x] Todas as APIs deprecated substituídas
+- [x] Contextos assíncronos corrigidos com `if (mounted)`
+- [x] `flutter analyze` não retorna `deprecated_member_use`
+- [x] `flutter analyze` não retorna `use_build_context_synchronously`
+- [x] Testes executam sem warnings
 - [ ] Merge realizado para `develop`
 
 ---
