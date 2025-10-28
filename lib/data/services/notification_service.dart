@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as dev;
 
 import 'package:notification_listener/notification_listener.dart';
 import 'package:notification_listener/models/notification.dart';
@@ -65,13 +66,13 @@ class NotificationService {
         _handleNotification,
         onError: (error) {
           // Log error but don't crash
-          print('Notification listener error: $error');
+          dev.log('Notification listener error: $error', name: 'NotificationService');
         },
       );
 
       _initialized = true;
     } catch (e) {
-      print('Error initializing notification service: $e');
+      dev.log('Error initializing notification service: $e', name: 'NotificationService');
       _initialized = true;
     }
   }
@@ -82,7 +83,7 @@ class NotificationService {
       await AndroidNotificationListener.request();
     } catch (e) {
       // Silently fail
-      print('Error opening permission settings: $e');
+      dev.log('Error opening permission settings: $e', name: 'NotificationService');
     }
   }
 
@@ -127,7 +128,7 @@ class NotificationService {
       TransactionNotificationService.show(transactionData);
     } catch (e) {
       // Silently fail - don't crash the app for notification processing errors
-      print('Error handling notification: $e');
+      dev.log('Error handling notification: $e', name: 'NotificationService');
     }
   }
 }

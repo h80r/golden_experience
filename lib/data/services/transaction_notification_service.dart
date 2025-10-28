@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as dev;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -97,7 +98,7 @@ class TransactionNotificationService {
         payload: jsonEncode(data.toJson()),
       );
     } catch (e) {
-      print('Error showing transaction notification: $e');
+      dev.log('Error showing transaction notification: $e', name: 'TransactionNotificationService');
     }
   }
 
@@ -106,7 +107,7 @@ class TransactionNotificationService {
     try {
       await _notificationsPlugin.cancelAll();
     } catch (e) {
-      print('Error canceling notifications: $e');
+      dev.log('Error canceling notifications: $e', name: 'TransactionNotificationService');
     }
   }
 
@@ -115,7 +116,7 @@ class TransactionNotificationService {
     try {
       await _notificationsPlugin.cancel(id);
     } catch (e) {
-      print('Error canceling notification: $e');
+      dev.log('Error canceling notification: $e', name: 'TransactionNotificationService');
     }
   }
 }

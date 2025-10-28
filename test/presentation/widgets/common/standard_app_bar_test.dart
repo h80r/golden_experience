@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/presentation/widgets/common/standard_app_bar.dart';
-import 'package:golden_experience/presentation/screens/settings_screen.dart';
 
 void main() {
   group('StandardAppBar', () {
@@ -110,7 +109,8 @@ void main() {
       expect(appBar.preferredSize, const Size.fromHeight(kToolbarHeight));
     });
 
-    testWidgets('renders multiple additional actions', (WidgetTester tester) async {
+    testWidgets('renders multiple additional actions',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
