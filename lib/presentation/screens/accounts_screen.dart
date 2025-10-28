@@ -429,6 +429,15 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
                           color: AppColors.textSecondary,
                         ),
                       ),
+                      if (widget.account.creditClosingDay != null) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          'Fechamento: Dia ${widget.account.creditClosingDay}',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
 

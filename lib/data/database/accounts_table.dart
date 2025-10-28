@@ -24,4 +24,7 @@ class Accounts extends Table {
 
   // Default account flag (only one account should be default at a time)
   BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+
+  // Credit card closing day (1-31, applicable only for credit accounts)
+  IntColumn get creditClosingDay => integer().nullable()();
 }

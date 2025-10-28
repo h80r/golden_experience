@@ -4,19 +4,27 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F13-T6
-- **current_task_title**: Feature - Credit Payment Date per Account
-- **current_task_status**: PENDING
+- **current_task_id**: PHASE_13_COMPLETE
+- **current_task_title**: Phase 13 Complete - All Tasks Finished
+- **current_task_status**: COMPLETED
 
 ## Step Tracking (Only for complex tasks)
 
 - **completed_steps**:
-    (none yet)
+    (not applicable)
 
 - **next_atomic_step**: |
-  (Task is starting fresh)
+  Phase 13 is complete. Review PLAN.md for next phase.
 
 ## Previous Task Completion
+
+- **F13-T6**: ✅ COMPLETED
+  - Database migration v6→v7 with creditClosingDay column (nullable integer)
+  - Added closing day selection field in account form (conditional on isCredit)
+  - Reused InlineCalendar widget from F13-T5 for consistent UX
+  - Field shows only for credit accounts with proper state management
+  - Full create/update logic with persistence in AccountFormBottomSheet
+  - Code generation completed successfully
 
 - **F13-T5**: ✅ COMPLETED
   - Custom inline calendar widget with month grid (7 columns × ~5 rows)

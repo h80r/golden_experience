@@ -55,7 +55,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -136,6 +136,14 @@ class LocalDatabase extends _$LocalDatabase {
             await customStatement('''
               ALTER TABLE app_settings
               ADD COLUMN salary_payment_value INTEGER NOT NULL DEFAULT 1
+            ''');
+          }
+
+          // Migration from v6 to v7: Add credit closing day column to accounts
+          if (from <= 6) {
+            await customStatement('''
+              ALTER TABLE accounts
+              ADD COLUMN credit_closing_day INTEGER
             ''');
           }
         },

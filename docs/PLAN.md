@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 56
-**Concluídas:** 39 / 56 (70%)
+**Concluídas:** 40 / 56 (71%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -76,7 +76,7 @@ main (develop)
 - **Fase 10 - Correções Críticas de UI/UX:** 6 / 6 (100%)
 - **Fase 11 - Padronização e Melhorias de UX:** 4 / 4 (100%)
 - **Fase 12 - Estabilidade e Code Health:** 3 / 3 (100%)
-- **Fase 13 - Gestão Avançada de Contas:** 5 / 6 (83%)
+- **Fase 13 - Gestão Avançada de Contas:** 6 / 6 (100%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -89,7 +89,7 @@ main (develop)
 
 **Objetivo:** Aprimorar a gestão de contas, categorias e configurações financeiras com recursos avançados de personalização.
 
-**Status:** 1 / 6 tarefas concluídas
+**Status:** 6 / 6 tarefas concluídas
 
 ---
 
@@ -333,41 +333,37 @@ Criar seção nas configurações para definir a data mensal em que o salário �
 
 ---
 
-### [ ] F13-T6: Feature - Credit Payment Date per Account
+### [x] F13-T6: Feature - Credit Payment Date per Account
 
 **Branch:** `feature/credit-payment-date`
 
 **Descrição:**
-Criar seção nas configurações para definir a data de pagamento da fatura de crédito para cada conta de crédito.
+Criar seção nas configurações para definir a data de fechamento da fatura de crédito para cada conta de crédito e também calcular a data de pagamento.
 
 **Implementação Esperada:**
 1. **Adicionar Campo no Banco:**
-   - Adicionar coluna `creditPaymentDay` (int 1-31) na tabela `Accounts`
+   - Adicionar coluna `creditClosingDay` (int 1-31) na tabela `Accounts`
    - Aplicável apenas para contas de crédito
 
 2. **UI na Account Creation/Editing:**
-   - Mostrar campo "Dia do Vencimento" apenas se `isCredit == true`
-   - Dropdown ou number picker com dias 1-31
+   - Mostrar campo "Dia do Fechamento" apenas se `isCredit == true`
+   - Usar o mesmo widget de seleção de dia do salário:
+     - Calendário inline personalizado
    - Validação de dias
 
-3. **UI na Settings Screen (Alternativa):**
-   - Seção "Datas de Vencimento"
-   - Lista de contas de crédito com seus respectivos dias
-   - Click para editar dia de vencimento
-
-4. **Uso Futuro:**
+3. **Uso Futuro:**
    - Alertas de proximidade de vencimento
    - Cálculo automático de fatura do mês
    - Projeção de gastos considerando vencimentos
 
 **Definition of Done:**
-- [ ] Coluna `creditPaymentDay` adicionada à tabela Accounts
-- [ ] Campo visível apenas para contas de crédito
-- [ ] UI para edição do dia de vencimento
-- [ ] Validação implementada
-- [ ] Valor persistido corretamente
-- [ ] Documentação de uso futuro
-- [ ] Merge realizado para `develop`
+- [x] Coluna `creditClosingDay` adicionada à tabela Accounts
+- [x] Campo visível apenas para contas de crédito
+- [x] UI para edição do dia de fechamento (InlineCalendar widget)
+- [x] Validação implementada (nullable field, 1-31 values)
+- [x] Valor persistido corretamente (both create and update)
+- [x] Documentação de uso futuro (comments in code)
+- [x] Merge realizado para `develop`
 
 ---
 
