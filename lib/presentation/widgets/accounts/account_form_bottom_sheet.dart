@@ -36,6 +36,7 @@ class _AccountFormBottomSheetState
   late GlobalKey<FormState> _formKey;
   late bool _isDebit;
   late bool _isCredit;
+  late FocusNode _nameFocusNode;
   bool _isLoading = false;
   double _lastKeyboardHeight = 0.0;
 
@@ -52,7 +53,7 @@ class _AccountFormBottomSheetState
         // Keyboard just opened - expand to 85%
         if (_sheetController.isAttached && mounted) {
           _sheetController.animateTo(
-            0.9,
+            0.93,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -61,7 +62,7 @@ class _AccountFormBottomSheetState
         // Keyboard just closed - return to 55%
         if (_sheetController.isAttached && mounted) {
           _sheetController.animateTo(
-            0.55,
+            0.58,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -72,7 +73,7 @@ class _AccountFormBottomSheetState
 
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 0.55,
+      initialChildSize: 0.58,
       minChildSize: 0.4,
       maxChildSize: 0.95,
       controller: _sheetController,
@@ -148,6 +149,7 @@ class _AccountFormBottomSheetState
                           label: 'Nome da Conta',
                           hint: 'Ex: Conta Corrente, Cartão de Crédito',
                           controller: _nameController,
+                          focusNode: _nameFocusNode,
                           prefixIcon: Icons.account_balance,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -308,6 +310,7 @@ class _AccountFormBottomSheetState
     _balanceController.dispose();
     _creditLimitController.dispose();
     _sheetController.dispose();
+    _nameFocusNode.dispose();
     super.dispose();
   }
 
@@ -317,6 +320,13 @@ class _AccountFormBottomSheetState
     _formKey = GlobalKey<FormState>();
     _sheetController = DraggableScrollableController();
     _nameController = TextEditingController(text: widget.account?.name ?? '');
+    _nameFocusNode = FocusNode();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _nameFocusNode.requestFocus();
+      }
+    });
 
     if (widget.account != null) {
       _isDebit = widget.account!.isDebit;

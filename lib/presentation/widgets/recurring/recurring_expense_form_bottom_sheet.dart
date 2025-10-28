@@ -36,6 +36,7 @@ class _RecurringExpenseFormBottomSheetState
   late GlobalKey<FormState> _formKey;
   late int? _selectedAccountId;
   late int? _selectedCategoryId;
+  late FocusNode _descriptionFocusNode;
   bool _isLoading = false;
   double _lastKeyboardHeight = 0.0;
 
@@ -54,7 +55,7 @@ class _RecurringExpenseFormBottomSheetState
         // Keyboard just opened - expand to 85%
         if (_sheetController.isAttached && mounted) {
           _sheetController.animateTo(
-            0.9,
+            0.93,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -63,7 +64,7 @@ class _RecurringExpenseFormBottomSheetState
         // Keyboard just closed - return to 55%
         if (_sheetController.isAttached && mounted) {
           _sheetController.animateTo(
-            0.55,
+            0.58,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -74,7 +75,7 @@ class _RecurringExpenseFormBottomSheetState
 
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 0.55,
+      initialChildSize: 0.58,
       minChildSize: 0.4,
       maxChildSize: 0.95,
       controller: _sheetController,
@@ -151,6 +152,7 @@ class _RecurringExpenseFormBottomSheetState
                         CustomTextField(
                           label: 'Descrição',
                           hint: 'Ex: Aluguel, Seguro, Assinatura',
+                          focusNode: _descriptionFocusNode,
                           controller: _descriptionController,
                           prefixIcon: Icons.description,
                           validator: (value) {
@@ -327,6 +329,7 @@ class _RecurringExpenseFormBottomSheetState
     _valueController.dispose();
     _chargeDayController.dispose();
     _sheetController.dispose();
+    _descriptionFocusNode.dispose();
     super.dispose();
   }
 
@@ -345,6 +348,13 @@ class _RecurringExpenseFormBottomSheetState
     );
     _selectedAccountId = widget.expense?.accountId;
     _selectedCategoryId = widget.expense?.categoryId;
+    _descriptionFocusNode = FocusNode();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _descriptionFocusNode.requestFocus();
+      }
+    });
   }
 
   Future<void> _handleSubmit() async {
