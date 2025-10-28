@@ -23,6 +23,19 @@ abstract class ICategoryRepository {
   /// Returns true if successful, false otherwise
   Future<bool> delete(int id);
 
+  /// Deletes a category if it has no linked transactions
+  /// Returns true if successful, false if category has transactions or doesn't exist
+  Future<bool> deleteIfUnused(int id);
+
+  /// Sets a category as the default
+  /// Automatically unsets the previous default category
+  /// Returns true if successful, false otherwise
+  Future<bool> setDefaultCategory(int id);
+
+  /// Gets the current default category
+  /// Returns null if no default is set
+  Future<CategoryModel?> getDefaultCategory();
+
   /// Seeds default categories
   /// Should be called on first app launch
   Future<void> seedDefaultCategories();

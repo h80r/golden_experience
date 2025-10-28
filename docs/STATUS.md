@@ -4,8 +4,8 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F13-T4
-- **current_task_title**: Feature - Category Management in Settings
+- **current_task_id**: F13-T5
+- **current_task_title**: Feature - Salary Payment Date Configuration
 - **current_task_status**: PENDING
 
 ## Step Tracking (Only for complex tasks)

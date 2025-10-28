@@ -350,11 +350,42 @@ class _RecurringExpenseFormBottomSheetState
     _selectedCategoryId = widget.expense?.categoryId;
     _descriptionFocusNode = FocusNode();
 
+    // If creating a new expense, load the defaults
+    if (widget.expense == null) {
+      _loadDefaults();
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _descriptionFocusNode.requestFocus();
       }
     });
+  }
+
+  /// Load the default account and category for new expenses
+  Future<void> _loadDefaults() async {
+    final accountRepository = ref.read(accountRepositoryProvider);
+    final categoryRepository = ref.read(categoryRepositoryProvider);
+
+    final results = await Future.wait([
+      accountRepository.getDefaultAccount(),
+      categoryRepository.getDefaultCategory(),
+    ]);
+
+    if (mounted) {
+      setState(() {
+        final defaultAccount = results[0] as AccountModel?;
+        final defaultCategory = results[1] as CategoryModel?;
+
+        if (defaultAccount != null) {
+          _selectedAccountId = defaultAccount.id;
+        }
+
+        if (defaultCategory != null) {
+          _selectedCategoryId = defaultCategory.id;
+        }
+      });
+    }
   }
 
   Future<void> _handleSubmit() async {

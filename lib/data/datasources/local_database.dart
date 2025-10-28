@@ -55,7 +55,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -113,6 +113,15 @@ class LocalDatabase extends _$LocalDatabase {
           if (from <= 3) {
             await customStatement('''
               ALTER TABLE accounts
+              ADD COLUMN is_default INTEGER NOT NULL DEFAULT 0
+              CHECK ("is_default" IN (0, 1))
+            ''');
+          }
+
+          // Migration from v4 to v5: Add isDefault column to categories
+          if (from <= 4) {
+            await customStatement('''
+              ALTER TABLE categories
               ADD COLUMN is_default INTEGER NOT NULL DEFAULT 0
               CHECK ("is_default" IN (0, 1))
             ''');

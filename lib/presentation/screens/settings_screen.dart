@@ -14,6 +14,7 @@ import '../theme/app_spacing.dart';
 import '../widgets/common/standard_app_bar.dart';
 import '../widgets/inputs/nubank_style_currency_field.dart';
 import '../widgets/inputs/reserve_percentage_slider.dart';
+import '../widgets/settings/category_management_section.dart';
 import '../widgets/settings/notification_settings_section.dart';
 
 /// SettingsScreen - Configuration screen for app-wide financial settings
@@ -50,188 +51,206 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           : SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Salário Mensal
-            NubankStyleCurrencyField(
-              label: 'Salário Mensal',
-              hint: 'Digite seu salário mensal',
-              controller: _monthlySalaryController,
-              onChanged: _onMonthlySalaryChanged,
-              initialValue: formState.monthlySalary,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-
-            // Saldo da Reserva
-            NubankStyleCurrencyField(
-              label: 'Saldo Inicial da Reserva',
-              hint: 'Digite o saldo inicial da reserva',
-              controller: _reserveBalanceController,
-              onChanged: _onReserveBalanceChanged,
-              initialValue: formState.reserveBalance,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-
-            // Percentual Máximo de Gasto da Reserva (Slider)
-            ReservePercentageSlider(
-              value: formState.maxReserveUsagePercentage,
-              onChanged: _onMaxReservePercentageChanged,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-
-            // Info message about auto-save
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-              ),
-              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      'Suas configurações são salvas automaticamente',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.primary,
+                  // Info message about auto-save
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8.0),
+                      border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            'Suas configurações são salvas automaticamente',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppColors.primary,
+                                    ),
                           ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-
-            // Divider
-            Divider(
-              color: AppColors.border,
-              thickness: 1,
-              height: AppSpacing.xl,
-            ),
-            const SizedBox(height: AppSpacing.md),
-
-            // Backup Section Header
-            Text(
-              'Backup e Restauração',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                  const SizedBox(height: AppSpacing.xl),
+                  // Salário Mensal
+                  NubankStyleCurrencyField(
+                    label: 'Salário Mensal',
+                    hint: 'Digite seu salário mensal',
+                    controller: _monthlySalaryController,
+                    onChanged: _onMonthlySalaryChanged,
+                    initialValue: formState.monthlySalary,
                   ),
-            ),
-            const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.lg),
 
-            Text(
-              'Exporte seus dados para um arquivo ou importe dados de um backup anterior.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
+                  // Saldo da Reserva
+                  NubankStyleCurrencyField(
+                    label: 'Saldo Inicial da Reserva',
+                    hint: 'Digite o saldo inicial da reserva',
+                    controller: _reserveBalanceController,
+                    onChanged: _onReserveBalanceChanged,
+                    initialValue: formState.reserveBalance,
                   ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.xl),
 
-            // Backup buttons
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: backupState.isLoading ? null : _exportBackup,
-                    icon: const Icon(Icons.cloud_download),
-                    label: backupState.isLoading
-                        ? const SizedBox(
-                            height: 16,
-                            width: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
+                  // Percentual Máximo de Gasto da Reserva (Slider)
+                  ReservePercentageSlider(
+                    value: formState.maxReserveUsagePercentage,
+                    onChanged: _onMaxReservePercentageChanged,
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // Divider
+                  Divider(
+                    color: AppColors.border,
+                    thickness: 1,
+                    height: AppSpacing.xl,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  // Category Management Section
+                  const CategoryManagementSection(),
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // Divider
+                  Divider(
+                    color: AppColors.border,
+                    thickness: 1,
+                    height: AppSpacing.xl,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  // Notifications Section
+                  NotificationSettingsSection(
+                    isAutoCaptureEnabled: _isAutoCaptureEnabled,
+                    onChanged: _onIsAutoCaptureEnabledChanged,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Divider
+                  Divider(
+                    color: AppColors.border,
+                    thickness: 1,
+                    height: AppSpacing.xl,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  // Backup Section Header
+                  Text(
+                    'Backup e Restauração',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  Text(
+                    'Exporte seus dados para um arquivo ou importe dados de um backup anterior.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Backup buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed:
+                              backupState.isLoading ? null : _exportBackup,
+                          icon: const Icon(Icons.cloud_download),
+                          label: backupState.isLoading
+                              ? const SizedBox(
+                                  height: 16,
+                                  width: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Exportar'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.md,
                             ),
-                          )
-                        : const Text('Exportar'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.md,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed:
+                              backupState.isLoading ? null : _importBackup,
+                          icon: const Icon(Icons.cloud_upload),
+                          label: const Text('Importar'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.secondary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.md,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // Backup status messages
+                  if (backupState.successMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.md),
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.successWithOpacity,
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(color: AppColors.success),
+                        ),
+                        child: Text(
+                          backupState.successMessage!,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.success,
+                                  ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: backupState.isLoading ? null : _importBackup,
-                    icon: const Icon(Icons.cloud_upload),
-                    label: const Text('Importar'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.secondary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.md,
+                  if (backupState.errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.md),
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: AppColors.errorWithOpacity,
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(color: AppColors.error),
+                        ),
+                        child: Text(
+                          backupState.errorMessage!,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.error,
+                                  ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-
-            // Backup status messages
-            if (backupState.successMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.md),
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.successWithOpacity,
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(color: AppColors.success),
-                  ),
-                  child: Text(
-                    backupState.successMessage!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.success,
-                        ),
-                  ),
-                ),
-              ),
-            if (backupState.errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.md),
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.errorWithOpacity,
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(color: AppColors.error),
-                  ),
-                  child: Text(
-                    backupState.errorMessage!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.error,
-                        ),
-                  ),
-                ),
-              ),
-            const SizedBox(height: AppSpacing.xl),
-
-            // Divider
-            Divider(
-              color: AppColors.border,
-              thickness: 1,
-              height: AppSpacing.xl,
-            ),
-            const SizedBox(height: AppSpacing.md),
-
-            // Notifications Section
-            NotificationSettingsSection(
-              isAutoCaptureEnabled: _isAutoCaptureEnabled,
-              onChanged: _onIsAutoCaptureEnabledChanged,
-            ),
-          ],
+                  const SizedBox(height: AppSpacing.xxxl),
+                ],
               ),
             ),
     );
@@ -430,29 +449,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _onMaxReservePercentageChanged(double value) async {
-    // Update form state
-    ref
-        .read(appSettingsFormProvider.notifier)
-        .updateMaxReserveUsagePercentage(value);
-
-    // Auto-save immediately
-    try {
-      final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
-      await appSettingsRepository.updateMaxReserveUsagePercentage(value);
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao salvar: $e'),
-          backgroundColor: AppColors.error,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
   Future<void> _onIsAutoCaptureEnabledChanged(bool value) async {
     // Update local state immediately for UI feedback
     setState(() {
@@ -476,6 +472,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _onMaxReservePercentageChanged(double value) async {
+    // Update form state
+    ref
+        .read(appSettingsFormProvider.notifier)
+        .updateMaxReserveUsagePercentage(value);
+
+    // Auto-save immediately
+    try {
+      final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
+      await appSettingsRepository.updateMaxReserveUsagePercentage(value);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao salvar: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   void _onMonthlySalaryChanged(double value) {
     // Update form state immediately for UI feedback
     ref.read(appSettingsFormProvider.notifier).updateMonthlySalary(value);
@@ -486,6 +505,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     // Create new timer for auto-save with 500ms debounce
     _monthlySalaryDebounce = Timer(const Duration(milliseconds: 500), () {
       _saveMonthlySalary(value);
+    });
+  }
+
+  void _onReserveBalanceChanged(double value) {
+    // Update form state immediately for UI feedback
+    ref.read(appSettingsFormProvider.notifier).updateReserveBalance(value);
+
+    // Cancel previous timer if exists
+    _reserveBalanceDebounce?.cancel();
+
+    // Create new timer for auto-save with 500ms debounce
+    _reserveBalanceDebounce = Timer(const Duration(milliseconds: 500), () {
+      _saveReserveBalance(value);
     });
   }
 
@@ -506,19 +538,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  void _onReserveBalanceChanged(double value) {
-    // Update form state immediately for UI feedback
-    ref.read(appSettingsFormProvider.notifier).updateReserveBalance(value);
-
-    // Cancel previous timer if exists
-    _reserveBalanceDebounce?.cancel();
-
-    // Create new timer for auto-save with 500ms debounce
-    _reserveBalanceDebounce = Timer(const Duration(milliseconds: 500), () {
-      _saveReserveBalance(value);
-    });
-  }
-
   Future<void> _saveReserveBalance(double value) async {
     try {
       final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
@@ -535,5 +554,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
     }
   }
-
 }
