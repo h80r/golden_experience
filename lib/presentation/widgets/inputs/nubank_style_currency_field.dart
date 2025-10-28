@@ -161,12 +161,18 @@ class _NubankStyleCurrencyFieldState extends State<NubankStyleCurrencyField> {
     _controller = widget.controller ?? TextEditingController();
     _displayController = TextEditingController();
 
-    // Initialize with initial value if provided (including zero values)
+    // Initialize with initial value if provided (including zero values).
+    // Do NOT override an existing controller value when it already contains text.
     if (widget.initialValue != null && widget.initialValue! >= 0) {
       final cents = (widget.initialValue! * 100).toInt();
-      _controller.text = cents.toString();
-      _updateDisplay();
+      if (_controller.text.isEmpty) {
+        _controller.text = cents.toString();
+      }
     }
+
+    // Ensure display reflects the current controller value (either pre-filled controller
+    // content or the initialValue we just applied).
+    _updateDisplay();
 
     // Listen to controller changes from outside
     _controller.addListener(_handleExternalChange);
