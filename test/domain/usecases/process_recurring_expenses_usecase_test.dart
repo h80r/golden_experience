@@ -52,6 +52,8 @@ void main() {
           lastRecurringCheck: todayAtMidnight,
           hasCompletedOnboarding: false,
           isAutoCaptureEnabled: false,
+          salaryPaymentMode: 'calendar',
+          salaryPaymentValue: 1,
         );
 
         mockAppSettingsRepository =
@@ -84,6 +86,8 @@ void main() {
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
           isAutoCaptureEnabled: false,
+          salaryPaymentMode: 'calendar',
+          salaryPaymentValue: 1,
         );
 
         mockAppSettingsRepository =
@@ -115,6 +119,8 @@ void main() {
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
           isAutoCaptureEnabled: false,
+          salaryPaymentMode: 'calendar',
+          salaryPaymentValue: 1,
         );
 
         final debitAccount = AccountModel(
@@ -176,6 +182,8 @@ void main() {
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
           isAutoCaptureEnabled: false,
+          salaryPaymentMode: 'calendar',
+          salaryPaymentValue: 1,
         );
 
         final debitAccount = AccountModel(
@@ -243,6 +251,8 @@ void main() {
           lastRecurringCheck: threeDaysAgo,
           hasCompletedOnboarding: false,
           isAutoCaptureEnabled: false,
+          salaryPaymentMode: 'calendar',
+          salaryPaymentValue: 1,
         );
 
         final debitAccount = AccountModel(
@@ -312,6 +322,8 @@ void main() {
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
           isAutoCaptureEnabled: false,
+          salaryPaymentMode: 'calendar',
+          salaryPaymentValue: 1,
         );
 
         final creditAccount = AccountModel(
@@ -369,6 +381,8 @@ void main() {
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
           isAutoCaptureEnabled: false,
+          salaryPaymentMode: 'calendar',
+          salaryPaymentValue: 1,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -413,6 +427,8 @@ void main() {
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
           isAutoCaptureEnabled: false,
+          salaryPaymentMode: 'calendar',
+          salaryPaymentValue: 1,
         );
 
         final debitAccount = AccountModel(
@@ -477,6 +493,8 @@ void main() {
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
           isAutoCaptureEnabled: false,
+          salaryPaymentMode: 'calendar',
+          salaryPaymentValue: 1,
         );
 
         mockAppSettingsRepository =
@@ -511,6 +529,8 @@ void main() {
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
           isAutoCaptureEnabled: false,
+          salaryPaymentMode: 'calendar',
+          salaryPaymentValue: 1,
         );
 
         final debitAccount = AccountModel(
@@ -564,6 +584,8 @@ void main() {
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
           isAutoCaptureEnabled: false,
+          salaryPaymentMode: 'calendar',
+          salaryPaymentValue: 1,
         );
 
         final debitAccount = AccountModel(
@@ -717,6 +739,8 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
       lastRecurringCheck: companion.lastRecurringCheck.value,
       hasCompletedOnboarding: companion.hasCompletedOnboarding.value,
       isAutoCaptureEnabled: companion.isAutoCaptureEnabled.value,
+      salaryPaymentMode: companion.salaryPaymentMode.value,
+      salaryPaymentValue: companion.salaryPaymentValue.value,
     );
   }
 
@@ -754,6 +778,15 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
   Future<void> updateReserveBalance(double balance) async {
     if (_settings == null) return;
     _settings = _settings!.copyWith(reserveBalance: balance);
+  }
+
+  @override
+  Future<void> updateSalaryPaymentConfig(String mode, int value) async {
+    if (_settings == null) return;
+    _settings = _settings!.copyWith(
+      salaryPaymentMode: mode,
+      salaryPaymentValue: value,
+    );
   }
 
   @override

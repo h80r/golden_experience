@@ -64,6 +64,16 @@ class AppSettingsRepositoryImpl implements IAppSettingsRepository {
   }
 
   @override
+  Future<void> updateSalaryPaymentConfig(String mode, int value) async {
+    await (_db.update(_db.appSettings)
+          ..where((s) => s.id.equals(_settingsId)))
+        .write(AppSettingsModelCompanion(
+          salaryPaymentMode: Value(mode),
+          salaryPaymentValue: Value(value),
+        ));
+  }
+
+  @override
   Future<void> initializeDefaults() async {
     final existing = await get();
     if (existing != null) return;
@@ -76,6 +86,8 @@ class AppSettingsRepositoryImpl implements IAppSettingsRepository {
       lastRecurringCheck: DateTime.now(),
       hasCompletedOnboarding: Value(false),
       isAutoCaptureEnabled: Value(false),
+      salaryPaymentMode: Value('calendar'),
+      salaryPaymentValue: Value(1),
     );
 
     await _db.into(_db.appSettings).insert(defaultSettings);

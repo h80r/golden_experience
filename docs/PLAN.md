@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 56
-**Concluídas:** 38 / 56 (68%)
+**Concluídas:** 39 / 56 (70%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -76,7 +76,7 @@ main (develop)
 - **Fase 10 - Correções Críticas de UI/UX:** 6 / 6 (100%)
 - **Fase 11 - Padronização e Melhorias de UX:** 4 / 4 (100%)
 - **Fase 12 - Estabilidade e Code Health:** 3 / 3 (100%)
-- **Fase 13 - Gestão Avançada de Contas:** 1 / 6 (17%)
+- **Fase 13 - Gestão Avançada de Contas:** 5 / 6 (83%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -187,11 +187,11 @@ ExpansionTile(
 - [x] Detalhes completos visíveis em modo expandido
 - [x] Ícone de expansão rotaciona adequadamente
 - [x] Testes de widget implementados
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F13-T3: Feature - Default Account Selection
+### [x] F13-T3: Feature - Default Account Selection
 
 **Branch:** `feature/default-account-selection`
 
@@ -227,18 +227,18 @@ class Accounts extends Table {
 ```
 
 **Definition of Done:**
-- [ ] Coluna `isDefault` adicionada à tabela Accounts
-- [ ] UI para marcar/desmarcar conta padrão implementada
-- [ ] Apenas uma conta pode ser default por vez
-- [ ] Bottom sheet de transações pré-seleciona conta padrão
-- [ ] Regras de negócio para exclusão implementadas
-- [ ] Testes de integração para seleção de conta padrão
-- [ ] Migration documentada
-- [ ] Merge realizado para `develop`
+- [x] Coluna `isDefault` adicionada à tabela Accounts
+- [x] UI para marcar/desmarcar conta padrão implementada
+- [x] Apenas uma conta pode ser default por vez
+- [x] Bottom sheet de transações pré-seleciona conta padrão
+- [x] Regras de negócio para exclusão implementadas
+- [x] Testes de integração para seleção de conta padrão
+- [x] Migration documentada
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F13-T4: Feature - Category Management in Settings
+### [x] F13-T4: Feature - Category Management in Settings
 
 **Branch:** `feature/category-management`
 
@@ -278,46 +278,58 @@ Adicionar seção nas configurações para criação/remoção de categorias e s
      - Outros
 
 **Definition of Done:**
-- [ ] Seção de gerenciamento de categorias na settings
-- [ ] CRUD completo de categorias implementado
-- [ ] Seleção de categoria padrão funcional
-- [ ] Validação de exclusão (categorias com transações)
-- [ ] Categorias iniciais criadas no onboarding
-- [ ] Bottom sheet de transações pré-seleciona categoria padrão
-- [ ] Testes de integração
-- [ ] Merge realizado para `develop`
+- [x] Seção de gerenciamento de categorias na settings
+- [x] CRUD completo de categorias implementado
+- [x] Seleção de categoria padrão funcional
+- [x] Validação de exclusão (categorias com transações)
+- [x] Categorias iniciais criadas no onboarding
+- [x] Bottom sheet de transações pré-seleciona categoria padrão
+- [x] Testes de integração
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F13-T5: Feature - Salary Payment Date Configuration
+### [x] F13-T5: Feature - Salary Payment Date Configuration
 
 **Branch:** `feature/salary-payment-date`
 
 **Descrição:**
-Criar seção nas configurações para definir a data mensal em que o salário é recebido.
+Criar seção nas configurações para definir a data mensal em que o salário é recebido com suporte a dois modos: data específica (calendário) e dia útil específico com cálculo de feriados.
 
 **Implementação Esperada:**
-1. **Adicionar Campo no Banco:**
-   - Adicionar coluna `salaryPaymentDay` (int 1-31) na tabela `AppSettings`
-   - Valor padrão: dia 1 do mês
+1. **Adicionar Campos no Banco:**
+   - Adicionar coluna `salaryPaymentMode` (texto: 'calendar' ou 'workday') na tabela `AppSettings`
+   - Adicionar coluna `salaryPaymentValue` (inteiro) na tabela `AppSettings`
+   - Valores padrão: modo 'calendar', valor 1
 
 2. **UI na Settings Screen:**
-   - Campo "Dia do Recebimento do Salário"
-   - Dropdown ou number picker com dias 1-31
-   - Validação para meses com menos de 31 dias
+   - SegmentedToggle para seleção entre "Dia Específico" e "Dia Útil"
+   - Modo Dia Específico: Calendário inline personalizado mostrando mês atual com seleção de dias (1-31)
+   - Modo Dia Útil: Dropdown com opções comuns (1º, 5º, 10º, 15º, 20º, último dia útil) + opção "Outro..." para entrada customizada (1-23)
+   - Datas de trabalho mostram o day/month correspondente (ex: "1º dia útil (03/11)")
 
-3. **Uso Futuro:**
+3. **Lógica de Feriados:**
+   - Implementar calendário brasileiro de feriados nacionais
+   - Incluir feriados específicos de São Paulo
+   - Suportar cálculo do nº dia útil excluindo finais de semana e feriados
+   - Seleção inteligente de mês: se data calculada já passou, usa próximo mês
+
+4. **Uso Futuro:**
    - Base para funcionalidade de projeção de saldo
    - Alertas de proximidade do dia do salário
    - Resetar "quanto posso gastar" baseado nesta data
 
 **Definition of Done:**
-- [ ] Coluna `salaryPaymentDay` adicionada ao banco
-- [ ] UI para seleção do dia implementada
-- [ ] Validação de dias implementada
-- [ ] Valor persistido corretamente
-- [ ] Documentação de uso futuro
-- [ ] Merge realizado para `develop`
+- [x] Colunas `salaryPaymentMode` e `salaryPaymentValue` adicionadas ao banco
+- [x] Migration v5→v6 implementada
+- [x] Widget calendário inline personalizado criado
+- [x] SegmentedToggle para modo de seleção
+- [x] Dropdown de dias úteis com cálculo de datas
+- [x] Calendário brasileiro de feriados implementado
+- [x] Lógica de seleção inteligente de mês
+- [x] UI completa integrada ao Settings Screen
+- [x] Persistência de dados funcionando
+- [x] Merge realizado para `develop`
 
 ---
 

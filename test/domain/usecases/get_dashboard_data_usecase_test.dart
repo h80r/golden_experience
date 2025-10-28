@@ -116,6 +116,9 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
   Future<void> updateIsAutoCaptureEnabled(bool enabled) async {}
 
   @override
+  Future<void> updateSalaryPaymentConfig(String mode, int value) async {}
+
+  @override
   Future<void> initializeDefaults() async {}
 
   @override
@@ -159,6 +162,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -182,6 +187,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -207,6 +214,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -251,6 +260,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -290,6 +301,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -320,6 +333,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -354,6 +369,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -387,6 +404,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -421,6 +440,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -452,6 +473,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -484,6 +507,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -517,6 +542,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -549,6 +576,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -585,6 +614,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -615,6 +646,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -649,6 +682,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -680,6 +715,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -711,6 +748,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -742,6 +781,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -852,6 +893,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -889,6 +932,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -937,6 +982,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 
@@ -970,6 +1017,8 @@ void main() {
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
             isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
           ),
         );
 

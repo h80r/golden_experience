@@ -55,7 +55,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -124,6 +124,18 @@ class LocalDatabase extends _$LocalDatabase {
               ALTER TABLE categories
               ADD COLUMN is_default INTEGER NOT NULL DEFAULT 0
               CHECK ("is_default" IN (0, 1))
+            ''');
+          }
+
+          // Migration from v5 to v6: Add salary payment configuration columns
+          if (from <= 5) {
+            await customStatement('''
+              ALTER TABLE app_settings
+              ADD COLUMN salary_payment_mode TEXT NOT NULL DEFAULT 'calendar'
+            ''');
+            await customStatement('''
+              ALTER TABLE app_settings
+              ADD COLUMN salary_payment_value INTEGER NOT NULL DEFAULT 1
             ''');
           }
         },

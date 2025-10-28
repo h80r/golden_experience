@@ -20,6 +20,12 @@ class AppSettings extends Table {
   BoolColumn get isAutoCaptureEnabled =>
       boolean().withDefault(const Constant(false))();
 
+  TextColumn get salaryPaymentMode =>
+      text().withDefault(const Constant('calendar'))();
+
+  IntColumn get salaryPaymentValue =>
+      integer().withDefault(const Constant(1))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

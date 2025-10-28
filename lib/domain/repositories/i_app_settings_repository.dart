@@ -30,6 +30,11 @@ abstract class IAppSettingsRepository {
   /// Updates only the auto capture enabled flag
   Future<void> updateIsAutoCaptureEnabled(bool enabled);
 
+  /// Updates salary payment configuration (mode and value)
+  /// mode: 'calendar' or 'workday'
+  /// value: 1-31 for calendar, 1-23 or 'last' for workday
+  Future<void> updateSalaryPaymentConfig(String mode, int value);
+
   /// Initializes settings with default values if they don't exist
   /// Should be called on first app launch
   Future<void> initializeDefaults();
