@@ -4,16 +4,18 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F13-T1
-- **current_task_title**: Correção - Fix Bottom Sheet Keyboard Behavior (Account + Recurring Expenses)
+- **current_task_id**: F13-T2
+- **current_task_title**: Melhoria - Collapsible Account Tiles with Click to Expand
 - **current_task_status**: COMPLETED
 
 ## Step Tracking (Only for complex tasks)
 
 - **completed_steps**:
-    - [F13-T1.1] Converted AccountFormBottomSheet to DraggableScrollableSheet with keyboard handling
-    - [F13-T1.2] Converted RecurringExpenseFormBottomSheet to DraggableScrollableSheet with keyboard handling
-    - [F13-T1.3] Verified build succeeds with flutter analyze and flutter build
+    - [F13-T2.1] Analyzed current account tile implementation
+    - [F13-T2.2] Implemented ExpansionTile-based collapsible account cards
+    - [F13-T2.3] Added collapsed state showing: name, type, and primary balance
+    - [F13-T2.4] Added expanded state showing: full details and action buttons
+    - [F13-T2.5] Verified build succeeds with flutter analyze and flutter build
 
 - **next_atomic_step**: |
-  (Task completed - both bottom sheets now auto-expand to 85% when keyboard opens and collapse to 55% when keyboard closes)
+  (Task completed - account tiles are now collapsible by default with smooth expansion animation)

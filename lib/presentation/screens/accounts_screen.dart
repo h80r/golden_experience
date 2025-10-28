@@ -94,179 +94,11 @@ class AccountsScreen extends ConsumerWidget {
     WidgetRef ref,
     AccountModel account,
   ) {
-    return Card(
-      color: AppColors.surface,
-      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
-        side: const BorderSide(
-          color: AppColors.border,
-          width: 1,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header: Name and Type Badges
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        account.name,
-                        style: AppTypography.headlineSmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      // Type badges
-                      Wrap(
-                        spacing: AppSpacing.sm,
-                        children: [
-                          if (account.isDebit)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.sm,
-                                vertical: AppSpacing.xs,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.successWithOpacity,
-                                borderRadius: BorderRadius.circular(
-                                  AppSpacing.radiusSmall,
-                                ),
-                              ),
-                              child: Text(
-                                'Débito',
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: AppColors.success,
-                                ),
-                              ),
-                            ),
-                          if (account.isCredit)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.sm,
-                                vertical: AppSpacing.xs,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.warningWithOpacity,
-                                borderRadius: BorderRadius.circular(
-                                  AppSpacing.radiusSmall,
-                                ),
-                              ),
-                              child: Text(
-                                'Crédito',
-                                style: AppTypography.labelSmall.copyWith(
-                                  color: AppColors.warning,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            const Divider(
-              color: AppColors.divider,
-              height: 1,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-
-            // Account Details (Debit and/or Credit)
-            if (account.isDebit)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Saldo',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  Text(
-                    formatCurrency(account.balance),
-                    style: AppTypography.displaySmall,
-                  ),
-                  if (account.isCredit) const SizedBox(height: AppSpacing.lg),
-                ],
-              ),
-
-            if (account.isCredit)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Limite de Crédito',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  Text(
-                    formatCurrency(account.creditLimit),
-                    style: AppTypography.displaySmall,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Utilizado: ${formatCurrency(account.creditUsed)}',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'Disponível: ${formatCurrency(account.creditLimit - account.creditUsed)}',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-
-            const SizedBox(height: AppSpacing.lg),
-            const Divider(
-              color: AppColors.divider,
-              height: 1,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-
-            // Action Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton.icon(
-                  onPressed: () {
-                    _showAccountFormBottomSheet(context, account);
-                  },
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Editar'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.secondary,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                TextButton.icon(
-                  onPressed: () {
-                    _showDeleteConfirmation(context, ref, account);
-                  },
-                  icon: const Icon(Icons.delete),
-                  label: const Text('Remover'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    return _AccountCardStateful(
+      account: account,
+      ref: ref,
+      onEdit: () => _showAccountFormBottomSheet(context, account),
+      onDelete: () => _showDeleteConfirmation(context, ref, account),
     );
   }
 
@@ -381,6 +213,240 @@ class AccountsScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Stateful widget to track expansion state of account card
+class _AccountCardStateful extends StatefulWidget {
+  final AccountModel account;
+  final WidgetRef ref;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _AccountCardStateful({
+    required this.account,
+    required this.ref,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  State<_AccountCardStateful> createState() => _AccountCardStatefulState();
+}
+
+class _AccountCardStatefulState extends State<_AccountCardStateful> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // Build balance display (only primary balance for collapsed state)
+    final balanceDisplay = widget.account.isDebit
+        ? formatCurrency(widget.account.balance)
+        : formatCurrency(widget.account.creditLimit - widget.account.creditUsed);
+
+    return Card(
+      color: AppColors.surface,
+      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+        side: const BorderSide(
+          color: AppColors.border,
+          width: 1,
+        ),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+        ),
+        child: ExpansionTile(
+          onExpansionChanged: (expanded) {
+            setState(() {
+              _isExpanded = expanded;
+            });
+          },
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.sm,
+          ),
+          childrenPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.md,
+          ),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  widget.account.name,
+                  style: AppTypography.headlineSmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Only show badges when collapsed
+              if (!_isExpanded) ...[
+                const SizedBox(width: AppSpacing.sm),
+                // Type badges (small)
+                if (widget.account.isDebit)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.successWithOpacity,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusSmall,
+                      ),
+                    ),
+                    child: Text(
+                      'Débito',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.success,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                if (widget.account.isDebit && widget.account.isCredit)
+                  const SizedBox(width: AppSpacing.xs),
+                if (widget.account.isCredit)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.warningWithOpacity,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusSmall,
+                      ),
+                    ),
+                    child: Text(
+                      'Crédito',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: AppColors.warning,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+              ],
+            ],
+          ),
+          // Only show subtitle (balance) when collapsed
+          subtitle: !_isExpanded
+              ? Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.sm),
+                  child: Text(
+                    balanceDisplay,
+                    style: AppTypography.titleLarge.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                )
+              : null,
+          trailing: Icon(
+            Icons.expand_more,
+            color: AppColors.textSecondary,
+          ),
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Divider(
+                  color: AppColors.divider,
+                  height: 1,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // Account Details (Debit and/or Credit)
+                if (widget.account.isDebit)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Saldo em Conta',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        formatCurrency(widget.account.balance),
+                        style: AppTypography.displaySmall,
+                      ),
+                      if (widget.account.isCredit)
+                        const SizedBox(height: AppSpacing.lg),
+                    ],
+                  ),
+
+                if (widget.account.isCredit)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Limite de Crédito',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        formatCurrency(widget.account.creditLimit),
+                        style: AppTypography.displaySmall,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Utilizado: ${formatCurrency(widget.account.creditUsed)}',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'Disponível: ${formatCurrency(widget.account.creditLimit - widget.account.creditUsed)}',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                const SizedBox(height: AppSpacing.lg),
+                const Divider(
+                  color: AppColors.divider,
+                  height: 1,
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // Action Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton.icon(
+                      onPressed: widget.onEdit,
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Editar'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.secondary,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    TextButton.icon(
+                      onPressed: widget.onDelete,
+                      icon: const Icon(Icons.delete),
+                      label: const Text('Remover'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.error,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

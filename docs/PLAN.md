@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 56
-**Concluídas:** 37 / 56 (66%)
+**Concluídas:** 38 / 56 (68%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -76,7 +76,7 @@ main (develop)
 - **Fase 10 - Correções Críticas de UI/UX:** 6 / 6 (100%)
 - **Fase 11 - Padronização e Melhorias de UX:** 4 / 4 (100%)
 - **Fase 12 - Estabilidade e Code Health:** 3 / 3 (100%)
-- **Fase 13 - Gestão Avançada de Contas:** 0 / 6 (0%)
+- **Fase 13 - Gestão Avançada de Contas:** 1 / 6 (17%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -89,11 +89,11 @@ main (develop)
 
 **Objetivo:** Aprimorar a gestão de contas, categorias e configurações financeiras com recursos avançados de personalização.
 
-**Status:** 0 / 6 tarefas concluídas
+**Status:** 1 / 6 tarefas concluídas
 
 ---
 
-### [ ] F13-T1: Correção - Fix New Account Bottom Sheet Behavior
+### [x] F13-T1: Correção - Fix New Account Bottom Sheet Behavior
 
 **Branch:** `fix/account-bottom-sheet-keyboard`
 
@@ -116,16 +116,16 @@ Corrigir o comportamento do bottom sheet de nova conta para expandir e contrair 
 Verificar implementação do `ExpenseDetailsBottomSheet` e aplicar a mesma lógica.
 
 **Definition of Done:**
-- [ ] Bottom sheet ajusta altura corretamente com teclado
-- [ ] Todos os campos acessíveis quando teclado está visível
-- [ ] Scroll automático para campo em foco
-- [ ] Comportamento consistente com bottom sheet de transações
-- [ ] Testes de widget para verificar comportamento
-- [ ] Merge realizado para `develop`
+- [x] Bottom sheet ajusta altura corretamente com teclado
+- [x] Todos os campos acessíveis quando teclado está visível
+- [x] Scroll automático para campo em foco
+- [x] Comportamento consistente com bottom sheet de transações
+- [x] Testes de widget para verificar comportamento
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F13-T2: Melhoria - Collapsible Account Tiles with Click to Expand
+### [x] F13-T2: Melhoria - Collapsible Account Tiles with Click to Expand
 
 **Branch:** `feature/collapsible-account-tiles`
 
@@ -181,12 +181,12 @@ ExpansionTile(
 ```
 
 **Definition of Done:**
-- [ ] Account tiles colapsados por padrão
-- [ ] Click expande/colapsa tile com animação
-- [ ] Informações essenciais visíveis em modo colapsado
-- [ ] Detalhes completos visíveis em modo expandido
-- [ ] Ícone de expansão rotaciona adequadamente
-- [ ] Testes de widget implementados
+- [x] Account tiles colapsados por padrão
+- [x] Click expande/colapsa tile com animação
+- [x] Informações essenciais visíveis em modo colapsado
+- [x] Detalhes completos visíveis em modo expandido
+- [x] Ícone de expansão rotaciona adequadamente
+- [x] Testes de widget implementados
 - [ ] Merge realizado para `develop`
 
 ---
