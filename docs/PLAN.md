@@ -432,7 +432,7 @@ Melhorar a interface do dropdown em todo o aplicativo para ter consistência com
 
 ---
 
-### [ ] F12-T2: Remoção de Código Morto e Alertas de Compilação (10 Issues)
+### [x] F12-T2: Remoção de Código Morto e Alertas de Compilação (10 Issues)
 
 **Descrição:** Identificar e remover variáveis, campos, métodos e elementos de código não utilizados, e corrigir problemas de sobrescrita.
 

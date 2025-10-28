@@ -42,7 +42,6 @@ void main() {
 
       test('singleton instance persists across multiple instantiations', () {
         final instance1 = NotificationParserRegistry();
-        final instance1Id = identical(instance1, instance1);
 
         final instance2 = NotificationParserRegistry();
         final bothSame = identical(instance1, instance2);

@@ -436,7 +436,6 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
       // The scaffold background is inherited from theme, so it should be the default
 
       // Verify AppBar background color

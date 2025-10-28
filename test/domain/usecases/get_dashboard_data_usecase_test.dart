@@ -150,7 +150,6 @@ void main() {
 
       test('should return DashboardData when settings exist', () async {
         // Arrange
-        final now = DateTime(2024, 10, 15);
         appSettingsRepository.setSettings(
           AppSettingsModel(
             id: 1,

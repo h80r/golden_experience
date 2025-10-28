@@ -4,8 +4,8 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F12-T2
-- **current_task_title**: Remoção de Código Morto e Alertas de Compilação (10 Issues)
+- **current_task_id**: F12-T3
+- **current_task_title**: Migração de APIs Deprecated e Contextos Assíncronos (11 Issues)
 - **current_task_status**: PENDING
 
 ## Step Tracking (Only for complex tasks)

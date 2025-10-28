@@ -16,12 +16,10 @@ import '../inputs/nubank_style_currency_field.dart';
 class AccountStep extends ConsumerStatefulWidget {
   final VoidCallback onContinue;
   final VoidCallback onBack;
-  final Function(String, bool, bool, double, double) onAccountDataChanged;
 
   const AccountStep({
     required this.onContinue,
     required this.onBack,
-    required this.onAccountDataChanged,
     super.key,
   });
 
@@ -281,13 +279,6 @@ class _AccountStepState extends ConsumerState<AccountStep> {
         setState(() {
           _isLoading = false;
         });
-        widget.onAccountDataChanged(
-          _nameController.text,
-          _isDebit,
-          _isCredit,
-          balance,
-          creditLimit,
-        );
         widget.onContinue();
       }
     } catch (e) {

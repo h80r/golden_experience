@@ -255,7 +255,6 @@ void main() {
 
         // Create expenses for different days
         final twoDaysAgo = threeDaysAgo.add(const Duration(days: 1));
-        final tomorrow = todayAtMidnight.add(const Duration(days: 1));
 
         final expense1 = RecurringExpenseModel(
           id: 1,
@@ -439,11 +438,6 @@ void main() {
           accountId: 1,
           categoryId: 1,
         );
-
-        // Create a custom transaction repository that fails on first create
-        var callCount = 0;
-        final failingTransactionRepo = MockTransactionRepository();
-        final originalCreate = failingTransactionRepo.create;
 
         mockAppSettingsRepository =
             MockAppSettingsRepository(initialSettings: settings);
@@ -852,7 +846,6 @@ class MockTransactionRepository implements ITransactionRepository {
     return Stream.value(_transactions);
   }
 
-  @override
   Stream<List<TransactionModel>> watchByMonth(int month, int year) {
     return Stream.value(
       _transactions

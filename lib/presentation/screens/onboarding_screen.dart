@@ -22,13 +22,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _currentStep = 0;
   late PageController _pageController;
 
-  // Form data to persist across steps
-  String? _accountName;
-  bool _accountIsDebit = true;
-  bool _accountIsCredit = false;
-  double _accountBalance = 0.0;
-  double _accountCreditLimit = 0.0;
-
   @override
   void initState() {
     super.initState();
@@ -137,15 +130,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             AccountStep(
               onContinue: _goToNextStep,
               onBack: _goToPreviousStep,
-              onAccountDataChanged: (name, isDebit, isCredit, balance, creditLimit) {
-                setState(() {
-                  _accountName = name;
-                  _accountIsDebit = isDebit;
-                  _accountIsCredit = isCredit;
-                  _accountBalance = balance;
-                  _accountCreditLimit = creditLimit;
-                });
-              },
             ),
 
             // Step 3: Categories Review
