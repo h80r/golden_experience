@@ -33,6 +33,7 @@ void main() {
             balance: 1000.0,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -64,6 +65,7 @@ void main() {
             balance: 1000.0,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -95,6 +97,7 @@ void main() {
             balance: 1000.0,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -126,6 +129,7 @@ void main() {
             balance: 1000.0,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -174,6 +178,7 @@ void main() {
             balance: 1000.0,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -206,6 +211,7 @@ void main() {
             balance: initialBalance,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -235,6 +241,7 @@ void main() {
             balance: 1000.0,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -274,6 +281,7 @@ void main() {
             balance: 0.0,
             creditLimit: 5000.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -305,6 +313,7 @@ void main() {
             balance: 0.0,
             creditLimit: initialLimit,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -336,6 +345,7 @@ void main() {
             balance: 1000.0,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
         accountRepository.shouldFailOnUpdate = true;
@@ -372,6 +382,7 @@ void main() {
             balance: 1000.0,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
         transactionRepository.shouldFailOnCreate = true;
@@ -403,6 +414,7 @@ void main() {
             balance: 1000.0,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -433,6 +445,7 @@ void main() {
             balance: 100.0,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -463,6 +476,7 @@ void main() {
             balance: 1000000.0,
             creditLimit: 0.0,
             creditUsed: 0.0,
+            isDefault: false,
           ),
         );
 
@@ -531,6 +545,7 @@ class MockAccountRepository implements IAccountRepository {
       balance: newBalance,
       creditLimit: account.creditLimit,
       creditUsed: account.creditUsed,
+            isDefault: false,
     );
     return true;
   }
@@ -550,6 +565,7 @@ class MockAccountRepository implements IAccountRepository {
       balance: account.balance,
       creditLimit: newLimit,
       creditUsed: account.creditUsed,
+            isDefault: false,
     );
     return true;
   }
@@ -569,6 +585,7 @@ class MockAccountRepository implements IAccountRepository {
       balance: account.balance,
       creditLimit: account.creditLimit,
       creditUsed: newCreditUsed,
+            isDefault: false,
     );
     return true;
   }
@@ -576,6 +593,24 @@ class MockAccountRepository implements IAccountRepository {
   @override
   Stream<List<AccountModel>> watchAll() {
     return Stream.value(_accounts.values.toList());
+  }
+
+  @override
+  Future<AccountModel?> getDefaultAccount() async {
+    return _accounts.values.firstWhere(
+      (account) => account.isDefault,
+      orElse: () => _accounts.values.first,
+    );
+  }
+
+  @override
+  Future<bool> setDefaultAccount(int accountId) async {
+    return true;
+  }
+
+  @override
+  Future<bool> clearDefaultAccount() async {
+    return true;
   }
 }
 

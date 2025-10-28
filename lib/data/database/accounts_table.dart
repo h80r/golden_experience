@@ -21,4 +21,7 @@ class Accounts extends Table {
 
   // Amount of credit used (for credit accounts)
   RealColumn get creditUsed => real().withDefault(Constant(0.0))();
+
+  // Default account flag (only one account should be default at a time)
+  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
 }

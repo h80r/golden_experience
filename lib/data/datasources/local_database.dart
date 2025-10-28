@@ -55,7 +55,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -106,6 +106,15 @@ class LocalDatabase extends _$LocalDatabase {
               ALTER TABLE app_settings
               ADD COLUMN is_auto_capture_enabled INTEGER NOT NULL DEFAULT 0
               CHECK ("is_auto_capture_enabled" IN (0, 1))
+            ''');
+          }
+
+          // Migration from v3 to v4: Add isDefault column to accounts
+          if (from <= 3) {
+            await customStatement('''
+              ALTER TABLE accounts
+              ADD COLUMN is_default INTEGER NOT NULL DEFAULT 0
+              CHECK ("is_default" IN (0, 1))
             ''');
           }
         },

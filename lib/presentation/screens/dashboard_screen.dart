@@ -28,11 +28,13 @@ class DashboardScreen extends ConsumerWidget {
     Future.wait([
       accountRepository.getAll(),
       categoryRepository.getAll(),
+      accountRepository.getDefaultAccount(),
     ]).then((results) {
       if (!context.mounted) return;
 
       final accounts = results[0] as List;
       final categories = results[1] as List;
+      final defaultAccount = results[2] as dynamic;
 
       // Convert lists to maps for the bottom sheet
       final accountsMap = {
@@ -44,7 +46,13 @@ class DashboardScreen extends ConsumerWidget {
           category.id as int: category.name as String
       };
 
-      // Show expense details bottom sheet with no pre-filled value
+      // Get default account ID if available
+      int? initialAccountId;
+      if (defaultAccount != null) {
+        initialAccountId = defaultAccount.id as int;
+      }
+
+      // Show expense details bottom sheet with pre-selected default account
       if (!context.mounted) return;
       showModalBottomSheet(
         context: context,
@@ -52,6 +60,7 @@ class DashboardScreen extends ConsumerWidget {
         builder: (context) => ExpenseDetailsBottomSheet(
           accounts: accountsMap,
           categories: categoriesMap,
+          initialAccountId: initialAccountId,
           onSave: ({
             required value,
             required description,

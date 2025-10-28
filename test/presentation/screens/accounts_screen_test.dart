@@ -46,6 +46,7 @@ void main() {
           balance: 5000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         ),
         AccountModel(
           id: 2,
@@ -55,6 +56,7 @@ void main() {
           balance: 0.0,
           creditLimit: 10000.0,
           creditUsed: 0.0,
+            isDefault: false,
         ),
       ];
 
@@ -94,6 +96,7 @@ void main() {
           balance: 1234.50,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         ),
       ];
 
@@ -129,6 +132,7 @@ void main() {
           balance: 0.0,
           creditLimit: 5000.0,
           creditUsed: 0.0,
+            isDefault: false,
         ),
       ];
 
@@ -218,6 +222,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         ),
       ];
 
@@ -259,6 +264,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         ),
       ];
 
@@ -314,6 +320,7 @@ void main() {
           balance: 2500.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         ),
       ];
 
@@ -371,6 +378,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         ),
         AccountModel(
           id: 2,
@@ -380,6 +388,7 @@ void main() {
           balance: 0.0,
           creditLimit: 5000.0,
           creditUsed: 0.0,
+            isDefault: false,
         ),
         AccountModel(
           id: 3,
@@ -389,6 +398,7 @@ void main() {
           balance: 3000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         ),
       ];
 

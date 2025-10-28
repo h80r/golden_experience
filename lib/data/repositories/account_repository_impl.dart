@@ -96,4 +96,43 @@ class AccountRepositoryImpl implements IAccountRepository {
   Stream<List<AccountModel>> watchAll() {
     return _db.select(_db.accounts).watch();
   }
+
+  @override
+  Future<AccountModel?> getDefaultAccount() async {
+    return await (_db.select(_db.accounts)
+          ..where((a) => a.isDefault.equals(true)))
+        .getSingleOrNull();
+  }
+
+  @override
+  Future<bool> setDefaultAccount(int accountId) async {
+    try {
+      // Use transaction to ensure atomicity (only one default at a time)
+      await _db.transaction(() async {
+        // Clear all default flags
+        await (_db.update(_db.accounts)
+              ..where((a) => a.isDefault.equals(true)))
+            .write(const AccountModelCompanion(isDefault: Value(false)));
+
+        // Set new default
+        await (_db.update(_db.accounts)..where((a) => a.id.equals(accountId)))
+            .write(const AccountModelCompanion(isDefault: Value(true)));
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> clearDefaultAccount() async {
+    try {
+      await (_db.update(_db.accounts)
+            ..where((a) => a.isDefault.equals(true)))
+          .write(const AccountModelCompanion(isDefault: Value(false)));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

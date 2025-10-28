@@ -125,6 +125,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -185,6 +186,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         );
 
         final expense1 = RecurringExpenseModel(
@@ -251,6 +253,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         );
 
         // Create expenses for different days
@@ -319,6 +322,7 @@ void main() {
           balance: 0.0,
           creditLimit: 5000.0,
           creditUsed: 0.0,
+            isDefault: false,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -419,6 +423,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         );
 
         final expense1 = RecurringExpenseModel(
@@ -516,6 +521,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -568,6 +574,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
+            isDefault: false,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -660,6 +667,25 @@ class MockAccountRepository implements IAccountRepository {
   @override
   Stream<List<AccountModel>> watchAll() {
     return Stream.value(_accounts.values.toList());
+  }
+
+  @override
+  Future<AccountModel?> getDefaultAccount() async {
+    try {
+      return _accounts.values.firstWhere((account) => account.isDefault);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> setDefaultAccount(int accountId) async {
+    return true;
+  }
+
+  @override
+  Future<bool> clearDefaultAccount() async {
+    return true;
   }
 }
 

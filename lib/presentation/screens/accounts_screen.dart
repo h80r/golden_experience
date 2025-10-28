@@ -109,6 +109,24 @@ class AccountsScreen extends ConsumerWidget {
   ) async {
     final accountRepository = ref.read(accountRepositoryProvider);
 
+    // Check if account is default
+    if (account.isDefault) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Defina outra conta como padrão antes de excluir',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.background,
+              ),
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
     // Check if account has transactions
     final hasTransactions = await accountRepository.hasTransactions(account.id);
 
@@ -244,7 +262,8 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
     // Build balance display (only primary balance for collapsed state)
     final balanceDisplay = widget.account.isDebit
         ? formatCurrency(widget.account.balance)
-        : formatCurrency(widget.account.creditLimit - widget.account.creditUsed);
+        : formatCurrency(
+            widget.account.creditLimit - widget.account.creditUsed);
 
     return Card(
       color: AppColors.surface,
@@ -413,7 +432,18 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
                     ],
                   ),
 
-                const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.md),
+
+                // Default Account Switch
+                SwitchListTile(
+                  value: widget.account.isDefault,
+                  onChanged: (_) => _handleToggleDefault(),
+                  title: const Text('Conta Padrão'),
+                  subtitle: const Text(
+                      'Selecionada automaticamente ao criar transações'),
+                  contentPadding: const EdgeInsets.symmetric(),
+                ),
+                const SizedBox(height: AppSpacing.md),
                 const Divider(
                   color: AppColors.divider,
                   height: 1,
@@ -449,5 +479,46 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleToggleDefault() async {
+    final accountRepository = widget.ref.read(accountRepositoryProvider);
+    final account = widget.account;
+
+    if (account.isDefault) {
+      // Clear default flag
+      final success = await accountRepository.clearDefaultAccount();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success ? 'Padrão removido' : 'Erro ao remover padrão',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.background,
+              ),
+            ),
+            backgroundColor: success ? AppColors.success : AppColors.error,
+          ),
+        );
+      }
+    } else {
+      // Set as default
+      final success = await accountRepository.setDefaultAccount(account.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? '"${account.name}" definida como padrão'
+                  : 'Erro ao definir padrão',
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.background,
+              ),
+            ),
+            backgroundColor: success ? AppColors.success : AppColors.error,
+          ),
+        );
+      }
+    }
   }
 }

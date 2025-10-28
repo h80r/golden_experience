@@ -42,4 +42,17 @@ abstract class IAccountRepository {
   /// Returns a stream of all accounts
   /// Updates automatically when data changes
   Stream<List<AccountModel>> watchAll();
+
+  /// Retrieves the default account
+  /// Returns null if no default account is set
+  Future<AccountModel?> getDefaultAccount();
+
+  /// Sets an account as the default account
+  /// Automatically clears the default flag from other accounts (atomic operation)
+  /// Returns true if successful, false otherwise
+  Future<bool> setDefaultAccount(int accountId);
+
+  /// Clears the default flag from all accounts
+  /// Returns true if successful, false otherwise
+  Future<bool> clearDefaultAccount();
 }

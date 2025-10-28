@@ -3,6 +3,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../../data/services/notification_service.dart';
 import '../../../data/parsers/notification_parser_registry.dart';
+import '../common/bordered_switch_tile.dart';
 
 /// Settings section for configuring notification capture features
 ///
@@ -81,42 +82,33 @@ class _NotificationSettingsSectionState
         const SizedBox(height: AppSpacing.lg),
 
         // Toggle for auto-capture
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.border),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: SwitchListTile(
-            value: widget.isAutoCaptureEnabled,
-            onChanged: (value) {
-              // Call the parent callback to update and save
-              widget.onChanged(value);
+        BorderedSwitchTile(
+          title: 'Ativar captura automática',
+          subtitle: _isLoading
+              ? 'Verificando permissão...'
+              : _hasPermission
+                  ? 'Permissão concedida'
+                  : 'Permissão necessária',
+          value: widget.isAutoCaptureEnabled,
+          onChanged: (value) {
+            // Call the parent callback to update and save
+            widget.onChanged(value);
 
-              if (value && !_hasPermission) {
-                // Prompt user to grant permission
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text(
-                      'É necessário conceder permissão para acessar notificações.',
-                    ),
-                    action: SnackBarAction(
-                      label: 'Configurar',
-                      onPressed: _openPermissionSettings,
-                    ),
+            if (value && !_hasPermission) {
+              // Prompt user to grant permission
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text(
+                    'É necessário conceder permissão para acessar notificações.',
                   ),
-                );
-              }
-            },
-            title: const Text('Ativar captura automática'),
-            subtitle: Text(
-              _isLoading
-                  ? 'Verificando permissão...'
-                  : _hasPermission
-                      ? 'Permissão concedida'
-                      : 'Permissão necessária',
-            ),
-            contentPadding: const EdgeInsets.all(AppSpacing.md),
-          ),
+                  action: SnackBarAction(
+                    label: 'Configurar',
+                    onPressed: _openPermissionSettings,
+                  ),
+                ),
+              );
+            }
+          },
         ),
 
         if (!_hasPermission && widget.isAutoCaptureEnabled) ...[
