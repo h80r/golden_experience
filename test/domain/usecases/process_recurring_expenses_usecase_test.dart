@@ -911,4 +911,60 @@ class MockTransactionRepository implements ITransactionRepository {
           .toList(),
     );
   }
+
+  @override
+  Future<List<TransactionModel>> getByDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    return _transactions
+        .where((t) =>
+            t.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+            t.date.isBefore(endDate.add(const Duration(days: 1))))
+        .toList();
+  }
+
+  @override
+  Stream<List<TransactionModel>> watchByDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) {
+    return Stream.value(
+      _transactions
+          .where((t) =>
+              t.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+              t.date.isBefore(endDate.add(const Duration(days: 1))))
+          .toList(),
+    );
+  }
+
+  @override
+  Future<List<TransactionModel>> getByAccountAndDateRange(
+    int accountId,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    return _transactions
+        .where((t) =>
+            t.accountId == accountId &&
+            t.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+            t.date.isBefore(endDate.add(const Duration(days: 1))))
+        .toList();
+  }
+
+  @override
+  Stream<List<TransactionModel>> watchByAccountAndDateRange(
+    int accountId,
+    DateTime startDate,
+    DateTime endDate,
+  ) {
+    return Stream.value(
+      _transactions
+          .where((t) =>
+              t.accountId == accountId &&
+              t.date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
+              t.date.isBefore(endDate.add(const Duration(days: 1))))
+          .toList(),
+    );
+  }
 }

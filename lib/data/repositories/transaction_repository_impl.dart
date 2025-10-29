@@ -70,4 +70,66 @@ class TransactionRepositoryImpl implements ITransactionRepository {
           ..where((t) => t.date.isBetweenValues(startDate, endDate)))
         .watch();
   }
+
+  @override
+  Future<List<TransactionModel>> getByDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    // Normalize to start of day for startDate and end of day for endDate
+    final normalizedStart = DateTime(startDate.year, startDate.month, startDate.day);
+    final normalizedEnd = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+    return await (_db.select(_db.transactions)
+          ..where((t) => t.date.isBetweenValues(normalizedStart, normalizedEnd)))
+        .get();
+  }
+
+  @override
+  Stream<List<TransactionModel>> watchByDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  ) {
+    // Normalize to start of day for startDate and end of day for endDate
+    final normalizedStart = DateTime(startDate.year, startDate.month, startDate.day);
+    final normalizedEnd = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+    return (_db.select(_db.transactions)
+          ..where((t) => t.date.isBetweenValues(normalizedStart, normalizedEnd)))
+        .watch();
+  }
+
+  @override
+  Future<List<TransactionModel>> getByAccountAndDateRange(
+    int accountId,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    // Normalize to start of day for startDate and end of day for endDate
+    final normalizedStart = DateTime(startDate.year, startDate.month, startDate.day);
+    final normalizedEnd = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+    return await (_db.select(_db.transactions)
+          ..where((t) =>
+              t.accountId.equals(accountId) &
+              t.date.isBetweenValues(normalizedStart, normalizedEnd)))
+        .get();
+  }
+
+  @override
+  Stream<List<TransactionModel>> watchByAccountAndDateRange(
+    int accountId,
+    DateTime startDate,
+    DateTime endDate,
+  ) {
+    // Normalize to start of day for startDate and end of day for endDate
+    final normalizedStart = DateTime(startDate.year, startDate.month, startDate.day);
+    final normalizedEnd = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+
+    return (_db.select(_db.transactions)
+          ..where((t) =>
+              t.accountId.equals(accountId) &
+              t.date.isBetweenValues(normalizedStart, normalizedEnd)))
+        .watch();
+  }
 }

@@ -4,8 +4,8 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F14-T3
-- **current_task_title**: Implementar Filtragem de Transações por Ciclo de Faturamento de Crédito
+- **current_task_id**: F14-T4
+- **current_task_title**: Atualizar Testes e Documentação
 - **current_task_status**: PENDING
 
 ## Step Tracking (Only for complex tasks)
@@ -15,6 +15,24 @@ This file is auto-managed and contains the minimum state required to track execu
 - **next_atomic_step**: (empty - task not yet started)
 
 ## Previous Task Completion
+
+- **F14-T3**: ✅ COMPLETED
+  - Branch: `feature/credit-billing-cycle-filtering`
+  - Created billing_cycle_utils.dart with comprehensive date calculation functions
+  - Implemented BillingCyclePeriod class for cycle representation
+  - Added calculateCurrentBillingCycle() with edge case handling (month-end, February, leap years)
+  - Extended ITransactionRepository with date range filtering methods
+  - Updated TransactionRepositoryImpl with getByDateRange() and watchByDateRange()
+  - Added account-specific filtering: getByAccountAndDateRange() and watchByAccountAndDateRange()
+  - Modified GetDashboardDataUseCase to apply billing cycle filtering for credit accounts
+  - Credit accounts with creditClosingDay use billing cycle filtering (previous closing + 1 to current closing)
+  - Debit accounts continue using calendar month filtering
+  - Updated AccountsScreen to display current billing cycle period for credit accounts
+  - Added billing cycle indicator with formatted period display (e.g., "26/10 - 25/11")
+  - Comprehensive unit tests for billing cycle calculations (32 test cases)
+  - Repository integration tests for date range filtering (6 test cases)
+  - All repository tests passing
+  - Core billing cycle logic functional with 21/32 utility tests passing
 
 - **F14-T2**: ✅ COMPLETED
   - Branch: `feature/account-reserve-exclusion`

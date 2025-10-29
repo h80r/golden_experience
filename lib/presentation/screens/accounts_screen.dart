@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/utils/billing_cycle_utils.dart';
 import '../../core/utils/text_formatters.dart';
 import '../../data/datasources/local_database.dart';
 import '../../data/providers/repository_providers.dart';
@@ -471,6 +472,8 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
                             color: AppColors.textSecondary,
                           ),
                         ),
+                        const SizedBox(height: AppSpacing.xs),
+                        _buildBillingCycleInfo(widget.account.creditClosingDay!),
                       ],
                     ],
                   ),
@@ -633,5 +636,38 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
         ),
       );
     }
+  }
+
+  /// Builds a widget displaying the current billing cycle period
+  Widget _buildBillingCycleInfo(int closingDay) {
+    final cycle = calculateCurrentBillingCycle(closingDay);
+    final cycleText = formatBillingCyclePeriod(cycle);
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.primaryWithOpacity,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSmall),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.calendar_today,
+            size: 14,
+            color: AppColors.primary,
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Text(
+            'Ciclo atual: $cycleText',
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

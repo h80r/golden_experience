@@ -73,6 +73,10 @@ class AppColors {
   /// Shadow color with transparency
   static const Color shadow = Color(0x3F000000);
 
+  // ====== Primary Color with Opacity ======
+  /// Primary color with opacity (for backgrounds)
+  static const Color primaryWithOpacity = Color(0x1FFFC700);
+
   // ====== Semantic Colors with Opacity ======
   /// Success color with opacity (for backgrounds)
   static const Color successWithOpacity = Color(0x1F00C49A);

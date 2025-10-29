@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../core/utils/billing_cycle_utils.dart';
 import '../models/dashboard_data.dart';
 import '../repositories/i_account_repository.dart';
 import '../repositories/i_app_settings_repository.dart';
@@ -36,23 +37,26 @@ class GetDashboardDataUseCase {
   /// Executes the use case to fetch and calculate dashboard data
   ///
   /// This method:
-  /// 1. Retrieves the current month's transactions
+  /// 1. Retrieves the current month's transactions with billing cycle filtering
   /// 2. Fetches the app settings
   /// 3. Calculates reserve balance from debit accounts
   /// 4. Performs all required calculations
   /// 5. Returns a complete DashboardData object
+  ///
+  /// For credit accounts with a creditClosingDay, transactions are filtered
+  /// by their billing cycle. For debit accounts, calendar month filtering applies.
   ///
   /// Returns [DashboardData] with all calculated values
   /// Throws an exception if settings are not initialized
   Future<DashboardData> execute() async {
     try {
       final now = DateTime.now();
-      final currentMonth = now.month;
-      final currentYear = now.year;
 
-      // Fetch transactions for current month
-      final transactions =
-          await _transactionRepository.getByMonth(currentMonth, currentYear);
+      // Fetch all accounts to determine billing cycle filtering
+      final allAccounts = await _accountRepository.getAll();
+
+      // Fetch transactions with billing cycle filtering applied
+      final transactions = await _getFilteredTransactions(now, allAccounts);
 
       // Fetch app settings
       final settings = await _appSettingsRepository.get();
@@ -64,12 +68,11 @@ class GetDashboardDataUseCase {
 
       // Calculate reserve balance from debit account balances
       // Exclude accounts with excludeFromReserve flag (intocável)
-      final allAccounts = await _accountRepository.getAll();
       final reserveBalance = allAccounts
           .where((account) => account.isDebit && !account.excludeFromReserve)
           .fold<double>(0.0, (sum, account) => sum + account.balance);
 
-      // Calculate total spent this month
+      // Calculate total spent this month/cycle
       final totalSpent = _calculateTotalSpent(transactions);
 
       // Calculate partial result (Salary - Spending)
@@ -148,5 +151,51 @@ class GetDashboardDataUseCase {
       total += (transaction as dynamic).value as double;
     }
     return total;
+  }
+
+  /// Fetches transactions filtered by billing cycle for credit accounts
+  /// and by calendar month for debit accounts
+  ///
+  /// For each account:
+  /// - If it's a credit account with a creditClosingDay, fetch transactions
+  ///   within the current billing cycle
+  /// - Otherwise, fetch transactions for the calendar month
+  ///
+  /// Returns a combined list of all filtered transactions
+  Future<List<dynamic>> _getFilteredTransactions(
+    DateTime referenceDate,
+    List<dynamic> accounts,
+  ) async {
+    final allTransactions = <dynamic>[];
+
+    for (final account in accounts) {
+      final accountId = (account as dynamic).id as int;
+      final isCredit = (account).isCredit as bool;
+      final creditClosingDay = (account).creditClosingDay as int?;
+
+      if (isCredit && creditClosingDay != null) {
+        // Credit account with billing cycle - use billing cycle filtering
+        final cycle = calculateCurrentBillingCycle(creditClosingDay, referenceDate);
+        final transactions = await _transactionRepository.getByAccountAndDateRange(
+          accountId,
+          cycle.start,
+          cycle.end,
+        );
+        allTransactions.addAll(transactions);
+      } else {
+        // Debit account or credit account without closing day - use calendar month
+        final startDate = DateTime(referenceDate.year, referenceDate.month, 1);
+        final endDate = DateTime(referenceDate.year, referenceDate.month + 1, 1)
+            .subtract(const Duration(seconds: 1));
+        final transactions = await _transactionRepository.getByAccountAndDateRange(
+          accountId,
+          startDate,
+          endDate,
+        );
+        allTransactions.addAll(transactions);
+      }
+    }
+
+    return allTransactions;
   }
 }
