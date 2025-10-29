@@ -28,13 +28,6 @@ class AppSettingsRepositoryImpl implements IAppSettingsRepository {
   }
 
   @override
-  Future<void> updateReserveBalance(double balance) async {
-    await (_db.update(_db.appSettings)
-          ..where((s) => s.id.equals(_settingsId)))
-        .write(AppSettingsModelCompanion(reserveBalance: Value(balance)));
-  }
-
-  @override
   Future<void> updateMaxReserveUsagePercentage(double percentage) async {
     await (_db.update(_db.appSettings)
           ..where((s) => s.id.equals(_settingsId)))
@@ -81,7 +74,6 @@ class AppSettingsRepositoryImpl implements IAppSettingsRepository {
     final defaultSettings = AppSettingsModelCompanion.insert(
       id: Value(_settingsId),
       monthlySalary: 0.0,
-      reserveBalance: 0.0,
       maxReserveUsagePercentage: 0.0,
       lastRecurringCheck: DateTime.now(),
       hasCompletedOnboarding: Value(false),

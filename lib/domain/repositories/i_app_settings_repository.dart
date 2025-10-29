@@ -15,9 +15,6 @@ abstract class IAppSettingsRepository {
   /// Updates only the monthly salary
   Future<void> updateMonthlySalary(double salary);
 
-  /// Updates only the reserve balance
-  Future<void> updateReserveBalance(double balance);
-
   /// Updates only the max reserve usage percentage
   Future<void> updateMaxReserveUsagePercentage(double percentage);
 

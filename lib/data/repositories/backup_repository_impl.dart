@@ -208,8 +208,6 @@ class BackupRepositoryImpl implements IBackupRepository {
             id: Value(settingData['id'] as int),
             monthlySalary:
                 Value((settingData['monthlySalary'] as num).toDouble()),
-            reserveBalance:
-                Value((settingData['reserveBalance'] as num).toDouble()),
             maxReserveUsagePercentage: Value(
                 (settingData['maxReserveUsagePercentage'] as num).toDouble()),
             lastRecurringCheck: Value(lastRecurringCheck),

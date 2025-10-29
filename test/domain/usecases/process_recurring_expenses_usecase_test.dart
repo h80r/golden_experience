@@ -47,7 +47,6 @@ void main() {
         final settings = AppSettingsModel(
           id: 1,
           monthlySalary: 5000.0,
-          reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: todayAtMidnight,
           hasCompletedOnboarding: false,
@@ -81,7 +80,6 @@ void main() {
         final settings = AppSettingsModel(
           id: 1,
           monthlySalary: 5000.0,
-          reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
@@ -114,7 +112,6 @@ void main() {
         final settings = AppSettingsModel(
           id: 1,
           monthlySalary: 5000.0,
-          reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
@@ -177,7 +174,6 @@ void main() {
         final settings = AppSettingsModel(
           id: 1,
           monthlySalary: 5000.0,
-          reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
@@ -246,7 +242,6 @@ void main() {
         final settings = AppSettingsModel(
           id: 1,
           monthlySalary: 5000.0,
-          reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: threeDaysAgo,
           hasCompletedOnboarding: false,
@@ -317,7 +312,6 @@ void main() {
         final settings = AppSettingsModel(
           id: 1,
           monthlySalary: 5000.0,
-          reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
@@ -376,7 +370,6 @@ void main() {
         final settings = AppSettingsModel(
           id: 1,
           monthlySalary: 5000.0,
-          reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
@@ -422,7 +415,6 @@ void main() {
         final settings = AppSettingsModel(
           id: 1,
           monthlySalary: 5000.0,
-          reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
@@ -488,7 +480,6 @@ void main() {
         final settings = AppSettingsModel(
           id: 1,
           monthlySalary: 5000.0,
-          reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
@@ -524,7 +515,6 @@ void main() {
         final settings = AppSettingsModel(
           id: 1,
           monthlySalary: 5000.0,
-          reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
@@ -579,7 +569,6 @@ void main() {
         final settings = AppSettingsModel(
           id: 1,
           monthlySalary: 5000.0,
-          reserveBalance: 2000.0,
           maxReserveUsagePercentage: 50.0,
           lastRecurringCheck: yesterday,
           hasCompletedOnboarding: false,
@@ -734,7 +723,6 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
     _settings = AppSettingsModel(
       id: companion.id.value,
       monthlySalary: companion.monthlySalary.value,
-      reserveBalance: companion.reserveBalance.value,
       maxReserveUsagePercentage: companion.maxReserveUsagePercentage.value,
       lastRecurringCheck: companion.lastRecurringCheck.value,
       hasCompletedOnboarding: companion.hasCompletedOnboarding.value,
@@ -772,12 +760,6 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
   Future<void> updateMonthlySalary(double salary) async {
     if (_settings == null) return;
     _settings = _settings!.copyWith(monthlySalary: salary);
-  }
-
-  @override
-  Future<void> updateReserveBalance(double balance) async {
-    if (_settings == null) return;
-    _settings = _settings!.copyWith(reserveBalance: balance);
   }
 
   @override

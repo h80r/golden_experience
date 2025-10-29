@@ -46,6 +46,7 @@ final getDashboardDataUseCaseProvider =
   return GetDashboardDataUseCase(
     transactionRepository: ref.read(transactionRepositoryProvider),
     appSettingsRepository: ref.read(appSettingsRepositoryProvider),
+    accountRepository: ref.read(accountRepositoryProvider),
   );
 });
 

@@ -55,7 +55,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -145,6 +145,45 @@ class LocalDatabase extends _$LocalDatabase {
               ALTER TABLE accounts
               ADD COLUMN credit_closing_day INTEGER
             ''');
+          }
+
+          // Migration from v7 to v8: Remove reserve_balance column from app_settings
+          if (from <= 7) {
+            // SQLite doesn't support DROP COLUMN directly, so we recreate the table
+            // Step 1: Create new app_settings table without reserve_balance
+            await customStatement('''
+              CREATE TABLE app_settings_new (
+                id INTEGER NOT NULL DEFAULT 1,
+                monthly_salary REAL NOT NULL,
+                max_reserve_usage_percentage REAL NOT NULL,
+                last_recurring_check INTEGER NOT NULL,
+                has_completed_onboarding INTEGER NOT NULL DEFAULT 0 CHECK ("has_completed_onboarding" IN (0, 1)),
+                is_auto_capture_enabled INTEGER NOT NULL DEFAULT 0 CHECK ("is_auto_capture_enabled" IN (0, 1)),
+                salary_payment_mode TEXT NOT NULL DEFAULT 'calendar',
+                salary_payment_value INTEGER NOT NULL DEFAULT 1,
+                PRIMARY KEY (id)
+              )
+            ''');
+
+            // Step 2: Copy data from old table (excluding reserve_balance)
+            await customStatement('''
+              INSERT INTO app_settings_new (
+                id, monthly_salary, max_reserve_usage_percentage,
+                last_recurring_check, has_completed_onboarding, is_auto_capture_enabled,
+                salary_payment_mode, salary_payment_value
+              )
+              SELECT
+                id, monthly_salary, max_reserve_usage_percentage,
+                last_recurring_check, has_completed_onboarding, is_auto_capture_enabled,
+                salary_payment_mode, salary_payment_value
+              FROM app_settings
+            ''');
+
+            // Step 3: Drop old table
+            await customStatement('DROP TABLE app_settings');
+
+            // Step 4: Rename new table to original name
+            await customStatement('ALTER TABLE app_settings_new RENAME TO app_settings');
           }
         },
       );

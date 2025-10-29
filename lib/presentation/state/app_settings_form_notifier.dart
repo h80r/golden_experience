@@ -10,7 +10,10 @@ part 'app_settings_form_notifier.g.dart';
 /// - Form state validation
 /// - Error message management
 /// - Form reset functionality
-@riverpod
+///
+/// Note: keepAlive is set to true because app settings should persist
+/// across navigation and not be disposed when the settings screen is left.
+@Riverpod(keepAlive: true)
 class AppSettingsFormNotifier extends _$AppSettingsFormNotifier {
   @override
   AppSettingsFormState build() => AppSettingsFormState.initial();
@@ -18,12 +21,6 @@ class AppSettingsFormNotifier extends _$AppSettingsFormNotifier {
   /// Updates the monthly salary field and validates the form.
   void updateMonthlySalary(double salary) {
     state = state.copyWith(monthlySalary: salary);
-    _validate();
-  }
-
-  /// Updates the reserve balance field and validates the form.
-  void updateReserveBalance(double balance) {
-    state = state.copyWith(reserveBalance: balance);
     _validate();
   }
 
@@ -42,12 +39,10 @@ class AppSettingsFormNotifier extends _$AppSettingsFormNotifier {
   /// Sets the form state from existing settings values.
   void setFromExisting({
     required double monthlySalary,
-    required double reserveBalance,
     required double maxReserveUsagePercentage,
   }) {
     state = AppSettingsFormState(
       monthlySalary: monthlySalary,
-      reserveBalance: reserveBalance,
       maxReserveUsagePercentage: maxReserveUsagePercentage,
       isValid: true,
       errorMessage: null,
@@ -58,8 +53,7 @@ class AppSettingsFormNotifier extends _$AppSettingsFormNotifier {
   ///
   /// Validation rules (in priority order):
   /// 1. Monthly salary must be greater than or equal to zero
-  /// 2. Reserve balance must be greater than or equal to zero
-  /// 3. Max reserve usage percentage must be between 0 and 100
+  /// 2. Max reserve usage percentage must be between 0 and 100
   void _validate() {
     String? errorMessage;
     bool isValid = true;
@@ -67,9 +61,6 @@ class AppSettingsFormNotifier extends _$AppSettingsFormNotifier {
     if (state.monthlySalary < 0) {
       isValid = false;
       errorMessage = 'O salário não pode ser negativo';
-    } else if (state.reserveBalance < 0) {
-      isValid = false;
-      errorMessage = 'O saldo de reserva não pode ser negativo';
     } else if (state.maxReserveUsagePercentage < 0 ||
         state.maxReserveUsagePercentage > 100) {
       isValid = false;

@@ -8,8 +8,6 @@ class AppSettings extends Table {
 
   RealColumn get monthlySalary => real()();
 
-  RealColumn get reserveBalance => real()();
-
   RealColumn get maxReserveUsagePercentage => real()();
 
   DateTimeColumn get lastRecurringCheck => dateTime()();

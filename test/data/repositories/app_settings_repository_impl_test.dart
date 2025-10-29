@@ -35,15 +35,13 @@ void main() {
       expect(settings, isNotNull);
       expect(settings!.id, equals(1));
       expect(settings.monthlySalary, equals(0.0));
-      expect(settings.reserveBalance, equals(0.0));
-      expect(settings.maxReserveUsagePercentage, equals(50.0));
+      expect(settings.maxReserveUsagePercentage, equals(0.0));
     });
 
     test('should save settings', () async {
       final newSettings = AppSettingsModelCompanion.insert(
         id: const Value(1),
         monthlySalary: 5000.0,
-        reserveBalance: 2000.0,
         maxReserveUsagePercentage: 60.0,
         lastRecurringCheck: DateTime.now(),
       );
@@ -53,7 +51,6 @@ void main() {
       final retrieved = await repository.get();
       expect(retrieved, isNotNull);
       expect(retrieved!.monthlySalary, equals(5000.0));
-      expect(retrieved.reserveBalance, equals(2000.0));
       expect(retrieved.maxReserveUsagePercentage, equals(60.0));
     });
 
@@ -62,13 +59,6 @@ void main() {
 
       final settings = await repository.get();
       expect(settings!.monthlySalary, equals(6000.0));
-    });
-
-    test('should update reserve balance', () async {
-      await repository.updateReserveBalance(3000.0);
-
-      final settings = await repository.get();
-      expect(settings!.reserveBalance, equals(3000.0));
     });
 
     test('should update max reserve usage percentage', () async {
@@ -110,7 +100,6 @@ void main() {
       final settings = AppSettingsModelCompanion.insert(
         id: const Value(999), // Try to set different id
         monthlySalary: 1000.0,
-        reserveBalance: 500.0,
         maxReserveUsagePercentage: 50.0,
         lastRecurringCheck: DateTime.now(),
       );

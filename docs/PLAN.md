@@ -60,8 +60,8 @@ main (develop)
 
 ## 📊 Progresso Geral
 
-**Total de Tarefas:** 56
-**Concluídas:** 40 / 56 (71%)
+**Total de Tarefas:** 66
+**Concluídas:** 40 / 66 (61%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -77,6 +77,8 @@ main (develop)
 - **Fase 11 - Padronização e Melhorias de UX:** 4 / 4 (100%)
 - **Fase 12 - Estabilidade e Code Health:** 3 / 3 (100%)
 - **Fase 13 - Gestão Avançada de Contas:** 6 / 6 (100%)
+- **Fase 14 - Refatoração do Sistema de Reserva:** 0 / 4 (0%)
+- **Fase 15 - Transações de Receita e Depósito Automático:** 0 / 6 (0%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -364,6 +366,744 @@ Criar seção nas configurações para definir a data de fechamento da fatura de
 - [x] Valor persistido corretamente (both create and update)
 - [x] Documentação de uso futuro (comments in code)
 - [x] Merge realizado para `develop`
+
+---
+
+## ⚙️ Fase 14: Refatoração do Sistema de Reserva e Ciclo de Faturamento
+
+**Objetivo:** Refatorar o cálculo da reserva para usar saldos das contas de débito e implementar filtragem de transações de crédito por ciclo de faturamento.
+
+**Status:** 0 / 4 tarefas concluídas
+
+---
+
+### [ ] F14-T1: Refatorar Cálculo de Reserva para Usar Saldos de Contas
+
+**Branch:** `refactor/reserve-from-account-balances`
+
+**Descrição:**
+Remover o campo de reserva inicial das configurações e calcular a reserva automaticamente como a soma dos saldos de todas as contas de débito não excluídas.
+
+**Problema Atual:**
+- Reserva é um valor manual que precisa ser atualizado pelo usuário
+- Não reflete automaticamente os saldos reais das contas
+- Dados duplicados e sujeitos a inconsistência
+
+**Implementação Esperada:**
+
+1. **Database Migration (v7→v8):**
+   - Remover coluna `reserveBalance` da tabela `AppSettings`
+   - Manter `maxReserveUsagePercentage` (ainda necessário)
+
+2. **Atualizar Dashboard Calculation Logic:**
+   - No `GetDashboardDataUseCase`, calcular reserva dinamicamente:
+   ```dart
+   // Buscar todas as contas com isDebit=true e excludeFromReserve=false
+   final debitAccounts = await accountRepository.getAll();
+   final reserveBalance = debitAccounts
+       .where((account) => account.isDebit && !account.excludeFromReserve)
+       .fold(0.0, (sum, account) => sum + account.balance);
+   ```
+
+3. **Remover de Settings UI:**
+   - Remover input de "Reserva Inicial" da tela de configurações
+   - Mostrar apenas a reserva calculada (read-only, informativo)
+   - Adicionar texto explicativo: "Calculado automaticamente como a soma dos saldos das contas de débito"
+
+4. **Atualizar Onboarding:**
+   - Remover step de configuração da reserva inicial (se existir)
+   - Focar apenas em salário e porcentagem de uso máximo
+
+5. **Repository Updates:**
+   - Remover método `updateReserveBalance()` do `AppSettingsRepository`
+   - Atualizar testes relacionados
+
+**Definition of Done:**
+- [ ] Migration v7→v8 implementada e testada
+- [ ] Campo `reserveBalance` removido do código
+- [ ] Dashboard calcula reserva a partir de saldos de contas
+- [ ] Settings UI atualizada (sem input manual de reserva)
+- [ ] Onboarding atualizado (se necessário)
+- [ ] Todos os testes atualizados e passando
+- [ ] Code generation executado com sucesso
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F14-T2: Adicionar Exclusão de Conta da Reserva
+
+**Branch:** `feature/account-reserve-exclusion`
+
+**Descrição:**
+Adicionar opção por conta para excluir seu saldo do cálculo da reserva (como um valor intocável).
+
+**Implementação Esperada:**
+
+1. **Database Migration (v8→v9):**
+   - Adicionar coluna `excludeFromReserve` (boolean, default: false) na tabela `Accounts`
+
+2. **UI em Account Creation/Editing:**
+   - Adicionar toggle "Excluir da Reserva" no formulário de conta
+   - Mostrar apenas para contas com `isDebit=true`
+   - Tooltip/helper text: "Contas excluídas não entram no cálculo da reserva disponível"
+
+3. **Visual Indicator:**
+   - Na lista de contas, mostrar ícone ou badge para contas excluídas da reserva
+   - Exemplo: ícone de cadeado ou badge "Intocável"
+
+4. **Dashboard Integration:**
+   - Já implementado na F14-T1 (filtro `!account.excludeFromReserve`)
+
+5. **Validation:**
+   - Não há restrições: usuário pode excluir qualquer conta
+   - Alertar se todas as contas forem excluídas (reserva = 0)
+
+**Definition of Done:**
+- [ ] Coluna `excludeFromReserve` adicionada à tabela Accounts
+- [ ] Toggle implementado no formulário de conta
+- [ ] Visual indicator implementado na lista de contas
+- [ ] Dashboard respeita a exclusão no cálculo
+- [ ] Validação e alertas implementados
+- [ ] Testes de integração para exclusão
+- [ ] Code generation executado
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F14-T3: Implementar Filtragem de Transações por Ciclo de Faturamento de Crédito
+
+**Branch:** `feature/credit-billing-cycle-filtering`
+
+**Descrição:**
+Filtrar transações de crédito para incluir apenas aquelas dentro do ciclo de faturamento atual (entre o dia de fechamento anterior e o próximo).
+
+**Implementação Esperada:**
+
+1. **Lógica de Cálculo do Ciclo:**
+   ```dart
+   // Para uma conta de crédito com creditClosingDay = 15
+   // Se hoje é 10/11/2025:
+   // - Ciclo atual: 15/10/2025 a 14/11/2025
+   // - Próximo fechamento: 15/11/2025
+
+   DateTime calculateCurrentCycleStart(int closingDay, DateTime today) {
+     final currentMonth = DateTime(today.year, today.month, closingDay);
+     if (today.day >= closingDay) {
+       return currentMonth; // Estamos após o fechamento deste mês
+     } else {
+       return DateTime(today.year, today.month - 1, closingDay); // Ciclo começou no mês anterior
+     }
+   }
+
+   DateTime calculateCurrentCycleEnd(int closingDay, DateTime today) {
+     final cycleStart = calculateCurrentCycleStart(closingDay, today);
+     return DateTime(cycleStart.year, cycleStart.month + 1, closingDay).subtract(Duration(days: 1));
+   }
+   ```
+
+2. **Atualizar Dashboard Calculation:**
+   - Ao calcular `totalSpent` para contas de crédito, filtrar transações:
+   ```dart
+   if (account.isCredit && account.creditClosingDay != null) {
+     final cycleStart = calculateCurrentCycleStart(account.creditClosingDay!, DateTime.now());
+     final cycleEnd = calculateCurrentCycleEnd(account.creditClosingDay!, DateTime.now());
+
+     transactions = transactions.where((t) =>
+       t.date.isAfter(cycleStart.subtract(Duration(days: 1))) &&
+       t.date.isBefore(cycleEnd.add(Duration(days: 1)))
+     ).toList();
+   }
+   ```
+
+3. **Edge Cases:**
+   - Conta sem `creditClosingDay`: incluir todas as transações (comportamento atual)
+   - Transições de mês (ex: ciclo de 25/10 a 24/11)
+   - Fevereiro e dias 29, 30, 31 (usar último dia válido do mês)
+
+4. **Atualizar Recurring Expenses:**
+   - Se despesas recorrentes usam contas de crédito, aplicar mesma lógica
+
+5. **UI Feedback:**
+   - Mostrar período do ciclo atual na tela de detalhes da conta
+   - Exemplo: "Ciclo atual: 15/10 a 14/11"
+
+**Definition of Done:**
+- [ ] Funções de cálculo de ciclo implementadas e testadas
+- [ ] Dashboard filtra transações de crédito por ciclo
+- [ ] Edge cases tratados (meses com dias inválidos)
+- [ ] Recurring expenses atualizado (se aplicável)
+- [ ] UI mostra período do ciclo (opcional)
+- [ ] Testes unitários para cálculo de ciclo
+- [ ] Testes de integração para filtragem
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F14-T4: Atualizar Testes e Documentação
+
+**Branch:** `chore/update-tests-reserve-refactor`
+
+**Descrição:**
+Atualizar todos os testes e documentação para refletir as mudanças no sistema de reserva e ciclo de faturamento.
+
+**Implementação Esperada:**
+
+1. **Repository Tests:**
+   - Atualizar testes do `AppSettingsRepository` (remover `updateReserveBalance()`)
+   - Atualizar testes do `AccountRepository` (adicionar `excludeFromReserve`)
+   - Adicionar testes para cálculo de reserva a partir de contas
+
+2. **Use Case Tests:**
+   - Atualizar `GetDashboardDataUseCaseTest` para nova lógica de reserva
+   - Adicionar testes para filtragem de ciclo de faturamento
+   - Testar cenários:
+     - Reserva com múltiplas contas
+     - Reserva com contas excluídas
+     - Ciclo de crédito em diferentes meses
+
+3. **Widget Tests:**
+   - Atualizar testes da `SettingsScreen` (sem input de reserva)
+   - Atualizar testes de account form (novo toggle de exclusão)
+
+4. **Integration Tests:**
+   - Criar teste end-to-end do novo fluxo de reserva
+   - Criar teste de filtragem de ciclo de crédito
+
+5. **Documentation:**
+   - Atualizar `CLAUDE.md`:
+     - Remover referências a `reserveBalance`
+     - Documentar `excludeFromReserve`
+     - Documentar lógica de ciclo de faturamento
+   - Atualizar comentários no código
+
+**Definition of Done:**
+- [ ] Todos os testes de repository atualizados
+- [ ] Todos os testes de use case atualizados
+- [ ] Todos os testes de widget atualizados
+- [ ] Integration tests criados
+- [ ] CLAUDE.md atualizado
+- [ ] Todos os testes passando
+- [ ] Merge realizado para `develop`
+
+---
+
+## ⚙️ Fase 15: Transações de Receita e Depósito Automático de Salário
+
+**Objetivo:** Implementar suporte a transações de receita (positivas) e criar sistema de depósito automático do salário na conta configurada.
+
+**Status:** 0 / 6 tarefas concluídas
+
+**Nota:** Esta fase prepara a base para funcionalidades futuras de pagamento de faturas e gestão de invoices de cartão de crédito.
+
+---
+
+### [ ] F15-T1: Implementar Sistema de Tipo de Transação
+
+**Branch:** `feature/transaction-income-type`
+
+**Descrição:**
+Adicionar suporte a transações de receita (positivas) além de despesas (negativas), incluindo campos preparatórios para pagamento futuro de faturas.
+
+**Implementação Esperada:**
+
+1. **Database Migration (v9→v10):**
+   - Adicionar coluna `isIncome` (boolean, default: false) na tabela `Transactions`
+   - Adicionar coluna `paymentDate` (nullable DateTime) na tabela `Transactions`
+   - Adicionar coluna `paymentAccountId` (nullable int, foreign key) na tabela `Transactions`
+   - `isIncome = true`: transação de receita (salário, presente, reembolso)
+   - `isIncome = false`: transação de despesa (padrão, compatível com dados existentes)
+   - Campos de payment: preparação para funcionalidade futura de pagar faturas
+
+2. **Atualizar Transaction Model:**
+   ```dart
+   @DataClassName('TransactionModel')
+   class Transactions extends Table {
+     // ... campos existentes
+     BoolColumn get isIncome => boolean().withDefault(const Constant(false))();
+     DateTimeColumn get paymentDate => dateTime().nullable()();
+     IntColumn get paymentAccountId => integer().nullable().references(Accounts, #id)();
+   }
+   ```
+
+3. **Repository Updates:**
+   - Métodos de CRUD já suportarão automaticamente o novo campo
+   - Adicionar filtros por tipo (opcional):
+     - `getIncomeTransactions()`
+     - `getExpenseTransactions()`
+
+4. **Dashboard Logic Updates:**
+   - Atualizar cálculo de `totalSpent` para contas de débito:
+   ```dart
+   // Para contas de débito, considerar receitas e despesas:
+   final expenses = transactions.where((t) => !t.isIncome).fold(0.0, (sum, t) => sum + t.value);
+   final income = transactions.where((t) => t.isIncome).fold(0.0, (sum, t) => sum + t.value);
+   final netSpent = expenses - income; // Despesas menos receitas adicionais
+   ```
+   - Para contas de crédito, manter apenas despesas (`isIncome = false`)
+
+5. **UI Updates (Preparatório):**
+   - Mostrar transações de receita com estilo diferente na lista:
+     - Cor verde para receitas
+     - Ícone de seta para cima
+     - Prefix "+" no valor
+   - Transações de despesa mantêm estilo atual (vermelho/padrão)
+
+**Definition of Done:**
+- [ ] Migration v9→v10 implementada
+- [ ] Campos `isIncome`, `paymentDate`, `paymentAccountId` adicionados
+- [ ] Transaction model atualizado
+- [ ] Dashboard calcula corretamente receitas vs despesas
+- [ ] UI diferencia visualmente receitas de despesas
+- [ ] Dados existentes permanecem como `isIncome=false` (despesas)
+- [ ] Testes atualizados
+- [ ] Code generation executado
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F15-T2: Criar Tabela Invoice para Gestão Futura de Faturas
+
+**Branch:** `chore/invoice-table-foundation`
+
+**Descrição:**
+Criar tabela Invoice para suportar gestão futura de faturas de cartão de crédito, incluindo rastreamento de períodos de cobrança, valores totais e status de pagamento.
+
+**Implementação Esperada:**
+
+1. **Database Table Definition:**
+   ```dart
+   @DataClassName('InvoiceModel')
+   class Invoices extends Table {
+     IntColumn get id => integer().autoIncrement()();
+     IntColumn get accountId => integer().references(Accounts, #id)();
+     DateTimeColumn get billingCycleStart => dateTime()();
+     DateTimeColumn get billingCycleEnd => dateTime()();
+     DateTimeColumn get closingDate => dateTime()();
+     DateTimeColumn get dueDate => dateTime()();
+     RealColumn get totalAmount => real()();
+     BoolColumn get isPaid => boolean().withDefault(const Constant(false))();
+     DateTimeColumn get paidDate => dateTime().nullable()();
+     IntColumn get paidFromAccountId => integer().nullable().references(Accounts, #id)();
+   }
+   ```
+
+2. **Domain Repository Interface:**
+   ```dart
+   abstract class IInvoiceRepository {
+     Future<InvoiceModel> create(InvoiceModel invoice);
+     Future<InvoiceModel?> getById(int id);
+     Future<List<InvoiceModel>> getByAccountId(int accountId);
+     Future<List<InvoiceModel>> getUnpaidByAccountId(int accountId);
+     Future<InvoiceModel> update(InvoiceModel invoice);
+     Future<void> delete(int id);
+     Stream<List<InvoiceModel>> watchByAccountId(int accountId);
+   }
+   ```
+
+3. **Data Repository Implementation:**
+   - Criar `InvoiceRepositoryImpl` em `lib/data/repositories/`
+   - Implementar CRUD completo usando Drift queries
+   - Adicionar provider no `repository_providers.dart`
+
+4. **Register in Database:**
+   - Adicionar `Invoices` à lista de tabelas em `@DriftDatabase`
+   - Executar code generation
+
+5. **Nota Importante:**
+   - **Nenhuma UI será implementada nesta task**
+   - Esta é apenas a fundação para funcionalidade futura (Fase 16+)
+   - Quando implementado, permitirá:
+     - Gerar invoices automaticamente por ciclo de faturamento
+     - Marcar invoices como pagas
+     - Rastrear de qual conta foi pago
+     - Visualizar histórico de faturas
+
+**Definition of Done:**
+- [ ] Tabela `Invoices` criada com todos os campos
+- [ ] Repository interface definida
+- [ ] Repository implementation completa
+- [ ] Provider registrado
+- [ ] Tabela adicionada ao `@DriftDatabase`
+- [ ] Code generation executado com sucesso
+- [ ] Testes de repository implementados
+- [ ] Documentação inline sobre uso futuro
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F15-T3: Adicionar Configuração de Conta de Salário
+
+**Branch:** `feature/salary-account-config`
+
+**Descrição:**
+Permitir que o usuário configure para qual conta o salário deve ser depositado automaticamente.
+
+**Implementação Esperada:**
+
+1. **Database Migration (v10→v11):**
+   - Adicionar coluna `salaryAccountId` (nullable int, foreign key) na tabela `AppSettings`
+   - Default: null (não configurado)
+
+2. **Settings UI:**
+   - Adicionar seção "Conta de Depósito do Salário" nas configurações
+   - Dropdown mostrando apenas contas com `isDebit=true`
+   - Formato do item: "[Nome da Conta] - Saldo: R$ X.XXX,XX"
+   - Opção "Nenhuma" (null) para desabilitar depósito automático
+
+3. **Validation:**
+   - Apenas contas com `isDebit=true` podem ser selecionadas
+   - Se conta selecionada for excluída, limpar `salaryAccountId`
+   - Mostrar warning se salário estiver configurado mas conta não
+
+4. **Repository Updates:**
+   - Adicionar método `updateSalaryAccountId(int? accountId)` no `AppSettingsRepository`
+   - Validação: verificar se conta existe e tem `isDebit=true`
+
+5. **UI Feedback:**
+   - Texto explicativo: "O salário será depositado automaticamente às 6h do dia configurado"
+   - Se não houver contas de débito, mostrar mensagem: "Crie uma conta de débito primeiro"
+
+**Definition of Done:**
+- [ ] Coluna `salaryAccountId` adicionada a `AppSettings`
+- [ ] Dropdown implementado na Settings screen
+- [ ] Apenas contas de débito aparecem no dropdown
+- [ ] Validação implementada
+- [ ] Repository method criado
+- [ ] UI feedback e textos explicativos
+- [ ] Testes de integração
+- [ ] Code generation executado
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F15-T4: Atualizar UI de Transação para Receita/Despesa
+
+**Branch:** `feature/transaction-ui-income-expense`
+
+**Descrição:**
+Atualizar o bottom sheet de transação e a lista de transações para suportar criação e visualização de transações de receita.
+
+**Implementação Esperada:**
+
+1. **Bottom Sheet Updates:**
+   - Adicionar SegmentedButton no topo para selecionar "Despesa" ou "Receita"
+   - Posições:
+     - Despesa (left, default)
+     - Receita (right)
+   - Estado inicial: "Despesa" (`isIncome = false`)
+
+2. **Visual Feedback no Form:**
+   - Quando "Receita" selecionado:
+     - Mudar cor do valor para verde
+     - Ícone de seta para cima
+     - Label: "Valor da Receita"
+   - Quando "Despesa" selecionado:
+     - Manter cor padrão (vermelho/neutro)
+     - Label: "Valor da Despesa"
+
+3. **Transaction List Updates:**
+   - Transações de receita (`isIncome = true`):
+     - Cor verde no valor: `Text(value, style: TextStyle(color: Colors.green))`
+     - Prefix "+": `+R$ 1.500,00`
+     - Ícone: `Icon(Icons.arrow_upward, color: Colors.green)`
+   - Transações de despesa (`isIncome = false`):
+     - Cor padrão/vermelho: `Text(value, style: TextStyle(color: Colors.red))`
+     - Prefix "-": `-R$ 150,00`
+     - Ícone: `Icon(Icons.arrow_downward, color: Colors.red)`
+
+4. **Dashboard Updates:**
+   - Mostrar resumo separado de receitas e despesas (opcional):
+     ```
+     Receitas: +R$ 5.000,00
+     Despesas: -R$ 3.200,00
+     Líquido: R$ 1.800,00
+     ```
+
+5. **Contas de Crédito:**
+   - Para contas de crédito, ocultar opção "Receita" (apenas despesas)
+   - Ou mostrar com tooltip: "Cartões de crédito suportam apenas despesas"
+
+**Definition of Done:**
+- [ ] SegmentedButton implementado no bottom sheet
+- [ ] Visual feedback de receita vs despesa no form
+- [ ] Lista de transações diferencia visualmente os tipos
+- [ ] Dashboard mostra resumo de receitas/despesas (opcional)
+- [ ] Validação para contas de crédito
+- [ ] Testes de widget atualizados
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F15-T5: Implementar Depósito Automático de Salário
+
+**Branch:** `feature/automatic-salary-deposit`
+
+**Descrição:**
+Implementar sistema de background job para depositar automaticamente o salário na conta configurada às 6h da manhã do dia especificado.
+
+**Implementação Esperada:**
+
+1. **Adicionar Dependência:**
+   - Adicionar `workmanager: ^0.5.2` ao `pubspec.yaml`
+   - Ou `flutter_local_notifications` + scheduler alternativo
+   - Configurar permissões no Android/iOS
+
+2. **Background Task Setup:**
+   ```dart
+   // lib/data/services/salary_deposit_service.dart
+   class SalaryDepositService {
+     static const taskName = 'salaryDepositTask';
+
+     static Future<void> initialize() async {
+       await Workmanager().initialize(callbackDispatcher);
+       await Workmanager().registerPeriodicTask(
+         taskName,
+         taskName,
+         frequency: Duration(hours: 24),
+         initialDelay: _calculateInitialDelay(),
+       );
+     }
+
+     static Duration _calculateInitialDelay() {
+       final now = DateTime.now();
+       final next6AM = DateTime(now.year, now.month, now.day, 6, 0);
+       if (now.isAfter(next6AM)) {
+         return next6AM.add(Duration(days: 1)).difference(now);
+       }
+       return next6AM.difference(now);
+     }
+   }
+
+   @pragma('vm:entry-point')
+   void callbackDispatcher() {
+     Workmanager().executeTask((task, inputData) async {
+       await _processSalaryDeposit();
+       return true;
+     });
+   }
+   ```
+
+3. **Deposit Logic:**
+   ```dart
+   Future<void> _processSalaryDeposit() async {
+     // Inicializar database
+     await LocalDatabase.initialize();
+     final db = LocalDatabase.instance;
+
+     // Buscar configurações
+     final settings = await appSettingsRepo.get();
+     if (settings.salaryAccountId == null || settings.monthlySalary == 0) {
+       return; // Não configurado
+     }
+
+     // Verificar se hoje é o dia do salário
+     final today = DateTime.now();
+     final isPaymentDay = _isSalaryPaymentDay(today, settings);
+     if (!isPaymentDay) return;
+
+     // Verificar se já depositou este mês
+     final alreadyDeposited = await _checkIfAlreadyDeposited(settings.salaryAccountId!, today);
+     if (alreadyDeposited) return;
+
+     // Criar transação de receita
+     final transaction = TransactionsCompanion.insert(
+       value: settings.monthlySalary,
+       description: 'Salário - ${_formatMonthYear(today)}',
+       date: today,
+       accountId: settings.salaryAccountId!,
+       categoryId: _getSalaryCategoryId(), // Categoria "Salário"
+       isIncome: Value(true),
+     );
+
+     await transactionRepo.create(transaction);
+
+     // Atualizar saldo da conta
+     final account = await accountRepo.getById(settings.salaryAccountId!);
+     await accountRepo.update(account.copyWith(
+       balance: account.balance + settings.monthlySalary,
+     ));
+   }
+
+   bool _isSalaryPaymentDay(DateTime date, AppSettingsModel settings) {
+     if (settings.salaryPaymentMode == 'calendar') {
+       final targetDay = settings.salaryPaymentValue;
+       final lastDayOfMonth = DateTime(date.year, date.month + 1, 0).day;
+
+       // Se dia configurado > dias no mês, usar último dia
+       final effectiveDay = targetDay > lastDayOfMonth ? lastDayOfMonth : targetDay;
+       return date.day == effectiveDay;
+     } else if (settings.salaryPaymentMode == 'workday') {
+       final workdayNumber = settings.salaryPaymentValue;
+       final effectiveDate = _calculateWorkday(date.year, date.month, workdayNumber);
+       return date.year == effectiveDate.year &&
+              date.month == effectiveDate.month &&
+              date.day == effectiveDate.day;
+     }
+     return false;
+   }
+
+   Future<bool> _checkIfAlreadyDeposited(int accountId, DateTime date) async {
+     final transactions = await transactionRepo.getByAccountAndMonth(accountId, date);
+     return transactions.any((t) =>
+       t.isIncome &&
+       t.description.startsWith('Salário') &&
+       t.date.month == date.month &&
+       t.date.year == date.year
+     );
+   }
+   ```
+
+4. **Initialization:**
+   - Inicializar serviço no `main.dart`:
+   ```dart
+   void main() async {
+     WidgetsFlutterBinding.ensureInitialized();
+     await LocalDatabase.initialize();
+     await SalaryDepositService.initialize();
+     runApp(MyApp());
+   }
+   ```
+
+5. **Edge Cases:**
+   - Dia 31 em meses com 30 dias → usar dia 30
+   - Dia 30/31 em fevereiro → usar dia 28 (ou 29 em ano bissexto)
+   - App fechado → background job ainda executa
+   - Erro na execução → retry na próxima execução diária
+
+6. **Testing:**
+   - Criar comando de teste manual: botão em Settings para "Simular Depósito"
+   - Logs para debugging
+
+**Definition of Done:**
+- [ ] Dependência `workmanager` adicionada
+- [ ] Background task configurado para rodar diariamente às 6h
+- [ ] Lógica de depósito implementada com todas as validações
+- [ ] Prevenção de duplicatas funcionando
+- [ ] Edge cases tratados (dias inválidos em meses)
+- [ ] Inicialização no `main.dart`
+- [ ] Comando de teste manual criado
+- [ ] Testes de integração
+- [ ] Documentação do serviço
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F15-T6: Testes e Casos Extremos
+
+**Branch:** `chore/income-salary-tests`
+
+**Descrição:**
+Implementar suite completa de testes para transações de receita, depósito automático de salário e todos os casos extremos.
+
+**Implementação Esperada:**
+
+1. **Unit Tests - Salary Deposit Service:**
+   ```dart
+   // test/data/services/salary_deposit_service_test.dart
+   group('SalaryDepositService', () {
+     test('identifica corretamente dia de pagamento - modo calendário', () {
+       // Testar dias 1-28
+       // Testar dia 31 em mês com 30 dias
+       // Testar dia 30/31 em fevereiro
+     });
+
+     test('identifica corretamente dia de pagamento - modo dia útil', () {
+       // Testar com feriados
+       // Testar último dia útil
+     });
+
+     test('previne duplicação de depósito no mesmo mês', () {
+       // Criar transação de salário
+       // Tentar depositar novamente
+       // Verificar que não cria duplicata
+     });
+
+     test('pula depósito se salário não configurado', () {
+       // Settings com salaryAccountId = null
+       // Verificar que nada acontece
+     });
+   });
+   ```
+
+2. **Integration Tests - Transaction Types:**
+   ```dart
+   // test/integration/income_transaction_test.dart
+   testWidgets('cria transação de receita corretamente', (tester) async {
+     // Abrir bottom sheet
+     // Selecionar "Receita"
+     // Inserir valor
+     // Salvar
+     // Verificar que isIncome = true
+     // Verificar que aparece verde na lista
+   });
+
+   testWidgets('transações de receita reduzem despesa líquida', (tester) async {
+     // Criar despesa de R$ 1000
+     // Criar receita de R$ 500
+     // Verificar que totalSpent = R$ 500 (líquido)
+   });
+   ```
+
+3. **Edge Case Tests:**
+   ```dart
+   group('Edge Cases - Salary Deposit', () {
+     test('depósito no dia 31 em abril (30 dias) usa dia 30', () {
+       final settings = AppSettingsModel(
+         salaryPaymentMode: 'calendar',
+         salaryPaymentValue: 31,
+         // ...
+       );
+       final april30 = DateTime(2025, 4, 30);
+       expect(_isSalaryPaymentDay(april30, settings), true);
+     });
+
+     test('depósito no dia 31 em fevereiro não-bissexto usa dia 28', () {
+       final settings = AppSettingsModel(
+         salaryPaymentMode: 'calendar',
+         salaryPaymentValue: 31,
+         // ...
+       );
+       final feb28 = DateTime(2025, 2, 28);
+       expect(_isSalaryPaymentDay(feb28, settings), true);
+     });
+
+     test('depósito no dia 31 em fevereiro bissexto usa dia 29', () {
+       final settings = AppSettingsModel(
+         salaryPaymentMode: 'calendar',
+         salaryPaymentValue: 31,
+         // ...
+       );
+       final feb29 = DateTime(2024, 2, 29); // 2024 é bissexto
+       expect(_isSalaryPaymentDay(feb29, settings), true);
+     });
+   });
+   ```
+
+4. **Repository Tests:**
+   - Atualizar testes de `TransactionRepository` para `isIncome`
+   - Testar filtros por tipo
+   - Testar campos `paymentDate` e `paymentAccountId` (nullable)
+
+5. **Use Case Tests:**
+   - Atualizar `GetDashboardDataUseCaseTest`
+   - Testar cálculo líquido (receitas - despesas)
+   - Testar com mix de receitas e despesas
+
+6. **Widget Tests:**
+   - Testar SegmentedButton no bottom sheet
+   - Testar visual de receitas vs despesas na lista
+   - Testar dropdown de conta de salário nas configurações
+
+**Definition of Done:**
+- [ ] Unit tests para SalaryDepositService (100% coverage)
+- [ ] Integration tests para income transactions
+- [ ] Edge case tests para todos os cenários de data
+- [ ] Repository tests atualizados
+- [ ] Use case tests atualizados
+- [ ] Widget tests completos
+- [ ] Todos os testes passando
+- [ ] Coverage report gerado
+- [ ] Merge realizado para `develop`
 
 ---
 

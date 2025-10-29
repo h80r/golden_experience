@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golden_experience/data/datasources/local_database.dart';
 import 'package:golden_experience/domain/models/dashboard_data.dart';
+import 'package:golden_experience/domain/repositories/i_account_repository.dart';
 import 'package:golden_experience/domain/repositories/i_app_settings_repository.dart';
 import 'package:golden_experience/domain/repositories/i_transaction_repository.dart';
 import 'package:golden_experience/domain/usecases/get_dashboard_data_usecase.dart';
@@ -83,6 +84,90 @@ class MockTransactionRepository implements ITransactionRepository {
   }
 }
 
+/// Mock implementation of IAccountRepository for testing
+class MockAccountRepository implements IAccountRepository {
+  final List<AccountModel> _accounts = [];
+
+  void addAccount(AccountModel account) {
+    _accounts.add(account);
+  }
+
+  void clearAccounts() {
+    _accounts.clear();
+  }
+
+  @override
+  Future<int> create(Insertable<AccountModel> account) async {
+    return 0;
+  }
+
+  @override
+  Future<AccountModel?> getById(int id) async {
+    try {
+      return _accounts.firstWhere((a) => a.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<List<AccountModel>> getAll() async => _accounts;
+
+  @override
+  Future<bool> update(Insertable<AccountModel> account) async {
+    return true;
+  }
+
+  @override
+  Future<bool> updateBalance(int accountId, double newBalance) async {
+    return true;
+  }
+
+  @override
+  Future<bool> updateCreditLimit(int accountId, double newLimit) async {
+    return true;
+  }
+
+  @override
+  Future<bool> updateCreditUsed(int accountId, double newCreditUsed) async {
+    return true;
+  }
+
+  @override
+  Future<bool> delete(int id) async {
+    return false;
+  }
+
+  @override
+  Future<bool> hasTransactions(int accountId) async {
+    return false;
+  }
+
+  @override
+  Stream<List<AccountModel>> watchAll() {
+    return Stream.value(_accounts);
+  }
+
+  @override
+  Future<AccountModel?> getDefaultAccount() async {
+    try {
+      return _accounts.firstWhere((a) => a.isDefault);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> setDefaultAccount(int accountId) async {
+    return true;
+  }
+
+  @override
+  Future<bool> clearDefaultAccount() async {
+    return true;
+  }
+}
+
 /// Mock implementation of IAppSettingsRepository for testing
 class MockAppSettingsRepository implements IAppSettingsRepository {
   AppSettingsModel? _settings;
@@ -99,9 +184,6 @@ class MockAppSettingsRepository implements IAppSettingsRepository {
 
   @override
   Future<void> updateMonthlySalary(double salary) async {}
-
-  @override
-  Future<void> updateReserveBalance(double balance) async {}
 
   @override
   Future<void> updateMaxReserveUsagePercentage(double percentage) async {}
@@ -131,14 +213,32 @@ void main() {
   group('GetDashboardDataUseCase', () {
     late MockTransactionRepository transactionRepository;
     late MockAppSettingsRepository appSettingsRepository;
+    late MockAccountRepository accountRepository;
     late GetDashboardDataUseCase useCase;
 
     setUp(() {
       transactionRepository = MockTransactionRepository();
       appSettingsRepository = MockAppSettingsRepository();
+      accountRepository = MockAccountRepository();
+
+      // Add default account with 2000.0 balance (used as reserve in most tests)
+      // Individual tests can clear and add custom accounts if needed
+      accountRepository.addAccount(AccountModel(
+        id: 1,
+        name: 'Default Test Account',
+        isDebit: true,
+        isCredit: false,
+        balance: 2000.0,
+        creditLimit: 0.0,
+        creditUsed: 0.0,
+        isDefault: false,
+        creditClosingDay: null,
+      ));
+
       useCase = GetDashboardDataUseCase(
         transactionRepository: transactionRepository,
         appSettingsRepository: appSettingsRepository,
+        accountRepository: accountRepository,
       );
     });
 
@@ -157,7 +257,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 5000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -166,6 +265,8 @@ void main() {
             salaryPaymentValue: 1,
           ),
         );
+
+        // Note: Default account with 2000.0 balance is added in setUp()
 
         // Act
         final result = await useCase.execute();
@@ -182,7 +283,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 5000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -209,7 +309,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 5000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -255,7 +354,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 5000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -296,7 +394,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 5000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -328,7 +425,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -364,7 +460,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 5000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -399,7 +494,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -435,7 +529,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -468,7 +561,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -502,7 +594,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -537,7 +628,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -571,7 +661,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -609,7 +698,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -641,7 +729,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 0.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -677,7 +764,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 0.0,
-            reserveBalance: 1000.0,
             maxReserveUsagePercentage: 100.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -710,7 +796,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 0.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -743,7 +828,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 0.01,
-            reserveBalance: 0.01,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -776,7 +860,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 1000000.0,
-            reserveBalance: 500000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -888,7 +971,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 5000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -927,7 +1009,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 5000.0,
-            reserveBalance: 3000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -977,7 +1058,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,
@@ -1012,7 +1092,6 @@ void main() {
           AppSettingsModel(
             id: 1,
             monthlySalary: 3000.0,
-            reserveBalance: 2000.0,
             maxReserveUsagePercentage: 50.0,
             lastRecurringCheck: DateTime(2024, 10, 1),
             hasCompletedOnboarding: false,

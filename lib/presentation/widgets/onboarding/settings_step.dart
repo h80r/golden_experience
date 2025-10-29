@@ -10,7 +10,7 @@ import '../buttons/secondary_button.dart';
 import '../inputs/nubank_style_currency_field.dart';
 import '../inputs/reserve_percentage_slider.dart';
 
-/// Settings step - Configure salary, reserve, and percentage
+/// Settings step - Configure salary and reserve percentage
 class SettingsStep extends ConsumerStatefulWidget {
   final VoidCallback onContinue;
   final VoidCallback onBack;
@@ -27,7 +27,6 @@ class SettingsStep extends ConsumerStatefulWidget {
 
 class _SettingsStepState extends ConsumerState<SettingsStep> {
   late TextEditingController _salaryController;
-  late TextEditingController _reserveController;
   double _reservePercentage = 50.0;
   bool _isLoading = false;
   String? _errorMessage;
@@ -94,14 +93,6 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
                   isEnabled: !_isLoading,
                 ),
                 SizedBox(height: AppSpacing.xl),
-                // Reserve balance field
-                NubankStyleCurrencyField(
-                  label: 'Saldo da Reserva',
-                  hint: '0,00',
-                  controller: _reserveController,
-                  isEnabled: !_isLoading,
-                ),
-                SizedBox(height: AppSpacing.xl),
                 // Reserve percentage slider
                 ReservePercentageSlider(
                   value: _reservePercentage,
@@ -143,7 +134,6 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
   @override
   void dispose() {
     _salaryController.dispose();
-    _reserveController.dispose();
     super.dispose();
   }
 
@@ -151,7 +141,6 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
   void initState() {
     super.initState();
     _salaryController = TextEditingController();
-    _reserveController = TextEditingController();
     _loadSettings();
   }
 
@@ -165,10 +154,6 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
           if (settings.monthlySalary > 0) {
             final cents = (settings.monthlySalary * 100).toInt();
             _salaryController.text = cents.toString();
-          }
-          if (settings.reserveBalance > 0) {
-            final cents = (settings.reserveBalance * 100).toInt();
-            _reserveController.text = cents.toString();
           }
           _reservePercentage = settings.maxReserveUsagePercentage;
         });
@@ -184,9 +169,9 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
 
   Future<void> _saveSettings() async {
     // Validate inputs
-    if (_salaryController.text.isEmpty || _reserveController.text.isEmpty) {
+    if (_salaryController.text.isEmpty) {
       setState(() {
-        _errorMessage = 'Preencha todos os campos';
+        _errorMessage = 'Preencha o salário mensal';
       });
       return;
     }
@@ -199,21 +184,17 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
     try {
       // NubankStyleCurrencyField uses internal representation (cents)
       final salaryCents = int.tryParse(_salaryController.text) ?? 0;
-      final reserveCents = int.tryParse(_reserveController.text) ?? 0;
 
       final salary = salaryCents / 100.0;
-      final reserve = reserveCents / 100.0;
 
-      if (salary <= 0 || reserve < 0) {
-        throw Exception(
-            'Salário deve ser maior que 0 e reserva não pode ser negativa');
+      if (salary <= 0) {
+        throw Exception('Salário deve ser maior que 0');
       }
 
       final repository = AppSettingsRepositoryImpl();
 
       // Update each field
       await repository.updateMonthlySalary(salary);
-      await repository.updateReserveBalance(reserve);
       await repository.updateMaxReserveUsagePercentage(_reservePercentage);
 
       if (mounted) {

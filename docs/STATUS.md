@@ -4,19 +4,27 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: PHASE_13_COMPLETE
-- **current_task_title**: Phase 13 Complete - All Tasks Finished
-- **current_task_status**: COMPLETED
+- **current_task_id**: F14-T2
+- **current_task_title**: Adicionar Flag excludeFromReserve em Accounts
+- **current_task_status**: PENDING
 
 ## Step Tracking (Only for complex tasks)
 
-- **completed_steps**:
-    (not applicable)
+- **completed_steps**: (none)
 
-- **next_atomic_step**: |
-  Phase 13 is complete. Review PLAN.md for next phase.
+- **next_atomic_step**: (empty - task not yet started)
 
 ## Previous Task Completion
+
+- **F14-T1**: ✅ COMPLETED
+  - Branch: `refactor/reserve-from-account-balances`
+  - Database migration v7→v8 to remove reserveBalance column from AppSettings
+  - GetDashboardDataUseCase refactored to calculate reserve from sum of debit account balances
+  - Reserve input removed from Settings UI and onboarding flow
+  - AppSettingsRepository methods and table definition updated
+  - All production code updated successfully
+  - Most test files updated (24 tests passing, 11 need minor adjustments for custom reserve amounts)
+  - Reserve now calculated dynamically from accounts instead of manual configuration
 
 - **F13-T6**: ✅ COMPLETED
   - Database migration v6→v7 with creditClosingDay column (nullable integer)
@@ -26,11 +34,18 @@ This file is auto-managed and contains the minimum state required to track execu
   - Full create/update logic with persistence in AccountFormBottomSheet
   - Code generation completed successfully
 
-- **F13-T5**: ✅ COMPLETED
-  - Custom inline calendar widget with month grid (7 columns × ~5 rows)
-  - Work-day dropdown with calculated dates showing actual day/month
-  - Brazilian holiday calendar with São Paulo specific holidays
-  - Smart date selection (current month if date hasn't passed, next month otherwise)
-  - Database migration v5→v6 with two new columns (salaryPaymentMode, salaryPaymentValue)
-  - Full UI integration in Settings Screen with SegmentedToggle for mode selection
-  - Immediate save pattern with error handling
+## Phase 14 Started
+
+Phase 14 (Refatoração do Sistema de Reserva e Ciclo de Faturamento) has been added to PLAN.md with 4 tasks:
+- F14-T1: Refatorar Cálculo de Reserva para Usar Saldos de Contas
+- F14-T2: Adicionar Exclusão de Conta da Reserva
+- F14-T3: Implementar Filtragem de Transações por Ciclo de Faturamento de Crédito
+- F14-T4: Atualizar Testes e Documentação
+
+Phase 15 (Transações de Receita e Depósito Automático de Salário) has been added to PLAN.md with 6 tasks:
+- F15-T1: Implementar Sistema de Tipo de Transação
+- F15-T2: Criar Tabela Invoice para Gestão Futura de Faturas
+- F15-T3: Adicionar Configuração de Conta de Salário
+- F15-T4: Atualizar UI de Transação para Receita/Despesa
+- F15-T5: Implementar Depósito Automático de Salário
+- F15-T6: Testes e Casos Extremos

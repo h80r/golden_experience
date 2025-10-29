@@ -1,5 +1,6 @@
 import 'dart:async';
 import '../models/dashboard_data.dart';
+import '../repositories/i_account_repository.dart';
 import '../repositories/i_app_settings_repository.dart';
 import '../repositories/i_transaction_repository.dart';
 
@@ -7,11 +8,13 @@ import '../repositories/i_transaction_repository.dart';
 ///
 /// This use case is responsible for:
 /// 1. Fetching the current month's transactions
-/// 2. Fetching app settings (salary, reserve, limits)
-/// 3. Performing all financial calculations according to business logic
-/// 4. Returning a complete DashboardData object for UI consumption
+/// 2. Fetching app settings (salary, limits)
+/// 3. Calculating reserve from debit account balances
+/// 4. Performing all financial calculations according to business logic
+/// 5. Returning a complete DashboardData object for UI consumption
 ///
 /// The calculations follow the PRD specifications:
+/// - **Reserve Balance:** Sum of all debit account balances (calculated dynamically)
 /// - **Total Spent:** Sum of all transactions for the current month
 /// - **Salary - Spending:** Simple difference
 /// - **Remaining Budget:** (Salary + (Reserve * % Max)) - Total Spent
@@ -20,20 +23,24 @@ import '../repositories/i_transaction_repository.dart';
 class GetDashboardDataUseCase {
   final ITransactionRepository _transactionRepository;
   final IAppSettingsRepository _appSettingsRepository;
+  final IAccountRepository _accountRepository;
 
   const GetDashboardDataUseCase({
     required ITransactionRepository transactionRepository,
     required IAppSettingsRepository appSettingsRepository,
+    required IAccountRepository accountRepository,
   })  : _transactionRepository = transactionRepository,
-        _appSettingsRepository = appSettingsRepository;
+        _appSettingsRepository = appSettingsRepository,
+        _accountRepository = accountRepository;
 
   /// Executes the use case to fetch and calculate dashboard data
   ///
   /// This method:
   /// 1. Retrieves the current month's transactions
   /// 2. Fetches the app settings
-  /// 3. Performs all required calculations
-  /// 4. Returns a complete DashboardData object
+  /// 3. Calculates reserve balance from debit accounts
+  /// 4. Performs all required calculations
+  /// 5. Returns a complete DashboardData object
   ///
   /// Returns [DashboardData] with all calculated values
   /// Throws an exception if settings are not initialized
@@ -55,6 +62,13 @@ class GetDashboardDataUseCase {
         );
       }
 
+      // Calculate reserve balance from debit account balances
+      // Sum of all debit accounts (future: will exclude accounts with excludeFromReserve flag)
+      final allAccounts = await _accountRepository.getAll();
+      final reserveBalance = allAccounts
+          .where((account) => account.isDebit)
+          .fold<double>(0.0, (sum, account) => sum + account.balance);
+
       // Calculate total spent this month
       final totalSpent = _calculateTotalSpent(transactions);
 
@@ -63,7 +77,7 @@ class GetDashboardDataUseCase {
 
       // Calculate reserve-related values
       final maxAllowedReserveUsage =
-          settings.reserveBalance * (settings.maxReserveUsagePercentage / 100);
+          reserveBalance * (settings.maxReserveUsagePercentage / 100);
 
       // Calculate remaining budget:
       // (Salary + (Reserve * % Max)) - Total Spent
@@ -76,7 +90,7 @@ class GetDashboardDataUseCase {
       final reserveOverspending = totalSpent > settings.monthlySalary
           ? (totalSpent - settings.monthlySalary)
           : 0.0;
-      final finalReserve = settings.reserveBalance - reserveOverspending;
+      final finalReserve = reserveBalance - reserveOverspending;
 
       // Calculate reserve usage percentage
       final reserveUsagePercentage = maxAllowedReserveUsage > 0
@@ -90,7 +104,7 @@ class GetDashboardDataUseCase {
         partialResult: partialResult,
         finalReserve: finalReserve,
         reserveUsagePercentage: reserveUsagePercentage,
-        initialReserve: settings.reserveBalance,
+        initialReserve: reserveBalance,
         maxReserveUsagePercentage: settings.maxReserveUsagePercentage,
       );
     } catch (e) {

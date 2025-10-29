@@ -31,13 +31,11 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   late TextEditingController _monthlySalaryController;
-  late TextEditingController _reserveBalanceController;
   late PageController _pageController;
   bool _isLoading = true;
   bool _isAutoCaptureEnabled = false;
   int _currentPage = 0;
   Timer? _monthlySalaryDebounce;
-  Timer? _reserveBalanceDebounce;
 
   // Salary payment configuration
   String _salaryPaymentMode = 'calendar';
@@ -83,10 +81,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void dispose() {
     _monthlySalaryController.dispose();
-    _reserveBalanceController.dispose();
     _pageController.dispose();
     _monthlySalaryDebounce?.cancel();
-    _reserveBalanceDebounce?.cancel();
     super.dispose();
   }
 
@@ -94,13 +90,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void initState() {
     super.initState();
     _monthlySalaryController = TextEditingController();
-    _reserveBalanceController = TextEditingController();
     _pageController = PageController();
 
-    // Load existing settings immediately in initState to prevent slider snap
-    // We use microtask to ensure it runs before the first frame
-    Future(() async {
-      await _loadSettings();
+    // Load existing settings immediately after the first frame
+    // This ensures form state is synced with database before UI renders
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadSettings();
     });
   }
 
@@ -163,16 +158,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             controller: _monthlySalaryController,
             onChanged: _onMonthlySalaryChanged,
             initialValue: formState.monthlySalary,
-          ),
-          const SizedBox(height: AppSpacing.lg),
-
-          // Reserve Balance
-          NubankStyleCurrencyField(
-            label: 'Saldo Inicial da Reserva',
-            hint: 'Digite o saldo inicial da reserva',
-            controller: _reserveBalanceController,
-            onChanged: _onReserveBalanceChanged,
-            initialValue: formState.reserveBalance,
           ),
           const SizedBox(height: AppSpacing.xl),
 
@@ -621,18 +606,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // Update the form provider first, which will trigger a rebuild
       ref.read(appSettingsFormProvider.notifier).setFromExisting(
             monthlySalary: settings.monthlySalary,
-            reserveBalance: settings.reserveBalance,
             maxReserveUsagePercentage: settings.maxReserveUsagePercentage,
           );
 
       // Convert values to cents for the controllers
       // This ensures the controllers are in sync with what the NubankStyleCurrencyField expects
       final monthlySalaryCents = (settings.monthlySalary * 100).toInt();
-      final reserveBalanceCents = (settings.reserveBalance * 100).toInt();
 
       // Update controllers with the internal representation (cents)
       _monthlySalaryController.text = monthlySalaryCents.toString();
-      _reserveBalanceController.text = reserveBalanceCents.toString();
 
       // Load salary payment configuration
       _calculateWorkdayDates();
@@ -764,18 +746,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     });
   }
 
-  void _onReserveBalanceChanged(double value) {
-    // Update form state immediately for UI feedback
-    ref.read(appSettingsFormProvider.notifier).updateReserveBalance(value);
-
-    // Cancel previous timer if exists
-    _reserveBalanceDebounce?.cancel();
-
-    // Create new timer for auto-save with 500ms debounce
-    _reserveBalanceDebounce = Timer(const Duration(milliseconds: 500), () {
-      _saveReserveBalance(value);
-    });
-  }
 
   Future<void> _onSalaryPaymentModeChanged() async {
     // Save immediately
@@ -845,20 +815,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _saveReserveBalance(double value) async {
-    try {
-      final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
-      await appSettingsRepository.updateReserveBalance(value);
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao salvar reserva: $e'),
-          backgroundColor: AppColors.error,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
-  }
 }

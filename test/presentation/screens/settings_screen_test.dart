@@ -19,9 +19,6 @@ class MockAppSettingsRepository extends Mock implements IAppSettingsRepository {
   Future<void> updateMonthlySalary(double salary) async {}
 
   @override
-  Future<void> updateReserveBalance(double balance) async {}
-
-  @override
   Future<void> updateMaxReserveUsagePercentage(double percentage) async {}
 
   @override
@@ -66,9 +63,8 @@ void main() {
 
       // Verify all input fields are present
       expect(find.text('Salário Mensal'), findsOneWidget);
-      expect(find.text('Saldo Inicial da Reserva'), findsOneWidget);
       expect(find.text('Percentual Máximo da Reserva'),
-          findsOneWidget); // Changed: slider label instead of text field label
+          findsOneWidget); // Slider label
 
       // Verify buttons are present
       expect(find.text('Cancelar'), findsOneWidget);
@@ -89,23 +85,6 @@ void main() {
 
       // Verify the input was accepted (test passes if no exception)
       expect(monthlySalaryField, findsOneWidget);
-    });
-
-    testWidgets('Reserve balance field updates correctly',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(createWidgetUnderTest());
-      await tester.pumpAndSettle();
-
-      // Find the reserve balance input field (second TextFormField)
-      final fields = find.byType(TextFormField);
-      final reserveBalanceField = fields.at(1);
-
-      // Enter a value (typing 1000000 cents = 10000.00)
-      await tester.enterText(reserveBalanceField, '1000000');
-      await tester.pumpAndSettle();
-
-      // Verify the input was accepted (test passes if no exception)
-      expect(reserveBalanceField, findsOneWidget);
     });
 
     testWidgets('Max reserve percentage slider updates correctly',
