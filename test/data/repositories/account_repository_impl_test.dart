@@ -206,6 +206,71 @@ void main() {
       expect(deleted, isNull);
     });
 
+    test('should create account with excludeFromReserve flag', () async {
+      final account = AccountModelCompanion.insert(
+        name: 'Test Excluded Account',
+        isDebit: Value(true),
+        isCredit: Value(false),
+        balance: Value(5000.0),
+        creditLimit: Value(0.0),
+        creditUsed: Value(0.0),
+        isDefault: const Value(false),
+        excludeFromReserve: const Value(true),
+      );
+
+      final id = await repository.create(account);
+      expect(id, greaterThan(0));
+
+      final retrieved = await repository.getById(id);
+      expect(retrieved, isNotNull);
+      expect(retrieved!.excludeFromReserve, isTrue);
+    });
+
+    test('should create account with default excludeFromReserve as false',
+        () async {
+      final account = AccountModelCompanion.insert(
+        name: 'Test Default Excluded Account',
+        isDebit: Value(true),
+        isCredit: Value(false),
+        balance: Value(2000.0),
+        creditLimit: Value(0.0),
+        creditUsed: Value(0.0),
+        isDefault: const Value(false),
+      );
+
+      final id = await repository.create(account);
+      expect(id, greaterThan(0));
+
+      final retrieved = await repository.getById(id);
+      expect(retrieved, isNotNull);
+      expect(retrieved!.excludeFromReserve, isFalse);
+    });
+
+    test('should update account excludeFromReserve flag', () async {
+      final account = AccountModelCompanion.insert(
+        name: 'Test Update Excluded',
+        isDebit: Value(true),
+        isCredit: Value(false),
+        balance: Value(3000.0),
+        creditLimit: Value(0.0),
+        creditUsed: Value(0.0),
+        isDefault: const Value(false),
+        excludeFromReserve: const Value(false),
+      );
+
+      final id = await repository.create(account);
+      final retrieved = await repository.getById(id);
+      expect(retrieved!.excludeFromReserve, isFalse);
+
+      final updated = retrieved.copyWith(excludeFromReserve: true);
+      final success = await repository.update(updated);
+
+      expect(success, isTrue);
+
+      final result = await repository.getById(id);
+      expect(result!.excludeFromReserve, isTrue);
+    });
+
     test('should watch all accounts stream', () async {
       final stream = repository.watchAll();
       expect(stream, isA<Stream<List<AccountModel>>>());

@@ -55,7 +55,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -184,6 +184,15 @@ class LocalDatabase extends _$LocalDatabase {
 
             // Step 4: Rename new table to original name
             await customStatement('ALTER TABLE app_settings_new RENAME TO app_settings');
+          }
+
+          // Migration from v8 to v9: Add excludeFromReserve column to accounts
+          if (from <= 8) {
+            await customStatement('''
+              ALTER TABLE accounts
+              ADD COLUMN exclude_from_reserve INTEGER NOT NULL DEFAULT 0
+              CHECK ("exclude_from_reserve" IN (0, 1))
+            ''');
           }
         },
       );

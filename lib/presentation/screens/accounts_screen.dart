@@ -349,6 +349,40 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
                       ),
                     ),
                   ),
+                // Excluded from reserve badge (only for debit accounts)
+                if (widget.account.isDebit && widget.account.excludeFromReserve)
+                  const SizedBox(width: AppSpacing.xs),
+                if (widget.account.isDebit && widget.account.excludeFromReserve)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.infoWithOpacity,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusSmall,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.lock,
+                          size: 10,
+                          color: AppColors.info,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          'Excluída',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: AppColors.info,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ],
           ),
@@ -441,6 +475,34 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
                     ],
                   ),
 
+                // Excluded from reserve information banner
+                if (widget.account.isDebit && widget.account.excludeFromReserve)
+                  Container(
+                    margin: const EdgeInsets.only(top: AppSpacing.md),
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: AppColors.infoWithOpacity,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusSmall,
+                      ),
+                      border: Border.all(color: AppColors.info),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.lock, color: AppColors.info, size: 20),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            'Esta conta está excluída do cálculo da reserva',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.info,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                 const SizedBox(height: AppSpacing.md),
 
                 // Default Account Switch
@@ -452,6 +514,18 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
                       'Selecionada automaticamente ao criar transações'),
                   contentPadding: const EdgeInsets.symmetric(),
                 ),
+
+                // Exclude from Reserve Switch (only for debit accounts)
+                if (widget.account.isDebit)
+                  SwitchListTile(
+                    value: widget.account.excludeFromReserve,
+                    onChanged: (_) => _handleToggleExcludeFromReserve(),
+                    title: const Text('Excluir da Reserva'),
+                    subtitle: const Text(
+                        'Conta não será contada no cálculo da reserva disponível'),
+                    contentPadding: const EdgeInsets.symmetric(),
+                  ),
+
                 const SizedBox(height: AppSpacing.md),
                 const Divider(
                   color: AppColors.divider,
@@ -528,6 +602,36 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _handleToggleExcludeFromReserve() async {
+    final accountRepository = widget.ref.read(accountRepositoryProvider);
+    final account = widget.account;
+
+    // Toggle the excludeFromReserve flag
+    final updated = account.copyWith(
+      excludeFromReserve: !account.excludeFromReserve,
+    );
+
+    final success = await accountRepository.update(updated);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? (updated.excludeFromReserve
+                    ? 'Conta excluída da reserva'
+                    : 'Conta incluída na reserva')
+                : 'Erro ao atualizar conta',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.background,
+            ),
+          ),
+          backgroundColor: success ? AppColors.success : AppColors.error,
+        ),
+      );
     }
   }
 }

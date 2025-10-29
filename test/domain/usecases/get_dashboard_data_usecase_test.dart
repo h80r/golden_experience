@@ -233,6 +233,7 @@ void main() {
         creditUsed: 0.0,
         isDefault: false,
         creditClosingDay: null,
+        excludeFromReserve: false,
       ));
 
       useCase = GetDashboardDataUseCase(
@@ -1118,6 +1119,219 @@ void main() {
         // finalReserve = 2000 - 990 = 1010
         expect(result.finalReserve, closeTo(1010.0, 0.01));
         expect(result.reserveUsagePercentage, closeTo(99.0, 0.1)); // 990/1000
+      });
+    });
+
+    group('Exclude From Reserve Feature', () {
+      test('should exclude accounts with excludeFromReserve=true from reserve calculation',
+          () async {
+        // Arrange: Clear default accounts and add custom setup
+        accountRepository.clearAccounts();
+
+        // Add regular debit account (included in reserve)
+        accountRepository.addAccount(AccountModel(
+          id: 1,
+          name: 'Regular Account',
+          isDebit: true,
+          isCredit: false,
+          balance: 3000.0,
+          creditLimit: 0.0,
+          creditUsed: 0.0,
+          isDefault: false,
+          creditClosingDay: null,
+          excludeFromReserve: false,
+        ));
+
+        // Add excluded debit account (NOT included in reserve)
+        accountRepository.addAccount(AccountModel(
+          id: 2,
+          name: 'Excluded Account',
+          isDebit: true,
+          isCredit: false,
+          balance: 5000.0, // This should NOT be counted
+          creditLimit: 0.0,
+          creditUsed: 0.0,
+          isDefault: false,
+          creditClosingDay: null,
+          excludeFromReserve: true,
+        ));
+
+        appSettingsRepository.setSettings(
+          AppSettingsModel(
+            id: 1,
+            monthlySalary: 4000.0,
+            maxReserveUsagePercentage: 50.0,
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
+          ),
+        );
+
+        // Act
+        final result = await useCase.execute();
+
+        // Assert: Reserve should be 3000.0 (only from account 1, not 8000.0 total)
+        expect(result.initialReserve, 3000.0);
+      });
+
+      test('should include all debit accounts when excludeFromReserve=false',
+          () async {
+        // Arrange: Clear default accounts and add custom setup
+        accountRepository.clearAccounts();
+
+        // Add two regular debit accounts (both included in reserve)
+        accountRepository.addAccount(AccountModel(
+          id: 1,
+          name: 'Account 1',
+          isDebit: true,
+          isCredit: false,
+          balance: 2000.0,
+          creditLimit: 0.0,
+          creditUsed: 0.0,
+          isDefault: false,
+          creditClosingDay: null,
+          excludeFromReserve: false,
+        ));
+
+        accountRepository.addAccount(AccountModel(
+          id: 2,
+          name: 'Account 2',
+          isDebit: true,
+          isCredit: false,
+          balance: 3000.0,
+          creditLimit: 0.0,
+          creditUsed: 0.0,
+          isDefault: false,
+          creditClosingDay: null,
+          excludeFromReserve: false,
+        ));
+
+        appSettingsRepository.setSettings(
+          AppSettingsModel(
+            id: 1,
+            monthlySalary: 4000.0,
+            maxReserveUsagePercentage: 50.0,
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
+          ),
+        );
+
+        // Act
+        final result = await useCase.execute();
+
+        // Assert: Reserve should be sum of both accounts = 5000.0
+        expect(result.initialReserve, 5000.0);
+      });
+
+      test('should handle all accounts excluded from reserve (zero reserve)',
+          () async {
+        // Arrange: Clear default accounts and add custom setup
+        accountRepository.clearAccounts();
+
+        // Add only excluded accounts
+        accountRepository.addAccount(AccountModel(
+          id: 1,
+          name: 'Excluded Account 1',
+          isDebit: true,
+          isCredit: false,
+          balance: 2000.0,
+          creditLimit: 0.0,
+          creditUsed: 0.0,
+          isDefault: false,
+          creditClosingDay: null,
+          excludeFromReserve: true,
+        ));
+
+        accountRepository.addAccount(AccountModel(
+          id: 2,
+          name: 'Excluded Account 2',
+          isDebit: true,
+          isCredit: false,
+          balance: 3000.0,
+          creditLimit: 0.0,
+          creditUsed: 0.0,
+          isDefault: false,
+          creditClosingDay: null,
+          excludeFromReserve: true,
+        ));
+
+        appSettingsRepository.setSettings(
+          AppSettingsModel(
+            id: 1,
+            monthlySalary: 4000.0,
+            maxReserveUsagePercentage: 50.0,
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
+          ),
+        );
+
+        // Act
+        final result = await useCase.execute();
+
+        // Assert: Reserve should be 0.0 (all accounts excluded)
+        expect(result.initialReserve, 0.0);
+        expect(result.finalReserve, 0.0);
+      });
+
+      test('should not exclude credit accounts from any calculations', () async {
+        // Arrange: Clear default accounts and add custom setup
+        accountRepository.clearAccounts();
+
+        // Add debit account
+        accountRepository.addAccount(AccountModel(
+          id: 1,
+          name: 'Debit Account',
+          isDebit: true,
+          isCredit: false,
+          balance: 2000.0,
+          creditLimit: 0.0,
+          creditUsed: 0.0,
+          isDefault: false,
+          creditClosingDay: null,
+          excludeFromReserve: false,
+        ));
+
+        // Add credit account (excludeFromReserve flag should have no effect)
+        accountRepository.addAccount(AccountModel(
+          id: 2,
+          name: 'Credit Account',
+          isDebit: false,
+          isCredit: true,
+          balance: 0.0,
+          creditLimit: 5000.0,
+          creditUsed: 1000.0,
+          isDefault: false,
+          creditClosingDay: 10,
+          excludeFromReserve: true, // This flag is irrelevant for credit accounts
+        ));
+
+        appSettingsRepository.setSettings(
+          AppSettingsModel(
+            id: 1,
+            monthlySalary: 4000.0,
+            maxReserveUsagePercentage: 50.0,
+            lastRecurringCheck: DateTime(2024, 10, 1),
+            hasCompletedOnboarding: false,
+            isAutoCaptureEnabled: false,
+            salaryPaymentMode: 'calendar',
+            salaryPaymentValue: 1,
+          ),
+        );
+
+        // Act
+        final result = await useCase.execute();
+
+        // Assert: Reserve should only include debit account (2000.0)
+        // Credit account shouldn't contribute to reserve regardless of flag
+        expect(result.initialReserve, 2000.0);
       });
     });
   });

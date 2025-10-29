@@ -245,3 +245,12 @@ class Transactions extends Table {
   // ... other columns
 }
 ```
+
+#### Accounts Table
+The Accounts table supports dual-type accounts (can be both debit and credit):
+- **isDebit / isCredit**: Boolean flags for account types (both can be true)
+- **balance**: Debit account balance
+- **creditLimit / creditUsed**: Credit account limits and usage
+- **isDefault**: Default account selection flag
+- **creditClosingDay**: Credit card closing day (1-31, nullable)
+- **excludeFromReserve**: When true, debit account balances are excluded from reserve calculations (added in schema v9)

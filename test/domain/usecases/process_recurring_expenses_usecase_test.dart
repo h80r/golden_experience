@@ -128,7 +128,8 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            isDefault: false,
+            excludeFromReserve: false,
+          isDefault: false,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -190,7 +191,8 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            isDefault: false,
+            excludeFromReserve: false,
+          isDefault: false,
         );
 
         final expense1 = RecurringExpenseModel(
@@ -258,7 +260,8 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            isDefault: false,
+            excludeFromReserve: false,
+          isDefault: false,
         );
 
         // Create expenses for different days
@@ -328,7 +331,8 @@ void main() {
           balance: 0.0,
           creditLimit: 5000.0,
           creditUsed: 0.0,
-            isDefault: false,
+            excludeFromReserve: false,
+          isDefault: false,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -431,7 +435,8 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            isDefault: false,
+            excludeFromReserve: false,
+          isDefault: false,
         );
 
         final expense1 = RecurringExpenseModel(
@@ -531,7 +536,8 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            isDefault: false,
+            excludeFromReserve: false,
+          isDefault: false,
         );
 
         final recurringExpense = RecurringExpenseModel(
@@ -585,7 +591,8 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            isDefault: false,
+            excludeFromReserve: false,
+          isDefault: false,
         );
 
         final recurringExpense = RecurringExpenseModel(

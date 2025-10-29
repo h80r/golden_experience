@@ -4,8 +4,8 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F14-T2
-- **current_task_title**: Adicionar Flag excludeFromReserve em Accounts
+- **current_task_id**: F14-T3
+- **current_task_title**: Implementar Filtragem de Transações por Ciclo de Faturamento de Crédito
 - **current_task_status**: PENDING
 
 ## Step Tracking (Only for complex tasks)
@@ -15,6 +15,21 @@ This file is auto-managed and contains the minimum state required to track execu
 - **next_atomic_step**: (empty - task not yet started)
 
 ## Previous Task Completion
+
+- **F14-T2**: ✅ COMPLETED
+  - Branch: `feature/account-reserve-exclusion`
+  - Database migration v8→v9 added `excludeFromReserve` boolean column to Accounts table
+  - Updated GetDashboardDataUseCase to filter out excluded accounts from reserve calculation
+  - **UX Refactored:** Moved "Excluir da Reserva" toggle from account form to expanded tile view
+  - Implemented as SwitchListTile in expanded account details (only for debit accounts)
+  - Toggle handler updates account with feedback via SnackBar
+  - Visual indicators added: cyan "Excluída" badge in account list (collapsed state)
+  - Information banner added in account details (expanded state)
+  - Repository tests added for create/update with excludeFromReserve field
+  - Use case tests added for reserve exclusion logic (4 new test cases, all passing)
+  - All test files updated to include new required field
+  - Flutter analyze passes with no issues
+  - CLAUDE.md documentation updated with new field information
 
 - **F14-T1**: ✅ COMPLETED
   - Branch: `refactor/reserve-from-account-balances`

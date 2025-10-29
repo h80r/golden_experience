@@ -27,4 +27,9 @@ class Accounts extends Table {
 
   // Credit card closing day (1-31, applicable only for credit accounts)
   IntColumn get creditClosingDay => integer().nullable()();
+
+  // Exclude from reserve calculation (applicable only for debit accounts)
+  // When true, this account's balance will not be counted in the reserve calculation
+  BoolColumn get excludeFromReserve =>
+      boolean().withDefault(const Constant(false))();
 }

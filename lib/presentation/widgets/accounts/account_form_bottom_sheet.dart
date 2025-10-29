@@ -287,6 +287,8 @@ class _AccountFormBottomSheetState
                 ),
               ),
 
+            const SizedBox(height: AppSpacing.lg),
+
             // Debit Balance Field
             if (_isDebit)
               Column(

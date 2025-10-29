@@ -63,10 +63,10 @@ class GetDashboardDataUseCase {
       }
 
       // Calculate reserve balance from debit account balances
-      // Sum of all debit accounts (future: will exclude accounts with excludeFromReserve flag)
+      // Exclude accounts with excludeFromReserve flag (intocável)
       final allAccounts = await _accountRepository.getAll();
       final reserveBalance = allAccounts
-          .where((account) => account.isDebit)
+          .where((account) => account.isDebit && !account.excludeFromReserve)
           .fold<double>(0.0, (sum, account) => sum + account.balance);
 
       // Calculate total spent this month
