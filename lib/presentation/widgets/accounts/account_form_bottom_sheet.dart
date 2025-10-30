@@ -41,6 +41,7 @@ class _AccountFormBottomSheetState
   bool _isLoading = false;
   double _lastKeyboardHeight = 0.0;
   int? _creditPaymentDay;
+  int _currentPageIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -140,9 +141,14 @@ class _AccountFormBottomSheetState
               Expanded(
                 child: PageView(
                   controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPageIndex = index;
+                    });
+                  },
                   children: [
                     _buildPage1(scrollController, isEditing),
-                    _buildPage2(),
+                    if (_isCredit) _buildPage2(),
                   ],
                 ),
               ),
@@ -287,6 +293,12 @@ class _AccountFormBottomSheetState
                     onTap: () {
                       setState(() {
                         _isCredit = !_isCredit;
+                        // Auto-navigate back to page 1 if credit is unchecked while on page 2
+                        if (!_isCredit && _currentPageIndex == 1) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _goToPreviousPage();
+                          });
+                        }
                       });
                     },
                     child: Container(
@@ -308,6 +320,12 @@ class _AccountFormBottomSheetState
                             onChanged: (value) {
                               setState(() {
                                 _isCredit = value ?? false;
+                                // Auto-navigate back to page 1 if credit is unchecked while on page 2
+                                if (!_isCredit && _currentPageIndex == 1) {
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    _goToPreviousPage();
+                                  });
+                                }
                               });
                             },
                           ),
@@ -464,7 +482,7 @@ class _AccountFormBottomSheetState
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                // Details icon button (25%) - only for credit accounts
+                // Calendar icon button (25%) - only for credit accounts
                 if (_isCredit)
                   Expanded(
                     flex: 1,
@@ -484,13 +502,17 @@ class _AccountFormBottomSheetState
                     ),
                   ),
                 if (_isCredit) const SizedBox(width: AppSpacing.sm),
-                // Save button (50%)
+                // Primary action button
+                // For credit accounts: "Próximo" (Next)
+                // For debit-only accounts: "Salvar" (Save)
                 Expanded(
                   flex: 2,
                   child: PrimaryButton(
-                    label: isEditing ? 'Atualizar' : 'Criar',
+                    label: _isCredit
+                        ? 'Próximo'
+                        : (isEditing ? 'Atualizar' : 'Criar'),
                     isLoading: _isLoading,
-                    onPressed: _handleSubmit,
+                    onPressed: _isCredit ? _goToNextPage : _handleSubmit,
                   ),
                 ),
               ],
@@ -659,6 +681,24 @@ class _AccountFormBottomSheetState
           backgroundColor: AppColors.error,
         ),
       );
+      return;
+    }
+
+    // Validate credit payment day if credit is enabled
+    if (_isCredit && _creditPaymentDay == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Por favor, selecione o dia do pagamento para contas de crédito',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.background,
+            ),
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      // Navigate to page 2 to let user set the payment day
+      _goToNextPage();
       return;
     }
 

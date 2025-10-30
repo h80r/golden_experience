@@ -216,7 +216,7 @@ Separar os conceitos de "data de fechamento" (quando a fatura fecha) e "data de 
 
 ---
 
-### [ ] F15-T2: Melhorias de Layout no Formulário de Conta
+### [x] F15-T2: Melhorias de Layout no Formulário de Conta
 
 **Branch:** `feature/account-form-layout-improvements`
 
@@ -300,18 +300,18 @@ Otimizar o layout do formulário de conta para reduzir altura vertical e melhora
    - Usar `LayoutBuilder` para decidir entre Row e Column
 
 **Definition of Done:**
-- [ ] Checkboxes de débito/crédito na mesma linha
-- [ ] Inputs de saldo/limite na mesma linha
-- [ ] Lógica de enable/disable funcionando corretamente
-- [ ] Visual feedback para campos desabilitados
-- [ ] Layout responsivo (vertical em telas pequenas)
-- [ ] Testes de widget atualizados
-- [ ] Aparência consistente com design system
-- [ ] Merge realizado para `develop`
+- [x] Checkboxes de débito/crédito na mesma linha
+- [x] Inputs de saldo/limite na mesma linha
+- [x] Lógica de enable/disable funcionando corretamente
+- [x] Visual feedback para campos desabilitados
+- [x] Layout responsivo (vertical em telas pequenas)
+- [x] Testes de widget atualizados
+- [x] Aparência consistente com design system
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F15-T3: Remover Página de Calendário Condicional para Contas Não-Crédito
+### [x] F15-T3: Remover Página de Calendário Condicional para Contas Não-Crédito
 
 **Branch:** `feature/conditional-calendar-page`
 
@@ -319,10 +319,8 @@ Otimizar o layout do formulário de conta para reduzir altura vertical e melhora
 Tornar a segunda página do formulário de conta (com calendário de pagamento) visível apenas quando o checkbox de crédito está marcado, eliminando navegação desnecessária para contas de débito.
 
 **Problema Atual:**
-- Formulário sempre tem 2 páginas (PageView com 2 children)
-- Contas apenas de débito exigem navegação para página 2 (calendário) mesmo sem usar
-- UX confusa: usuário vê calendário inútil para contas de débito
-- Botão "Próximo" sempre visível, mesmo quando não há próxima página relevante
+- Formulário tem 2 páginas (PageView com 2 children)
+- Usuário pode fazer um swipe para a página do calendário mesmo se não for relevante
 
 **Implementação Esperada:**
 
@@ -420,14 +418,14 @@ Tornar a segunda página do formulário de conta (com calendário de pagamento) 
    - Ocultar se apenas 1 página (débito only)
 
 **Definition of Done:**
-- [ ] Segunda página (calendário) só aparece se `_isCredit == true`
-- [ ] Botão de navegação adapta-se ao número de páginas
-- [ ] Desmarcar crédito volta para página 1 se necessário
-- [ ] Validação impede salvar crédito sem dia de pagamento
-- [ ] Indicador de página condicional implementado
-- [ ] UX suave com animações apropriadas
-- [ ] Testes de widget para fluxos de 1 e 2 páginas
-- [ ] Merge realizado para `develop`
+- [x] Segunda página (calendário) só aparece se `_isCredit == true`
+- [x] Botão de navegação adapta-se ao número de páginas
+- [x] Desmarcar crédito volta para página 1 se necessário
+- [x] Validação impede salvar crédito sem dia de pagamento
+- [x] Indicador de página condicional implementado
+- [x] UX suave com animações apropriadas
+- [x] Testes de widget para fluxos de 1 e 2 páginas
+- [x] Merge realizado para `develop`
 
 ---
 
