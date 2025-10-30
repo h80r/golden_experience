@@ -1,8 +1,14 @@
 /// Utility functions for credit card billing cycle calculations.
 ///
 /// This module provides date calculation functions to determine billing cycle
-/// periods based on a credit card's closing day, handling edge cases like
-/// month-end transitions, February, and leap years.
+/// periods based on a credit card's payment day. The closing day is automatically
+/// calculated as payment day minus 7 days, creating a clear separation between:
+/// - **Closing day**: When the billing cycle ends and the statement is generated
+/// - **Payment day**: When the bill is due for payment
+/// - **Ideal purchase period**: The 7-day window between closing and payment where
+///   purchases don't impact the current bill
+///
+/// Edge cases like month-end transitions, February, and leap years are handled.
 library;
 
 /// Represents a billing cycle period with start and end dates.
@@ -226,4 +232,195 @@ BillingCyclePeriod getBillingCycleForMonth(
   // Use the 15th of the month as a safe reference point (always exists)
   final referenceDate = DateTime(year, month, 15);
   return calculateCurrentBillingCycle(closingDay, referenceDate);
+}
+
+/// Calculates the closing day from the payment day.
+///
+/// The closing day is automatically calculated as **payment day minus 7 days**.
+/// This creates a 7-day "ideal purchase period" between closing and payment
+/// where new purchases don't impact the current bill.
+///
+/// **Parameters:**
+/// - [paymentDay]: The payment due day (1-31).
+///
+/// **Returns:**
+/// The calculated closing day (1-31).
+///
+/// **Edge Cases:**
+/// - If paymentDay is 1-7, the closing day will be in the range 1-31 depending
+///   on the previous month's length (handled at the date calculation level).
+/// - For example, paymentDay=5 results in closingDay calculated at runtime
+///   based on the previous month.
+///
+/// **Examples:**
+/// ```dart
+/// calculateClosingDay(15); // Returns: 8
+/// calculateClosingDay(1);  // Returns: handled at date level (varies by month)
+/// calculateClosingDay(31); // Returns: 24
+/// ```
+int calculateClosingDay(int paymentDay) {
+  return paymentDay - 7;
+}
+
+/// Calculates the actual closing date for a given payment date.
+///
+/// This function handles the complexities of date arithmetic when the closing
+/// day falls in the previous month or when dealing with months of varying lengths.
+///
+/// **Parameters:**
+/// - [paymentDay]: The payment day of the month (1-31).
+/// - [referenceMonth]: A DateTime in the month for which to calculate the closing date.
+///
+/// **Returns:**
+/// A [DateTime] representing the actual closing date.
+///
+/// **Examples:**
+/// ```dart
+/// // Payment on the 15th -> Closing on the 8th (same month)
+/// calculateClosingDate(15, DateTime(2024, 11, 1));
+/// // Returns: DateTime(2024, 11, 8)
+///
+/// // Payment on the 5th -> Closing in previous month
+/// calculateClosingDate(5, DateTime(2024, 11, 1));
+/// // Returns: DateTime(2024, 10, 28) (Oct has 31 days, so 31 - 7 + 5 = 28)
+/// ```
+DateTime calculateClosingDate(int paymentDay, DateTime referenceMonth) {
+  // Get the payment date in the reference month
+  final paymentDate = _getClosingDate(
+    referenceMonth.year,
+    referenceMonth.month,
+    paymentDay,
+  );
+
+  // Subtract 7 days to get the closing date
+  return paymentDate.subtract(const Duration(days: 7));
+}
+
+/// Calculates the ideal purchase period for a credit card.
+///
+/// The "ideal purchase period" is the window between the closing date and the
+/// payment date (7 days). Purchases made during this period are included in the
+/// **next** billing cycle, not the current one, giving you the maximum float time.
+///
+/// **Logic:**
+/// - If today < this month's payment day → show this month's ideal period
+/// - If today >= this month's payment day → show **next month's** ideal period
+///
+/// **Parameters:**
+/// - [paymentDay]: The payment due day (1-31).
+/// - [referenceDate]: The date to use as reference. Defaults to today.
+///
+/// **Returns:**
+/// A [BillingCyclePeriod] representing the ideal purchase window.
+///
+/// **Examples:**
+/// ```dart
+/// // Payment day is 15th, today is Nov 5, 2024
+/// final idealPeriod = calculateIdealPurchasePeriod(15, DateTime(2024, 11, 5));
+/// // Returns: BillingCyclePeriod(start: Nov 9, 2024, end: Nov 15, 2024)
+/// // (This month's ideal period - payment hasn't happened yet)
+///
+/// // Payment day is 15th, today is Nov 16, 2024
+/// final idealPeriod = calculateIdealPurchasePeriod(15, DateTime(2024, 11, 16));
+/// // Returns: BillingCyclePeriod(start: Dec 9, 2024, end: Dec 15, 2024)
+/// // (Next month's ideal period - this month's payment already happened)
+/// ```
+BillingCyclePeriod calculateIdealPurchasePeriod(
+  int paymentDay, [
+  DateTime? referenceDate,
+]) {
+  final now = referenceDate ?? DateTime.now();
+  final normalizedNow = DateTime(now.year, now.month, now.day);
+
+  // Get this month's payment date
+  final thisMonthPaymentDate = _getClosingDate(now.year, now.month, paymentDay);
+
+  DateTime targetMonth;
+
+  if (normalizedNow.isBefore(thisMonthPaymentDate)) {
+    // Before this month's payment day → show this month's ideal period
+    targetMonth = now;
+  } else {
+    // On or after this month's payment day → show next month's ideal period
+    final nextMonth = now.month == 12 ? 1 : now.month + 1;
+    final nextYear = now.month == 12 ? now.year + 1 : now.year;
+    targetMonth = DateTime(nextYear, nextMonth, 1);
+  }
+
+  // Calculate the ideal period for the target month
+  final closingDate = calculateClosingDate(paymentDay, targetMonth);
+  final paymentDate = _getClosingDate(targetMonth.year, targetMonth.month, paymentDay);
+  final startDate = closingDate.add(const Duration(days: 1));
+
+  return BillingCyclePeriod(start: startDate, end: paymentDate);
+}
+
+/// Calculates the current billing cycle based on payment day.
+///
+/// **IMPORTANT**: The "current" billing cycle is the one whose payment is due next
+/// (or was most recently due). The cycle transitions happen at the **payment day**,
+/// not the closing day.
+///
+/// **Logic:**
+/// - If today < this month's payment day → return cycle ending this month (bill due soon)
+/// - If today >= this month's payment day → return cycle ending next month (next bill)
+///
+/// **Parameters:**
+/// - [paymentDay]: The payment due day (1-31).
+/// - [referenceDate]: The date to use as reference for "current" cycle.
+///   Defaults to today if not provided.
+///
+/// **Returns:**
+/// A [BillingCyclePeriod] representing the current billing cycle.
+///
+/// **Examples:**
+/// ```dart
+/// // Payment day is 15th (closing ~8th), today is Nov 10, 2024
+/// final cycle = calculateCurrentBillingCycleFromPaymentDay(15, DateTime(2024, 11, 10));
+/// // Returns: start = Oct 9, 2024, end = Nov 8, 2024
+/// // (Bill due Nov 15, still in this cycle)
+///
+/// // Payment day is 15th, today is Nov 16, 2024
+/// final cycle = calculateCurrentBillingCycleFromPaymentDay(15, DateTime(2024, 11, 16));
+/// // Returns: start = Nov 9, 2024, end = Dec 8, 2024
+/// // (Bill for Nov 15 already paid, now in next cycle)
+/// ```
+BillingCyclePeriod calculateCurrentBillingCycleFromPaymentDay(
+  int paymentDay, [
+  DateTime? referenceDate,
+]) {
+  final now = referenceDate ?? DateTime.now();
+  final normalizedNow = DateTime(now.year, now.month, now.day);
+
+  // Get this month's payment date
+  final thisMonthPaymentDate = _getClosingDate(now.year, now.month, paymentDay);
+
+  // Determine which cycle we're in based on payment day
+  if (normalizedNow.isBefore(thisMonthPaymentDate)) {
+    // Before this month's payment day
+    // → Current cycle ends this month (this is the bill we need to pay next)
+    final thisMonthClosingDate = calculateClosingDate(paymentDay, now);
+    final cycleEnd = thisMonthClosingDate;
+
+    // Cycle start is the day after previous month's closing
+    final prevMonth = now.month == 1 ? 12 : now.month - 1;
+    final prevYear = now.month == 1 ? now.year - 1 : now.year;
+    final prevClosingDate = calculateClosingDate(paymentDay, DateTime(prevYear, prevMonth, 1));
+    final cycleStart = prevClosingDate.add(const Duration(days: 1));
+
+    return BillingCyclePeriod(start: cycleStart, end: cycleEnd);
+  } else {
+    // On or after this month's payment day
+    // → Current cycle ends next month (this is the next bill we'll need to pay)
+    final nextMonth = now.month == 12 ? 1 : now.month + 1;
+    final nextYear = now.month == 12 ? now.year + 1 : now.year;
+    final nextMonthClosingDate = calculateClosingDate(paymentDay, DateTime(nextYear, nextMonth, 1));
+    final cycleEnd = nextMonthClosingDate;
+
+    // Cycle start is the day after this month's closing
+    final thisMonthClosingDate = calculateClosingDate(paymentDay, now);
+    final cycleStart = thisMonthClosingDate.add(const Duration(days: 1));
+
+    return BillingCyclePeriod(start: cycleStart, end: cycleEnd);
+  }
 }

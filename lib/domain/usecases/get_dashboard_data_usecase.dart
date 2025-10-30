@@ -43,8 +43,9 @@ class GetDashboardDataUseCase {
   /// 4. Performs all required calculations
   /// 5. Returns a complete DashboardData object
   ///
-  /// For credit accounts with a creditClosingDay, transactions are filtered
-  /// by their billing cycle. For debit accounts, calendar month filtering applies.
+  /// For credit accounts with a creditPaymentDay, transactions are filtered
+  /// by their billing cycle (calculated from payment day - 7).
+  /// For debit accounts, calendar month filtering applies.
   ///
   /// Returns [DashboardData] with all calculated values
   /// Throws an exception if settings are not initialized
@@ -157,8 +158,8 @@ class GetDashboardDataUseCase {
   /// and by calendar month for debit accounts
   ///
   /// For each account:
-  /// - If it's a credit account with a creditClosingDay, fetch transactions
-  ///   within the current billing cycle
+  /// - If it's a credit account with a creditPaymentDay, fetch transactions
+  ///   within the current billing cycle (calculated from payment - 7)
   /// - Otherwise, fetch transactions for the calendar month
   ///
   /// Returns a combined list of all filtered transactions
@@ -171,11 +172,11 @@ class GetDashboardDataUseCase {
     for (final account in accounts) {
       final accountId = (account as dynamic).id as int;
       final isCredit = (account).isCredit as bool;
-      final creditClosingDay = (account).creditClosingDay as int?;
+      final creditPaymentDay = (account).creditPaymentDay as int?;
 
-      if (isCredit && creditClosingDay != null) {
-        // Credit account with billing cycle - use billing cycle filtering
-        final cycle = calculateCurrentBillingCycle(creditClosingDay, referenceDate);
+      if (isCredit && creditPaymentDay != null) {
+        // Credit account with billing cycle - use payment day to determine current cycle
+        final cycle = calculateCurrentBillingCycleFromPaymentDay(creditPaymentDay, referenceDate);
         final transactions = await _transactionRepository.getByAccountAndDateRange(
           accountId,
           cycle.start,

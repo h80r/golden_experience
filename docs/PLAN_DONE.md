@@ -2547,3 +2547,455 @@ Melhorar a interface do dropdown em todo o aplicativo para ter consistência com
 - [ ] Merge realizado para `develop`
 
 ---
+
+## ⚙️ Fase 13: Gestão Avançada de Contas e Configurações
+
+**Objetivo:** Aprimorar a gestão de contas, categorias e configurações financeiras com recursos avançados de personalização.
+
+**Status:** 6 / 6 tarefas concluídas
+
+---
+
+### [x] F13-T1: Correção - Fix New Account Bottom Sheet Behavior
+
+**Branch:** `fix/account-bottom-sheet-keyboard`
+
+**Descrição:**
+Corrigir o comportamento do bottom sheet de nova conta para expandir e contrair adequadamente com e sem teclado, exatamente como o bottom sheet de transações.
+
+**Problema Atual:**
+- Bottom sheet de conta não se ajusta corretamente quando o teclado aparece
+- Campos podem ficar ocultos atrás do teclado
+- Comportamento inconsistente com o bottom sheet de transações
+
+**Implementação Esperada:**
+- Usar `MediaQuery.of(context).viewInsets.bottom` para detectar teclado
+- Aplicar padding inferior dinâmico
+- Bottom sheet deve expandir quando teclado aparece
+- Bottom sheet deve contrair quando teclado desaparece
+- Scroll automático para campo em foco
+
+**Referência:**
+Verificar implementação do `ExpenseDetailsBottomSheet` e aplicar a mesma lógica.
+
+**Definition of Done:**
+- [x] Bottom sheet ajusta altura corretamente com teclado
+- [x] Todos os campos acessíveis quando teclado está visível
+- [x] Scroll automático para campo em foco
+- [x] Comportamento consistente com bottom sheet de transações
+- [x] Testes de widget para verificar comportamento
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F13-T2: Melhoria - Collapsible Account Tiles with Click to Expand
+
+**Branch:** `feature/collapsible-account-tiles`
+
+**Descrição:**
+Reduzir o tamanho dos tiles de contas e implementar funcionalidade de click-to-expand para mostrar detalhes.
+
+**Problema Atual:**
+- Tiles de contas ocupam muito espaço vertical
+- Todas as informações sempre visíveis desperdiçam espaço
+- Dificulta visualização quando há muitas contas
+
+**Implementação Esperada:**
+1. **Versão Colapsada (Padrão):**
+   - Nome da conta
+   - Tipo (débito/crédito)
+   - Saldo atual
+   - Ícone de expansão
+
+2. **Versão Expandida (Ao Clicar):**
+   - Todas as informações da versão colapsada
+   - Limite de crédito (se aplicável)
+   - Saldo da fatura (se aplicável)
+   - Data de vencimento (se aplicável)
+   - Botões de ação (editar, excluir)
+
+3. **Animação:**
+   - Transição suave entre estados
+   - Rotação do ícone de expansão
+   - Expansion tile animado
+
+**Exemplo de Implementação:**
+```dart
+ExpansionTile(
+  title: Text(account.name),
+  subtitle: Text('${account.type} - ${CurrencyFormatter.format(account.balance)}'),
+  children: [
+    // Detalhes expandidos
+    if (account.isCredit) ...[
+      ListTile(
+        title: Text('Limite de Crédito'),
+        trailing: Text(CurrencyFormatter.format(account.creditLimit)),
+      ),
+      // ... outros detalhes
+    ],
+    ButtonBar(
+      children: [
+        IconButton(icon: Icon(Icons.edit), onPressed: () => _editAccount(account)),
+        IconButton(icon: Icon(Icons.delete), onPressed: () => _deleteAccount(account)),
+      ],
+    ),
+  ],
+)
+```
+
+**Definition of Done:**
+- [x] Account tiles colapsados por padrão
+- [x] Click expande/colapsa tile com animação
+- [x] Informações essenciais visíveis em modo colapsado
+- [x] Detalhes completos visíveis em modo expandido
+- [x] Ícone de expansão rotaciona adequadamente
+- [x] Testes de widget implementados
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F13-T3: Feature - Default Account Selection
+
+**Branch:** `feature/default-account-selection`
+
+**Descrição:**
+Implementar seleção de conta padrão na página de contas que já venha pré-selecionada no dropdown de criação/edição de transações.
+
+**Implementação Esperada:**
+1. **Adicionar Campo no Banco:**
+   - Adicionar coluna `isDefault` (booleano) na tabela `Accounts`
+   - Apenas uma conta pode ser default por vez
+
+2. **UI na Página de Contas:**
+   - Adicionar ícone de "estrela" ou "favorito" nos tiles de conta
+   - Permitir marcar/desmarcar como conta padrão
+   - Destacar visualmente a conta padrão (ex: ícone dourado)
+
+3. **Integração com Bottom Sheet de Transações:**
+   - Ao abrir bottom sheet, pré-selecionar a conta marcada como default
+   - Se não houver conta default, manter comportamento atual
+
+4. **Regras de Negócio:**
+   - Ao marcar uma conta como default, desmarcar a anterior automaticamente
+   - Não permitir excluir conta marcada como default sem antes marcar outra
+   - Se conta default for excluída, limpar flag de default
+
+**Database Migration:**
+```dart
+// Adicionar ao schema do Drift
+class Accounts extends Table {
+  // ... campos existentes
+  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+}
+```
+
+**Definition of Done:**
+- [x] Coluna `isDefault` adicionada à tabela Accounts
+- [x] UI para marcar/desmarcar conta padrão implementada
+- [x] Apenas uma conta pode ser default por vez
+- [x] Bottom sheet de transações pré-seleciona conta padrão
+- [x] Regras de negócio para exclusão implementadas
+- [x] Testes de integração para seleção de conta padrão
+- [x] Migration documentada
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F13-T4: Feature - Category Management in Settings
+
+**Branch:** `feature/category-management`
+
+**Descrição:**
+Adicionar seção nas configurações para criação/remoção de categorias e seleção de categoria padrão.
+
+**Implementação Esperada:**
+1. **UI na Settings Screen:**
+   - Nova seção "Gerenciar Categorias"
+   - Lista de categorias existentes
+   - Botão para adicionar nova categoria
+   - Ícone de estrela para marcar categoria padrão
+   - Botão de excluir categoria
+
+2. **Adicionar Campo no Banco:**
+   - Adicionar coluna `isDefault` na tabela `Categories`
+   - Apenas uma categoria pode ser default por vez
+
+3. **Dialog de Nova Categoria:**
+   - Campo de texto para nome da categoria
+   - Seletor de cor/ícone (opcional para MVP)
+   - Botão salvar/cancelar
+
+4. **Regras de Negócio:**
+   - Não permitir excluir categorias que tenham transações vinculadas
+   - Ao marcar categoria como default, desmarcar a anterior
+   - Bottom sheet de transações pré-seleciona categoria default
+
+5. **Categorias Iniciais:**
+   - Criar categorias padrão no primeiro uso:
+     - Alimentação
+     - Transporte
+     - Lazer
+     - Saúde
+     - Educação
+     - Moradia
+     - Outros
+
+**Definition of Done:**
+- [x] Seção de gerenciamento de categorias na settings
+- [x] CRUD completo de categorias implementado
+- [x] Seleção de categoria padrão funcional
+- [x] Validação de exclusão (categorias com transações)
+- [x] Categorias iniciais criadas no onboarding
+- [x] Bottom sheet de transações pré-seleciona categoria padrão
+- [x] Testes de integração
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F13-T5: Feature - Salary Payment Date Configuration
+
+**Branch:** `feature/salary-payment-date`
+
+**Descrição:**
+Criar seção nas configurações para definir a data mensal em que o salário é recebido com suporte a dois modos: data específica (calendário) e dia útil específico com cálculo de feriados.
+
+**Implementação Esperada:**
+1. **Adicionar Campos no Banco:**
+   - Adicionar coluna `salaryPaymentMode` (texto: 'calendar' ou 'workday') na tabela `AppSettings`
+   - Adicionar coluna `salaryPaymentValue` (inteiro) na tabela `AppSettings`
+   - Valores padrão: modo 'calendar', valor 1
+
+2. **UI na Settings Screen:**
+   - SegmentedToggle para seleção entre "Dia Específico" e "Dia Útil"
+   - Modo Dia Específico: Calendário inline personalizado mostrando mês atual com seleção de dias (1-31)
+   - Modo Dia Útil: Dropdown com opções comuns (1º, 5º, 10º, 15º, 20º, último dia útil) + opção "Outro..." para entrada customizada (1-23)
+   - Datas de trabalho mostram o day/month correspondente (ex: "1º dia útil (03/11)")
+
+3. **Lógica de Feriados:**
+   - Implementar calendário brasileiro de feriados nacionais
+   - Incluir feriados específicos de São Paulo
+   - Suportar cálculo do nº dia útil excluindo finais de semana e feriados
+   - Seleção inteligente de mês: se data calculada já passou, usa próximo mês
+
+4. **Uso Futuro:**
+   - Base para funcionalidade de projeção de saldo
+   - Alertas de proximidade do dia do salário
+   - Resetar "quanto posso gastar" baseado nesta data
+
+**Definition of Done:**
+- [x] Colunas `salaryPaymentMode` e `salaryPaymentValue` adicionadas ao banco
+- [x] Migration v5→v6 implementada
+- [x] Widget calendário inline personalizado criado
+- [x] SegmentedToggle para modo de seleção
+- [x] Dropdown de dias úteis com cálculo de datas
+- [x] Calendário brasileiro de feriados implementado
+- [x] Lógica de seleção inteligente de mês
+- [x] UI completa integrada ao Settings Screen
+- [x] Persistência de dados funcionando
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F13-T6: Feature - Credit Payment Date per Account
+
+**Branch:** `feature/credit-payment-date`
+
+**Descrição:**
+Criar seção nas configurações para definir a data de fechamento da fatura de crédito para cada conta de crédito e também calcular a data de pagamento.
+
+**Implementação Esperada:**
+1. **Adicionar Campo no Banco:**
+   - Adicionar coluna `creditClosingDay` (int 1-31) na tabela `Accounts`
+   - Aplicável apenas para contas de crédito
+
+2. **UI na Account Creation/Editing:**
+   - Mostrar campo "Dia do Fechamento" apenas se `isCredit == true`
+   - Usar o mesmo widget de seleção de dia do salário:
+     - Calendário inline personalizado
+   - Validação de dias
+
+3. **Uso Futuro:**
+   - Alertas de proximidade de vencimento
+   - Cálculo automático de fatura do mês
+   - Projeção de gastos considerando vencimentos
+
+**Definition of Done:**
+- [x] Coluna `creditClosingDay` adicionada à tabela Accounts
+- [x] Campo visível apenas para contas de crédito
+- [x] UI para edição do dia de fechamento (InlineCalendar widget)
+- [x] Validação implementada (nullable field, 1-31 values)
+- [x] Valor persistido corretamente (both create and update)
+- [x] Documentação de uso futuro (comments in code)
+- [x] Merge realizado para `develop`
+
+---
+
+## ⚙️ Fase 14: Refatoração do Sistema de Reserva e Ciclo de Faturamento
+
+**Objetivo:** Refatorar o cálculo da reserva para usar saldos das contas de débito e implementar filtragem de transações de crédito por ciclo de faturamento.
+
+**Status:** 3 / 3 tarefas concluídas
+
+---
+
+### [x] F14-T1: Refatorar Cálculo de Reserva para Usar Saldos de Contas
+
+**Branch:** `refactor/reserve-from-account-balances`
+
+**Descrição:**
+Remover o campo de reserva inicial das configurações e calcular a reserva automaticamente como a soma dos saldos de todas as contas de débito não excluídas.
+
+**Problema Atual:**
+- Reserva é um valor manual que precisa ser atualizado pelo usuário
+- Não reflete automaticamente os saldos reais das contas
+- Dados duplicados e sujeitos a inconsistência
+
+**Implementação Esperada:**
+
+1. **Database Migration (v7→v8):**
+   - Remover coluna `reserveBalance` da tabela `AppSettings`
+   - Manter `maxReserveUsagePercentage` (ainda necessário)
+
+2. **Atualizar Dashboard Calculation Logic:**
+   - No `GetDashboardDataUseCase`, calcular reserva dinamicamente:
+   ```dart
+   // Buscar todas as contas com isDebit=true e excludeFromReserve=false
+   final debitAccounts = await accountRepository.getAll();
+   final reserveBalance = debitAccounts
+       .where((account) => account.isDebit && !account.excludeFromReserve)
+       .fold(0.0, (sum, account) => sum + account.balance);
+   ```
+
+3. **Remover de Settings UI:**
+   - Remover input de "Reserva Inicial" da tela de configurações
+   - Mostrar apenas a reserva calculada (read-only, informativo)
+   - Adicionar texto explicativo: "Calculado automaticamente como a soma dos saldos das contas de débito"
+
+4. **Atualizar Onboarding:**
+   - Remover step de configuração da reserva inicial (se existir)
+   - Focar apenas em salário e porcentagem de uso máximo
+
+5. **Repository Updates:**
+   - Remover método `updateReserveBalance()` do `AppSettingsRepository`
+   - Atualizar testes relacionados
+
+**Definition of Done:**
+- [ ] Migration v7→v8 implementada e testada
+- [ ] Campo `reserveBalance` removido do código
+- [ ] Dashboard calcula reserva a partir de saldos de contas
+- [ ] Settings UI atualizada (sem input manual de reserva)
+- [ ] Onboarding atualizado (se necessário)
+- [ ] Todos os testes atualizados e passando
+- [ ] Code generation executado com sucesso
+- [ ] Merge realizado para `develop`
+
+---
+
+### [x] F14-T2: Adicionar Exclusão de Conta da Reserva
+
+**Branch:** `feature/account-reserve-exclusion`
+
+**Descrição:**
+Adicionar opção por conta para excluir seu saldo do cálculo da reserva (como um valor intocável).
+
+**Implementação Esperada:**
+
+1. **Database Migration (v8→v9):**
+   - Adicionar coluna `excludeFromReserve` (boolean, default: false) na tabela `Accounts`
+
+2. **UI em Account Creation/Editing:**
+   - Adicionar toggle "Excluir da Reserva" no formulário de conta
+   - Mostrar apenas para contas com `isDebit=true`
+   - Tooltip/helper text: "Contas excluídas não entram no cálculo da reserva disponível"
+
+3. **Visual Indicator:**
+   - Na lista de contas, mostrar ícone ou badge para contas excluídas da reserva
+   - Exemplo: ícone de cadeado ou badge "Intocável"
+
+4. **Dashboard Integration:**
+   - Já implementado na F14-T1 (filtro `!account.excludeFromReserve`)
+
+5. **Validation:**
+   - Não há restrições: usuário pode excluir qualquer conta
+   - Alertar se todas as contas forem excluídas (reserva = 0)
+
+**Definition of Done:**
+- [ ] Coluna `excludeFromReserve` adicionada à tabela Accounts
+- [ ] Toggle implementado no formulário de conta
+- [ ] Visual indicator implementado na lista de contas
+- [ ] Dashboard respeita a exclusão no cálculo
+- [ ] Validação e alertas implementados
+- [ ] Testes de integração para exclusão
+- [ ] Code generation executado
+- [ ] Merge realizado para `develop`
+
+---
+
+### [x] F14-T3: Implementar Filtragem de Transações por Ciclo de Faturamento de Crédito
+
+**Branch:** `feature/credit-billing-cycle-filtering`
+
+**Descrição:**
+Filtrar transações de crédito para incluir apenas aquelas dentro do ciclo de faturamento atual (entre o dia de fechamento anterior e o próximo).
+
+**Implementação Esperada:**
+
+1. **Lógica de Cálculo do Ciclo:**
+   ```dart
+   // Para uma conta de crédito com creditClosingDay = 15
+   // Se hoje é 10/11/2025:
+   // - Ciclo atual: 15/10/2025 a 14/11/2025
+   // - Próximo fechamento: 15/11/2025
+
+   DateTime calculateCurrentCycleStart(int closingDay, DateTime today) {
+     final currentMonth = DateTime(today.year, today.month, closingDay);
+     if (today.day >= closingDay) {
+       return currentMonth; // Estamos após o fechamento deste mês
+     } else {
+       return DateTime(today.year, today.month - 1, closingDay); // Ciclo começou no mês anterior
+     }
+   }
+
+   DateTime calculateCurrentCycleEnd(int closingDay, DateTime today) {
+     final cycleStart = calculateCurrentCycleStart(closingDay, today);
+     return DateTime(cycleStart.year, cycleStart.month + 1, closingDay).subtract(Duration(days: 1));
+   }
+   ```
+
+2. **Atualizar Dashboard Calculation:**
+   - Ao calcular `totalSpent` para contas de crédito, filtrar transações:
+   ```dart
+   if (account.isCredit && account.creditClosingDay != null) {
+     final cycleStart = calculateCurrentCycleStart(account.creditClosingDay!, DateTime.now());
+     final cycleEnd = calculateCurrentCycleEnd(account.creditClosingDay!, DateTime.now());
+
+     transactions = transactions.where((t) =>
+       t.date.isAfter(cycleStart.subtract(Duration(days: 1))) &&
+       t.date.isBefore(cycleEnd.add(Duration(days: 1)))
+     ).toList();
+   }
+   ```
+
+3. **Edge Cases:**
+   - Conta sem `creditClosingDay`: incluir todas as transações (comportamento atual)
+   - Transições de mês (ex: ciclo de 25/10 a 24/11)
+   - Fevereiro e dias 29, 30, 31 (usar último dia válido do mês)
+
+4. **Atualizar Recurring Expenses:**
+   - Se despesas recorrentes usam contas de crédito, aplicar mesma lógica
+
+5. **UI Feedback:**
+   - Mostrar período do ciclo atual na tela de detalhes da conta
+   - Exemplo: "Ciclo atual: 15/10 a 14/11"
+
+**Definition of Done:**
+- [x] Funções de cálculo de ciclo implementadas e testadas
+- [x] Dashboard filtra transações de crédito por ciclo
+- [x] Edge cases tratados (meses com dias inválidos)
+- [x] Recurring expenses atualizado (se aplicável)
+- [x] UI mostra período do ciclo (opcional)
+- [x] Testes unitários para cálculo de ciclo
+- [x] Testes de integração para filtragem
+- [x] Merge realizado para `develop`
+
+---

@@ -252,5 +252,5 @@ The Accounts table supports dual-type accounts (can be both debit and credit):
 - **balance**: Debit account balance
 - **creditLimit / creditUsed**: Credit account limits and usage
 - **isDefault**: Default account selection flag
-- **creditClosingDay**: Credit card closing day (1-31, nullable)
+- **creditPaymentDay**: Credit card payment due day (1-31, nullable). The closing day is automatically calculated as payment day - 7 days. This creates a 7-day "ideal purchase period" between closing and payment where purchases go to the next bill. (renamed from creditClosingDay in schema v10)
 - **excludeFromReserve**: When true, debit account balances are excluded from reserve calculations (added in schema v9)

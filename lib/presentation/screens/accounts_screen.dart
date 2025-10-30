@@ -464,16 +464,23 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
                           color: AppColors.textSecondary,
                         ),
                       ),
-                      if (widget.account.creditClosingDay != null) ...[
+                      if (widget.account.creditPaymentDay != null) ...[
                         const SizedBox(height: AppSpacing.sm),
                         Text(
-                          'Fechamento: Dia ${widget.account.creditClosingDay}',
+                          'Pagamento: Dia ${widget.account.creditPaymentDay}',
                           style: AppTypography.bodySmall.copyWith(
                             color: AppColors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
-                        _buildBillingCycleInfo(widget.account.creditClosingDay!),
+                        Text(
+                          'Fechamento: Dia ${calculateClosingDate(widget.account.creditPaymentDay!, DateTime.now()).day}',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        _buildBillingCycleInfo(widget.account.creditPaymentDay!),
                       ],
                     ],
                   ),
@@ -638,36 +645,77 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
     }
   }
 
-  /// Builds a widget displaying the current billing cycle period
-  Widget _buildBillingCycleInfo(int closingDay) {
-    final cycle = calculateCurrentBillingCycle(closingDay);
+  /// Builds a widget displaying the current billing cycle period and ideal purchase window
+  Widget _buildBillingCycleInfo(int paymentDay) {
+    // Calculate billing cycle using the payment day (corrected logic)
+    final cycle = calculateCurrentBillingCycleFromPaymentDay(paymentDay);
     final cycleText = formatBillingCyclePeriod(cycle);
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.primaryWithOpacity,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusSmall),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.calendar_today,
-            size: 14,
-            color: AppColors.primary,
+    // Calculate ideal purchase period
+    final idealPeriod = calculateIdealPurchasePeriod(paymentDay);
+    final idealPeriodText = formatBillingCyclePeriod(idealPeriod);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Billing cycle
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: AppColors.primaryWithOpacity,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSmall),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
           ),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            'Ciclo atual: $cycleText',
-            style: AppTypography.bodySmall.copyWith(
-              color: AppColors.primary,
-              fontWeight: FontWeight.w500,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.calendar_today,
+                size: 14,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                'Ciclo atual: $cycleText',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        // Ideal purchase period
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: AppColors.success.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSmall),
+            border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.shopping_cart,
+                size: 14,
+                color: AppColors.success,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Flexible(
+                child: Text(
+                  'Período ideal: $idealPeriodText',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

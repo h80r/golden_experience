@@ -25,8 +25,10 @@ class Accounts extends Table {
   // Default account flag (only one account should be default at a time)
   BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
 
-  // Credit card closing day (1-31, applicable only for credit accounts)
-  IntColumn get creditClosingDay => integer().nullable()();
+  // Credit card payment day (1-31, applicable only for credit accounts)
+  // This is the due date when the credit card bill must be paid
+  // The closing day is automatically calculated as payment day - 7 days
+  IntColumn get creditPaymentDay => integer().nullable()();
 
   // Exclude from reserve calculation (applicable only for debit accounts)
   // When true, this account's balance will not be counted in the reserve calculation

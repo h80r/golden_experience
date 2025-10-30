@@ -40,7 +40,7 @@ class _AccountFormBottomSheetState
   late FocusNode _nameFocusNode;
   bool _isLoading = false;
   double _lastKeyboardHeight = 0.0;
-  int? _creditClosingDay;
+  int? _creditPaymentDay;
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +182,7 @@ class _AccountFormBottomSheetState
     if (widget.account != null) {
       _isDebit = widget.account!.isDebit;
       _isCredit = widget.account!.isCredit;
-      _creditClosingDay = widget.account!.creditClosingDay;
+      _creditPaymentDay = widget.account!.creditPaymentDay;
       // Initialize empty controllers - NubankStyleCurrencyField handles initialValue internally
       _balanceController = TextEditingController();
       _creditLimitController = TextEditingController();
@@ -190,7 +190,7 @@ class _AccountFormBottomSheetState
       // Default: debit account
       _isDebit = true;
       _isCredit = false;
-      _creditClosingDay = null;
+      _creditPaymentDay = null;
       _balanceController = TextEditingController();
       _creditLimitController = TextEditingController();
     }
@@ -397,14 +397,19 @@ class _AccountFormBottomSheetState
 
   /// Build page 2 with closing day calendar (for credit accounts)
   Widget _buildPage2() {
+    // Calculate the closing day from payment day
+    final calculatedClosingDay = _creditPaymentDay != null
+        ? _creditPaymentDay! - 7
+        : null;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Closing Day Section
+          // Payment Day Section
           Text(
-            'Dia do Fechamento da Fatura',
+            'Dia do Pagamento da Fatura',
             style: AppTypography.headlineMedium.copyWith(
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
@@ -412,20 +417,49 @@ class _AccountFormBottomSheetState
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Selecione o dia do mês em que a fatura do cartão fecha',
+            'Selecione o dia do mês em que a fatura do cartão vence',
             style: AppTypography.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
           InlineCalendar(
-            selectedDay: _creditClosingDay ?? 1,
+            selectedDay: _creditPaymentDay ?? 1,
             onDaySelected: (day) {
               setState(() {
-                _creditClosingDay = day;
+                _creditPaymentDay = day;
               });
             },
             compactMode: true,
           ),
+          const SizedBox(height: AppSpacing.md),
+
+          // Calculated Closing Day Info
+          if (_creditPaymentDay != null)
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      'Fechamento automático: dia ${calculatedClosingDay! > 0 ? calculatedClosingDay : "calculado no mês anterior"}\n(7 dias antes do pagamento)',
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           const SizedBox(height: AppSpacing.xl),
 
           // Bottom row: Cancel (25%) | Back (25%) | Save (50%)
@@ -568,7 +602,7 @@ class _AccountFormBottomSheetState
           isCredit: _isCredit,
           balance: balance,
           creditLimit: creditLimit,
-          creditClosingDay: drift.Value(_creditClosingDay),
+          creditPaymentDay: drift.Value(_creditPaymentDay),
         );
 
         final success = await accountRepository.update(updated);
@@ -609,7 +643,7 @@ class _AccountFormBottomSheetState
           isCredit: drift.Value(_isCredit),
           balance: drift.Value(balance),
           creditLimit: drift.Value(creditLimit),
-          creditClosingDay: drift.Value(_creditClosingDay),
+          creditPaymentDay: drift.Value(_creditPaymentDay),
         );
 
         final id = await accountRepository.create(newAccount);

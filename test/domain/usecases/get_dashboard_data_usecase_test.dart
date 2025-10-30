@@ -288,7 +288,7 @@ void main() {
         creditLimit: 0.0,
         creditUsed: 0.0,
         isDefault: false,
-        creditClosingDay: null,
+        creditPaymentDay:null,
         excludeFromReserve: false,
       ));
 
@@ -1194,7 +1194,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditClosingDay: null,
+          creditPaymentDay:null,
           excludeFromReserve: false,
         ));
 
@@ -1208,7 +1208,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditClosingDay: null,
+          creditPaymentDay:null,
           excludeFromReserve: true,
         ));
 
@@ -1247,7 +1247,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditClosingDay: null,
+          creditPaymentDay:null,
           excludeFromReserve: false,
         ));
 
@@ -1260,7 +1260,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditClosingDay: null,
+          creditPaymentDay:null,
           excludeFromReserve: false,
         ));
 
@@ -1299,7 +1299,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditClosingDay: null,
+          creditPaymentDay:null,
           excludeFromReserve: true,
         ));
 
@@ -1312,7 +1312,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditClosingDay: null,
+          creditPaymentDay:null,
           excludeFromReserve: true,
         ));
 
@@ -1351,7 +1351,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditClosingDay: null,
+          creditPaymentDay:null,
           excludeFromReserve: false,
         ));
 
@@ -1365,7 +1365,7 @@ void main() {
           creditLimit: 5000.0,
           creditUsed: 1000.0,
           isDefault: false,
-          creditClosingDay: 10,
+          creditPaymentDay:10,
           excludeFromReserve: true, // This flag is irrelevant for credit accounts
         ));
 

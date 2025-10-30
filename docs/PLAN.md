@@ -60,8 +60,8 @@ main (develop)
 
 ## 📊 Progresso Geral
 
-**Total de Tarefas:** 66
-**Concluídas:** 40 / 66 (61%)
+**Total de Tarefas:** 69
+**Concluídas:** 44 / 69 (64%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -77,8 +77,9 @@ main (develop)
 - **Fase 11 - Padronização e Melhorias de UX:** 4 / 4 (100%)
 - **Fase 12 - Estabilidade e Code Health:** 3 / 3 (100%)
 - **Fase 13 - Gestão Avançada de Contas:** 6 / 6 (100%)
-- **Fase 14 - Refatoração do Sistema de Reserva:** 0 / 4 (0%)
-- **Fase 15 - Transações de Receita e Depósito Automático:** 0 / 6 (0%)
+- **Fase 14 - Refatoração do Sistema de Reserva:** 3 / 3 (100%)
+- **Fase 15 - Melhorias em Ciclo de Faturamento e UX:** 1 / 4 (25%)
+- **Fase 16 - Transações de Receita e Depósito Automático:** 0 / 7 (0%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -87,459 +88,489 @@ main (develop)
 
 ---
 
-## ⚙️ Fase 13: Gestão Avançada de Contas e Configurações
+## ⚙️ Fase 15: Melhorias em Ciclo de Faturamento e UX de Formulários
 
-**Objetivo:** Aprimorar a gestão de contas, categorias e configurações financeiras com recursos avançados de personalização.
+**Objetivo:** Refinar o sistema de ciclo de faturamento de crédito para separar conceitos de fechamento vs pagamento, melhorar a experiência do formulário de contas, e adicionar ferramentas de debug para notificações.
 
-**Status:** 6 / 6 tarefas concluídas
+**Status:** 1 / 4 tarefas concluídas
 
 ---
 
-### [x] F13-T1: Correção - Fix New Account Bottom Sheet Behavior
+### [x] F15-T1: Implementar Sistema de Data de Fechamento e Pagamento Separados
 
-**Branch:** `fix/account-bottom-sheet-keyboard`
+**Branch:** `refactor/closing-vs-payment-dates`
 
 **Descrição:**
-Corrigir o comportamento do bottom sheet de nova conta para expandir e contrair adequadamente com e sem teclado, exatamente como o bottom sheet de transações.
+Separar os conceitos de "data de fechamento" (quando a fatura fecha) e "data de pagamento" (quando a fatura vence) para cartões de crédito. O fechamento ocorre automaticamente uma semana antes do pagamento, criando uma janela de "período ideal de compra" onde as transações não impactam o ciclo atual.
 
 **Problema Atual:**
-- Bottom sheet de conta não se ajusta corretamente quando o teclado aparece
-- Campos podem ficar ocultos atrás do teclado
-- Comportamento inconsistente com o bottom sheet de transações
-
-**Implementação Esperada:**
-- Usar `MediaQuery.of(context).viewInsets.bottom` para detectar teclado
-- Aplicar padding inferior dinâmico
-- Bottom sheet deve expandir quando teclado aparece
-- Bottom sheet deve contrair quando teclado desaparece
-- Scroll automático para campo em foco
-
-**Referência:**
-Verificar implementação do `ExpenseDetailsBottomSheet` e aplicar a mesma lógica.
-
-**Definition of Done:**
-- [x] Bottom sheet ajusta altura corretamente com teclado
-- [x] Todos os campos acessíveis quando teclado está visível
-- [x] Scroll automático para campo em foco
-- [x] Comportamento consistente com bottom sheet de transações
-- [x] Testes de widget para verificar comportamento
-- [x] Merge realizado para `develop`
-
----
-
-### [x] F13-T2: Melhoria - Collapsible Account Tiles with Click to Expand
-
-**Branch:** `feature/collapsible-account-tiles`
-
-**Descrição:**
-Reduzir o tamanho dos tiles de contas e implementar funcionalidade de click-to-expand para mostrar detalhes.
-
-**Problema Atual:**
-- Tiles de contas ocupam muito espaço vertical
-- Todas as informações sempre visíveis desperdiçam espaço
-- Dificulta visualização quando há muitas contas
-
-**Implementação Esperada:**
-1. **Versão Colapsada (Padrão):**
-   - Nome da conta
-   - Tipo (débito/crédito)
-   - Saldo atual
-   - Ícone de expansão
-
-2. **Versão Expandida (Ao Clicar):**
-   - Todas as informações da versão colapsada
-   - Limite de crédito (se aplicável)
-   - Saldo da fatura (se aplicável)
-   - Data de vencimento (se aplicável)
-   - Botões de ação (editar, excluir)
-
-3. **Animação:**
-   - Transição suave entre estados
-   - Rotação do ícone de expansão
-   - Expansion tile animado
-
-**Exemplo de Implementação:**
-```dart
-ExpansionTile(
-  title: Text(account.name),
-  subtitle: Text('${account.type} - ${CurrencyFormatter.format(account.balance)}'),
-  children: [
-    // Detalhes expandidos
-    if (account.isCredit) ...[
-      ListTile(
-        title: Text('Limite de Crédito'),
-        trailing: Text(CurrencyFormatter.format(account.creditLimit)),
-      ),
-      // ... outros detalhes
-    ],
-    ButtonBar(
-      children: [
-        IconButton(icon: Icon(Icons.edit), onPressed: () => _editAccount(account)),
-        IconButton(icon: Icon(Icons.delete), onPressed: () => _deleteAccount(account)),
-      ],
-    ),
-  ],
-)
-```
-
-**Definition of Done:**
-- [x] Account tiles colapsados por padrão
-- [x] Click expande/colapsa tile com animação
-- [x] Informações essenciais visíveis em modo colapsado
-- [x] Detalhes completos visíveis em modo expandido
-- [x] Ícone de expansão rotaciona adequadamente
-- [x] Testes de widget implementados
-- [x] Merge realizado para `develop`
-
----
-
-### [x] F13-T3: Feature - Default Account Selection
-
-**Branch:** `feature/default-account-selection`
-
-**Descrição:**
-Implementar seleção de conta padrão na página de contas que já venha pré-selecionada no dropdown de criação/edição de transações.
-
-**Implementação Esperada:**
-1. **Adicionar Campo no Banco:**
-   - Adicionar coluna `isDefault` (booleano) na tabela `Accounts`
-   - Apenas uma conta pode ser default por vez
-
-2. **UI na Página de Contas:**
-   - Adicionar ícone de "estrela" ou "favorito" nos tiles de conta
-   - Permitir marcar/desmarcar como conta padrão
-   - Destacar visualmente a conta padrão (ex: ícone dourado)
-
-3. **Integração com Bottom Sheet de Transações:**
-   - Ao abrir bottom sheet, pré-selecionar a conta marcada como default
-   - Se não houver conta default, manter comportamento atual
-
-4. **Regras de Negócio:**
-   - Ao marcar uma conta como default, desmarcar a anterior automaticamente
-   - Não permitir excluir conta marcada como default sem antes marcar outra
-   - Se conta default for excluída, limpar flag de default
-
-**Database Migration:**
-```dart
-// Adicionar ao schema do Drift
-class Accounts extends Table {
-  // ... campos existentes
-  BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
-}
-```
-
-**Definition of Done:**
-- [x] Coluna `isDefault` adicionada à tabela Accounts
-- [x] UI para marcar/desmarcar conta padrão implementada
-- [x] Apenas uma conta pode ser default por vez
-- [x] Bottom sheet de transações pré-seleciona conta padrão
-- [x] Regras de negócio para exclusão implementadas
-- [x] Testes de integração para seleção de conta padrão
-- [x] Migration documentada
-- [x] Merge realizado para `develop`
-
----
-
-### [x] F13-T4: Feature - Category Management in Settings
-
-**Branch:** `feature/category-management`
-
-**Descrição:**
-Adicionar seção nas configurações para criação/remoção de categorias e seleção de categoria padrão.
-
-**Implementação Esperada:**
-1. **UI na Settings Screen:**
-   - Nova seção "Gerenciar Categorias"
-   - Lista de categorias existentes
-   - Botão para adicionar nova categoria
-   - Ícone de estrela para marcar categoria padrão
-   - Botão de excluir categoria
-
-2. **Adicionar Campo no Banco:**
-   - Adicionar coluna `isDefault` na tabela `Categories`
-   - Apenas uma categoria pode ser default por vez
-
-3. **Dialog de Nova Categoria:**
-   - Campo de texto para nome da categoria
-   - Seletor de cor/ícone (opcional para MVP)
-   - Botão salvar/cancelar
-
-4. **Regras de Negócio:**
-   - Não permitir excluir categorias que tenham transações vinculadas
-   - Ao marcar categoria como default, desmarcar a anterior
-   - Bottom sheet de transações pré-seleciona categoria default
-
-5. **Categorias Iniciais:**
-   - Criar categorias padrão no primeiro uso:
-     - Alimentação
-     - Transporte
-     - Lazer
-     - Saúde
-     - Educação
-     - Moradia
-     - Outros
-
-**Definition of Done:**
-- [x] Seção de gerenciamento de categorias na settings
-- [x] CRUD completo de categorias implementado
-- [x] Seleção de categoria padrão funcional
-- [x] Validação de exclusão (categorias com transações)
-- [x] Categorias iniciais criadas no onboarding
-- [x] Bottom sheet de transações pré-seleciona categoria padrão
-- [x] Testes de integração
-- [x] Merge realizado para `develop`
-
----
-
-### [x] F13-T5: Feature - Salary Payment Date Configuration
-
-**Branch:** `feature/salary-payment-date`
-
-**Descrição:**
-Criar seção nas configurações para definir a data mensal em que o salário é recebido com suporte a dois modos: data específica (calendário) e dia útil específico com cálculo de feriados.
-
-**Implementação Esperada:**
-1. **Adicionar Campos no Banco:**
-   - Adicionar coluna `salaryPaymentMode` (texto: 'calendar' ou 'workday') na tabela `AppSettings`
-   - Adicionar coluna `salaryPaymentValue` (inteiro) na tabela `AppSettings`
-   - Valores padrão: modo 'calendar', valor 1
-
-2. **UI na Settings Screen:**
-   - SegmentedToggle para seleção entre "Dia Específico" e "Dia Útil"
-   - Modo Dia Específico: Calendário inline personalizado mostrando mês atual com seleção de dias (1-31)
-   - Modo Dia Útil: Dropdown com opções comuns (1º, 5º, 10º, 15º, 20º, último dia útil) + opção "Outro..." para entrada customizada (1-23)
-   - Datas de trabalho mostram o day/month correspondente (ex: "1º dia útil (03/11)")
-
-3. **Lógica de Feriados:**
-   - Implementar calendário brasileiro de feriados nacionais
-   - Incluir feriados específicos de São Paulo
-   - Suportar cálculo do nº dia útil excluindo finais de semana e feriados
-   - Seleção inteligente de mês: se data calculada já passou, usa próximo mês
-
-4. **Uso Futuro:**
-   - Base para funcionalidade de projeção de saldo
-   - Alertas de proximidade do dia do salário
-   - Resetar "quanto posso gastar" baseado nesta data
-
-**Definition of Done:**
-- [x] Colunas `salaryPaymentMode` e `salaryPaymentValue` adicionadas ao banco
-- [x] Migration v5→v6 implementada
-- [x] Widget calendário inline personalizado criado
-- [x] SegmentedToggle para modo de seleção
-- [x] Dropdown de dias úteis com cálculo de datas
-- [x] Calendário brasileiro de feriados implementado
-- [x] Lógica de seleção inteligente de mês
-- [x] UI completa integrada ao Settings Screen
-- [x] Persistência de dados funcionando
-- [x] Merge realizado para `develop`
-
----
-
-### [x] F13-T6: Feature - Credit Payment Date per Account
-
-**Branch:** `feature/credit-payment-date`
-
-**Descrição:**
-Criar seção nas configurações para definir a data de fechamento da fatura de crédito para cada conta de crédito e também calcular a data de pagamento.
-
-**Implementação Esperada:**
-1. **Adicionar Campo no Banco:**
-   - Adicionar coluna `creditClosingDay` (int 1-31) na tabela `Accounts`
-   - Aplicável apenas para contas de crédito
-
-2. **UI na Account Creation/Editing:**
-   - Mostrar campo "Dia do Fechamento" apenas se `isCredit == true`
-   - Usar o mesmo widget de seleção de dia do salário:
-     - Calendário inline personalizado
-   - Validação de dias
-
-3. **Uso Futuro:**
-   - Alertas de proximidade de vencimento
-   - Cálculo automático de fatura do mês
-   - Projeção de gastos considerando vencimentos
-
-**Definition of Done:**
-- [x] Coluna `creditClosingDay` adicionada à tabela Accounts
-- [x] Campo visível apenas para contas de crédito
-- [x] UI para edição do dia de fechamento (InlineCalendar widget)
-- [x] Validação implementada (nullable field, 1-31 values)
-- [x] Valor persistido corretamente (both create and update)
-- [x] Documentação de uso futuro (comments in code)
-- [x] Merge realizado para `develop`
-
----
-
-## ⚙️ Fase 14: Refatoração do Sistema de Reserva e Ciclo de Faturamento
-
-**Objetivo:** Refatorar o cálculo da reserva para usar saldos das contas de débito e implementar filtragem de transações de crédito por ciclo de faturamento.
-
-**Status:** 0 / 4 tarefas concluídas
-
----
-
-### [ ] F14-T1: Refatorar Cálculo de Reserva para Usar Saldos de Contas
-
-**Branch:** `refactor/reserve-from-account-balances`
-
-**Descrição:**
-Remover o campo de reserva inicial das configurações e calcular a reserva automaticamente como a soma dos saldos de todas as contas de débito não excluídas.
-
-**Problema Atual:**
-- Reserva é um valor manual que precisa ser atualizado pelo usuário
-- Não reflete automaticamente os saldos reais das contas
-- Dados duplicados e sujeitos a inconsistência
+- Sistema atual usa apenas `creditClosingDay` que representa o fechamento
+- Não há conceito de data de pagamento separada
+- Usuários não visualizam o "período ideal de compra" (janela entre fechamento e pagamento)
+- Ciclo de faturamento usa apenas a data de fechamento, sem considerar o pagamento
 
 **Implementação Esperada:**
 
-1. **Database Migration (v7→v8):**
-   - Remover coluna `reserveBalance` da tabela `AppSettings`
-   - Manter `maxReserveUsagePercentage` (ainda necessário)
-
-2. **Atualizar Dashboard Calculation Logic:**
-   - No `GetDashboardDataUseCase`, calcular reserva dinamicamente:
+1. **Database Migration (v9→v10):**
    ```dart
-   // Buscar todas as contas com isDebit=true e excludeFromReserve=false
-   final debitAccounts = await accountRepository.getAll();
-   final reserveBalance = debitAccounts
-       .where((account) => account.isDebit && !account.excludeFromReserve)
-       .fold(0.0, (sum, account) => sum + account.balance);
+   // Renomear e adicionar campos na tabela Accounts
+   // - Renomear `creditClosingDay` para `creditPaymentDay` (mantém valores existentes)
+   // - Calcular `creditClosingDay` automaticamente como paymentDay - 7
+   // Migration preserva dados: creditPaymentDay = creditClosingDay atual
    ```
 
-3. **Remover de Settings UI:**
-   - Remover input de "Reserva Inicial" da tela de configurações
-   - Mostrar apenas a reserva calculada (read-only, informativo)
-   - Adicionar texto explicativo: "Calculado automaticamente como a soma dos saldos das contas de débito"
+2. **Atualizar Account Model:**
+   - Campo `creditPaymentDay` (int 1-31, nullable) - dia do vencimento da fatura
+   - Campo `creditClosingDay` - CALCULADO automaticamente (paymentDay - 7)
+   - Se paymentDay < 8, ajustar para mês anterior (ex: paymentDay=5 → closingDay=28 do mês anterior)
 
-4. **Atualizar Onboarding:**
-   - Remover step de configuração da reserva inicial (se existir)
-   - Focar apenas em salário e porcentagem de uso máximo
-
-5. **Repository Updates:**
-   - Remover método `updateReserveBalance()` do `AppSettingsRepository`
-   - Atualizar testes relacionados
-
-**Definition of Done:**
-- [ ] Migration v7→v8 implementada e testada
-- [ ] Campo `reserveBalance` removido do código
-- [ ] Dashboard calcula reserva a partir de saldos de contas
-- [ ] Settings UI atualizada (sem input manual de reserva)
-- [ ] Onboarding atualizado (se necessário)
-- [ ] Todos os testes atualizados e passando
-- [ ] Code generation executado com sucesso
-- [ ] Merge realizado para `develop`
-
----
-
-### [ ] F14-T2: Adicionar Exclusão de Conta da Reserva
-
-**Branch:** `feature/account-reserve-exclusion`
-
-**Descrição:**
-Adicionar opção por conta para excluir seu saldo do cálculo da reserva (como um valor intocável).
-
-**Implementação Esperada:**
-
-1. **Database Migration (v8→v9):**
-   - Adicionar coluna `excludeFromReserve` (boolean, default: false) na tabela `Accounts`
-
-2. **UI em Account Creation/Editing:**
-   - Adicionar toggle "Excluir da Reserva" no formulário de conta
-   - Mostrar apenas para contas com `isDebit=true`
-   - Tooltip/helper text: "Contas excluídas não entram no cálculo da reserva disponível"
-
-3. **Visual Indicator:**
-   - Na lista de contas, mostrar ícone ou badge para contas excluídas da reserva
-   - Exemplo: ícone de cadeado ou badge "Intocável"
-
-4. **Dashboard Integration:**
-   - Já implementado na F14-T1 (filtro `!account.excludeFromReserve`)
-
-5. **Validation:**
-   - Não há restrições: usuário pode excluir qualquer conta
-   - Alertar se todas as contas forem excluídas (reserva = 0)
-
-**Definition of Done:**
-- [ ] Coluna `excludeFromReserve` adicionada à tabela Accounts
-- [ ] Toggle implementado no formulário de conta
-- [ ] Visual indicator implementado na lista de contas
-- [ ] Dashboard respeita a exclusão no cálculo
-- [ ] Validação e alertas implementados
-- [ ] Testes de integração para exclusão
-- [ ] Code generation executado
-- [ ] Merge realizado para `develop`
-
----
-
-### [ ] F14-T3: Implementar Filtragem de Transações por Ciclo de Faturamento de Crédito
-
-**Branch:** `feature/credit-billing-cycle-filtering`
-
-**Descrição:**
-Filtrar transações de crédito para incluir apenas aquelas dentro do ciclo de faturamento atual (entre o dia de fechamento anterior e o próximo).
-
-**Implementação Esperada:**
-
-1. **Lógica de Cálculo do Ciclo:**
+3. **Lógica de Cálculo de Datas:**
    ```dart
-   // Para uma conta de crédito com creditClosingDay = 15
-   // Se hoje é 10/11/2025:
-   // - Ciclo atual: 15/10/2025 a 14/11/2025
-   // - Próximo fechamento: 15/11/2025
+   // Em billing_cycle_utils.dart
 
-   DateTime calculateCurrentCycleStart(int closingDay, DateTime today) {
-     final currentMonth = DateTime(today.year, today.month, closingDay);
-     if (today.day >= closingDay) {
-       return currentMonth; // Estamos após o fechamento deste mês
+   /// Calcula a data de fechamento baseada na data de pagamento
+   /// Regra: fechamento = pagamento - 7 dias
+   DateTime calculateClosingDate(int paymentDay, DateTime referenceMonth) {
+     final paymentDate = DateTime(referenceMonth.year, referenceMonth.month, paymentDay);
+     return paymentDate.subtract(Duration(days: 7));
+   }
+
+   /// Identifica o "período ideal de compra" (entre fechamento e pagamento)
+   /// Compras neste período não impactam a fatura atual
+   DateTimeRange calculateIdealPurchasePeriod(int paymentDay, DateTime now) {
+     final closingDate = calculateClosingDate(paymentDay, now);
+     final paymentDate = DateTime(now.year, now.month, paymentDay);
+
+     return DateTimeRange(
+       start: closingDate.add(Duration(days: 1)),
+       end: paymentDate,
+     );
+   }
+   ```
+
+4. **Atualizar Billing Cycle Logic:**
+   ```dart
+   // Ciclo de faturamento atual:
+   // - Início: dia após fechamento ANTERIOR (inclusive)
+   // - Fim: data de fechamento ATUAL (exclusive)
+   //
+   // Exemplo com paymentDay = 15:
+   // - Fechamento: dia 8 (15 - 7)
+   // - Ciclo atual (se hoje é 10/11): 09/10 até 07/11
+   // - Período ideal: 08/11 até 15/11 (compras aqui vão para próxima fatura)
+
+   BillingCyclePeriod calculateCurrentBillingCycle(int paymentDay, DateTime today) {
+     final closingDay = _calculateClosingDay(paymentDay);
+
+     // Determinar qual mês de referência usar
+     DateTime referenceMonth;
+     if (today.day > closingDay) {
+       // Após o fechamento: ciclo atual vai do fechamento deste mês até próximo
+       referenceMonth = DateTime(today.year, today.month);
      } else {
-       return DateTime(today.year, today.month - 1, closingDay); // Ciclo começou no mês anterior
+       // Antes do fechamento: ciclo atual começou no mês anterior
+       referenceMonth = DateTime(today.year, today.month - 1);
+     }
+
+     final cycleStart = DateTime(referenceMonth.year, referenceMonth.month, closingDay)
+         .add(Duration(days: 1));
+     final cycleEnd = DateTime(referenceMonth.year, referenceMonth.month + 1, closingDay);
+
+     return BillingCyclePeriod(start: cycleStart, end: cycleEnd);
+   }
+   ```
+
+5. **UI Updates - Account Form:**
+   - Remover seletor de "Dia de Fechamento"
+   - Adicionar seletor de "Dia de Pagamento" (usando InlineCalendar)
+   - Mostrar fechamento calculado: "Fechamento automático: dia X" (read-only)
+   - Tooltip explicativo: "Sua fatura fecha 7 dias antes do pagamento"
+
+6. **UI Updates - Accounts Screen:**
+   - Expandir informações exibidas no tile expandido:
+     - "Pagamento: dia X"
+     - "Fechamento: dia Y"
+     - "Período ideal: dd/mm - dd/mm" (destacado em verde/azul)
+   - Tooltip no período ideal: "Compras neste período vão para a próxima fatura"
+
+7. **Edge Cases:**
+   - PaymentDay 1-7: fechamento fica no mês anterior
+     - Ex: paymentDay=5 → closingDay=28 (ou 29/30/31 dependendo do mês anterior)
+   - Fevereiro: ajustar dias inválidos
+   - Dia 31 em meses com 30 dias: usar último dia válido
+
+**Definition of Done:**
+- [x] Migration v9→v10 implementada (rename + preserva dados)
+- [x] Campo `creditPaymentDay` adicionado ao model
+- [x] Campo `creditClosingDay` calculado automaticamente
+- [x] Funções de cálculo de fechamento e período ideal criadas
+- [x] `calculateCurrentBillingCycle()` atualizado para usar lógica correta
+- [x] UI do formulário atualizada (payment day selector)
+- [x] Accounts screen exibe fechamento, pagamento e período ideal
+- [x] Edge cases tratados (dias inválidos, mudança de mês)
+- [x] Testes unitários para todas as funções de cálculo
+- [x] Testes de integração para billing cycle com nova lógica
+- [x] Todos os testes passando (atualizar mocks para usar paymentDay)
+- [x] Documentação atualizada (CLAUDE.md)
+- [x] Merge realizado para `develop`
+
+---
+
+### [ ] F15-T2: Melhorias de Layout no Formulário de Conta
+
+**Branch:** `feature/account-form-layout-improvements`
+
+**Descrição:**
+Otimizar o layout do formulário de conta para reduzir altura vertical e melhorar usabilidade, colocando checkboxes e inputs relacionados na mesma linha.
+
+**Problema Atual:**
+- Checkboxes de débito e crédito ocupam linhas separadas
+- Inputs de saldo e limite ocupam linhas separadas
+- Formulário muito extenso verticalmente
+- Desperdício de espaço horizontal
+
+**Implementação Esperada:**
+
+1. **Página 1 - Reorganização de Layout:**
+   ```dart
+   // ANTES:
+   // [ ] Conta de Débito
+   // [ ] Conta de Crédito
+   // [Campo: Saldo Inicial]
+   // [Campo: Limite de Crédito]
+
+   // DEPOIS:
+   // Row: [ ] Conta de Débito    [ ] Conta de Crédito
+   // Row: [Campo: Saldo]    [Campo: Limite]
+   ```
+
+2. **Implementação de Row para Checkboxes:**
+   ```dart
+   Row(
+     children: [
+       Expanded(
+         child: CheckboxListTile(
+           title: Text('Conta de Débito'),
+           value: _isDebit,
+           onChanged: (value) => setState(() => _isDebit = value ?? false),
+         ),
+       ),
+       Expanded(
+         child: CheckboxListTile(
+           title: Text('Conta de Crédito'),
+           value: _isCredit,
+           onChanged: (value) => setState(() => _isCredit = value ?? false),
+         ),
+       ),
+     ],
+   )
+   ```
+
+3. **Implementação de Row para Inputs Monetários:**
+   ```dart
+   Row(
+     children: [
+       Expanded(
+         child: NubankStyleCurrencyField(
+           label: 'Saldo Inicial',
+           enabled: _isDebit,
+           controller: _balanceController,
+         ),
+       ),
+       SizedBox(width: AppSpacing.md),
+       Expanded(
+         child: NubankStyleCurrencyField(
+           label: 'Limite de Crédito',
+           enabled: _isCredit,
+           controller: _creditLimitController,
+         ),
+       ),
+     ],
+   )
+   ```
+
+4. **Lógica de Enable/Disable:**
+   - Campo "Saldo" enabled apenas se `_isDebit == true`
+   - Campo "Limite" enabled apenas se `_isCredit == true`
+   - Ambos desabilitados se nenhum checkbox marcado
+   - Visual feedback: campos disabled ficam com opacidade reduzida
+
+5. **Responsividade:**
+   - Em telas menores (<360px width), manter layout vertical
+   - Usar `LayoutBuilder` para decidir entre Row e Column
+
+**Definition of Done:**
+- [ ] Checkboxes de débito/crédito na mesma linha
+- [ ] Inputs de saldo/limite na mesma linha
+- [ ] Lógica de enable/disable funcionando corretamente
+- [ ] Visual feedback para campos desabilitados
+- [ ] Layout responsivo (vertical em telas pequenas)
+- [ ] Testes de widget atualizados
+- [ ] Aparência consistente com design system
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F15-T3: Remover Página de Calendário Condicional para Contas Não-Crédito
+
+**Branch:** `feature/conditional-calendar-page`
+
+**Descrição:**
+Tornar a segunda página do formulário de conta (com calendário de pagamento) visível apenas quando o checkbox de crédito está marcado, eliminando navegação desnecessária para contas de débito.
+
+**Problema Atual:**
+- Formulário sempre tem 2 páginas (PageView com 2 children)
+- Contas apenas de débito exigem navegação para página 2 (calendário) mesmo sem usar
+- UX confusa: usuário vê calendário inútil para contas de débito
+- Botão "Próximo" sempre visível, mesmo quando não há próxima página relevante
+
+**Implementação Esperada:**
+
+1. **Lógica Condicional de Páginas:**
+   ```dart
+   // Em _buildPageView()
+   Widget _buildPageView() {
+     final pages = <Widget>[
+       _buildPage1(scrollController, isEditing),
+       if (_isCredit) _buildPage2(), // Só adiciona se crédito marcado
+     ];
+
+     return PageView(
+       controller: _pageController,
+       children: pages,
+     );
+   }
+   ```
+
+2. **Atualização do Botão de Navegação:**
+   ```dart
+   // Na Página 1
+   Widget _buildNavigationButton() {
+     if (!_isCredit) {
+       // Sem crédito: mostrar apenas botão "Salvar"
+       return PrimaryButton(
+         text: _isLoading ? 'Salvando...' : 'Salvar',
+         onPressed: _isLoading ? null : _handleSave,
+       );
+     } else {
+       // Com crédito: mostrar botão "Próximo" para ir ao calendário
+       return Row(
+         children: [
+           Expanded(
+             child: OutlinedButton(
+               onPressed: () => _pageController.nextPage(
+                 duration: Duration(milliseconds: 300),
+                 curve: Curves.easeInOut,
+               ),
+               child: Text('Próximo'),
+             ),
+           ),
+         ],
+       );
      }
    }
-
-   DateTime calculateCurrentCycleEnd(int closingDay, DateTime today) {
-     final cycleStart = calculateCurrentCycleStart(closingDay, today);
-     return DateTime(cycleStart.year, cycleStart.month + 1, closingDay).subtract(Duration(days: 1));
-   }
    ```
 
-2. **Atualizar Dashboard Calculation:**
-   - Ao calcular `totalSpent` para contas de crédito, filtrar transações:
+3. **Validação de Salvamento:**
    ```dart
-   if (account.isCredit && account.creditClosingDay != null) {
-     final cycleStart = calculateCurrentCycleStart(account.creditClosingDay!, DateTime.now());
-     final cycleEnd = calculateCurrentCycleEnd(account.creditClosingDay!, DateTime.now());
+   Future<void> _handleSave() async {
+     // Validar que pelo menos um tipo está marcado
+     if (!_isDebit && !_isCredit) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(content: Text('Selecione ao menos um tipo de conta')),
+       );
+       return;
+     }
 
-     transactions = transactions.where((t) =>
-       t.date.isAfter(cycleStart.subtract(Duration(days: 1))) &&
-       t.date.isBefore(cycleEnd.add(Duration(days: 1)))
-     ).toList();
+     // Se crédito marcado mas não selecionou dia de pagamento
+     if (_isCredit && _creditPaymentDay == null) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(content: Text('Selecione o dia de pagamento do crédito')),
+       );
+       return;
+     }
+
+     // Prosseguir com salvamento...
    }
    ```
 
-3. **Edge Cases:**
-   - Conta sem `creditClosingDay`: incluir todas as transações (comportamento atual)
-   - Transições de mês (ex: ciclo de 25/10 a 24/11)
-   - Fevereiro e dias 29, 30, 31 (usar último dia válido do mês)
+4. **Atualização Dinâmica:**
+   - Ao desmarcar checkbox de crédito na página 1, resetar `_creditPaymentDay = null`
+   - Se usuário estiver na página 2 e desmarcar crédito, voltar para página 1
+   - Listener no checkbox de crédito:
+   ```dart
+   onChanged: (value) {
+     setState(() {
+       _isCredit = value ?? false;
+       if (!_isCredit) {
+         _creditPaymentDay = null;
+         if (_pageController.page == 1.0) {
+           _pageController.previousPage(
+             duration: Duration(milliseconds: 300),
+             curve: Curves.easeInOut,
+           );
+         }
+       }
+     });
+   }
+   ```
 
-4. **Atualizar Recurring Expenses:**
-   - Se despesas recorrentes usam contas de crédito, aplicar mesma lógica
-
-5. **UI Feedback:**
-   - Mostrar período do ciclo atual na tela de detalhes da conta
-   - Exemplo: "Ciclo atual: 15/10 a 14/11"
+5. **Indicador de Página:**
+   - Mostrar indicador de página apenas se houver 2 páginas (`_isCredit == true`)
+   - Ocultar se apenas 1 página (débito only)
 
 **Definition of Done:**
-- [ ] Funções de cálculo de ciclo implementadas e testadas
-- [ ] Dashboard filtra transações de crédito por ciclo
-- [ ] Edge cases tratados (meses com dias inválidos)
-- [ ] Recurring expenses atualizado (se aplicável)
-- [ ] UI mostra período do ciclo (opcional)
-- [ ] Testes unitários para cálculo de ciclo
-- [ ] Testes de integração para filtragem
+- [ ] Segunda página (calendário) só aparece se `_isCredit == true`
+- [ ] Botão de navegação adapta-se ao número de páginas
+- [ ] Desmarcar crédito volta para página 1 se necessário
+- [ ] Validação impede salvar crédito sem dia de pagamento
+- [ ] Indicador de página condicional implementado
+- [ ] UX suave com animações apropriadas
+- [ ] Testes de widget para fluxos de 1 e 2 páginas
 - [ ] Merge realizado para `develop`
 
 ---
 
-### [ ] F14-T4: Atualizar Testes e Documentação
+### [ ] F15-T4: Feature Experimental - Monitor de Notificações para Debug
+
+**Branch:** `feature/notification-debug-monitor`
+
+**Descrição:**
+Criar ferramenta de debug experimental que exibe uma notificação do app contendo metadados de qualquer notificação recebida, útil para testar e desenvolver futuros parsers de notificações bancárias.
+
+**Problema/Objetivo:**
+- Facilitar desenvolvimento de parsers de notificações bancárias
+- Permitir visualizar metadados de notificações sem conectar debugger
+- Ferramenta útil para testar captura de transações automáticas
+- Não é feature de produção, mas sim debugging tool
+
+**Implementação Esperada:**
+
+1. **Adicionar Toggle nas Configurações:**
+   ```dart
+   // Settings Screen - Developer Options (nova seção)
+   SwitchListTile(
+     title: Text('Monitor de Notificações (Debug)'),
+     subtitle: Text('Mostra metadados de notificações recebidas'),
+     value: _notificationDebugEnabled,
+     onChanged: (value) async {
+       await ref.read(appSettingsRepositoryProvider)
+           .updateNotificationDebugMode(value);
+       setState(() => _notificationDebugEnabled = value);
+     },
+   )
+   ```
+
+2. **Database Field:**
+   - Adicionar campo `notificationDebugMode` (boolean, default: false) em `AppSettings`
+   - Migration necessária (v10→v11 ou ajustar conforme numeração atual)
+
+3. **Notification Listener Service:**
+   ```dart
+   // lib/data/services/notification_monitor_service.dart
+   class NotificationMonitorService {
+     final FlutterLocalNotificationsPlugin _localNotifications;
+     final IAppSettingsRepository _settingsRepo;
+
+     // Chamado pelo NotificationListenerService quando notificação é recebida
+     Future<void> onNotificationReceived(Map<String, dynamic> metadata) async {
+       final settings = await _settingsRepo.get();
+
+       if (!settings.notificationDebugMode) {
+         return; // Debug mode desabilitado
+       }
+
+       // Criar notificação do app com metadados
+       await _showDebugNotification(metadata);
+     }
+
+     Future<void> _showDebugNotification(Map<String, dynamic> metadata) async {
+       final title = 'Notificação Capturada';
+       final body = '''
+   App: ${metadata['appName'] ?? 'Desconhecido'}
+   Título: ${metadata['title'] ?? 'N/A'}
+   Texto: ${metadata['text'] ?? 'N/A'}
+   Timestamp: ${metadata['timestamp'] ?? 'N/A'}
+   Package: ${metadata['packageName'] ?? 'N/A'}
+       '''.trim();
+
+       await _localNotifications.show(
+         metadata['id'] ?? DateTime.now().millisecondsSinceEpoch,
+         title,
+         body,
+         NotificationDetails(
+           android: AndroidNotificationDetails(
+             'notification_debug',
+             'Debug de Notificações',
+             channelDescription: 'Notificações de debug do monitor',
+             importance: Importance.high,
+             priority: Priority.high,
+             icon: '@mipmap/ic_launcher',
+           ),
+           iOS: DarwinNotificationDetails(),
+         ),
+       );
+     }
+   }
+   ```
+
+4. **Integração com Listener Existente:**
+   ```dart
+   // No NotificationListenerService existente (de F8-T4)
+   @override
+   void onNotificationPosted(StatusBarNotification sbn) {
+     final metadata = {
+       'id': sbn.id,
+       'appName': sbn.packageName,
+       'title': sbn.notification?.extras?.getString('android.title'),
+       'text': sbn.notification?.extras?.getString('android.text'),
+       'timestamp': DateTime.now().toIso8601String(),
+       'packageName': sbn.packageName,
+     };
+
+     // Enviar para monitor (se habilitado)
+     NotificationMonitorService.instance.onNotificationReceived(metadata);
+
+     // Continuar com lógica de parsing normal...
+   }
+   ```
+
+5. **UI Feedback:**
+   - Badge "EXPERIMENTAL" ao lado do toggle
+   - Texto de aviso: "⚠️ Apenas para desenvolvimento. Pode gerar muitas notificações."
+   - Opção de "Limpar notificações de debug" (botão)
+
+6. **Limitações e Boas Práticas:**
+   - Limitar a 50 notificações de debug por sessão (counter em memória)
+   - Auto-desabilitar após 24h (opcional)
+   - Logs detalhados para facilitar desenvolvimento
+
+**Definition of Done:**
+- [ ] Campo `notificationDebugMode` adicionado a AppSettings
+- [ ] Toggle implementado em Settings (seção Developer Options)
+- [ ] NotificationMonitorService criado e funcional
+- [ ] Integração com NotificationListenerService existente
+- [ ] Notificações de debug exibem metadados corretamente
+- [ ] Limitação de quantidade implementada
+- [ ] UI com badges e avisos apropriados
+- [ ] Botão para limpar notificações de debug
+- [ ] Testes de integração (mock de notificações)
+- [ ] Documentação de uso para debug
+- [ ] Merge realizado para `develop`
+
+---
+
+## ⚙️ Fase 16: Transações de Receita e Depósito Automático de Salário
+
+**Objetivo:** Implementar suporte a transações de receita (positivas) e criar sistema de depósito automático do salário na conta configurada.
+
+**Status:** 0 / 7 tarefas concluídas
+
+**Nota:** Esta fase prepara a base para funcionalidades futuras de pagamento de faturas e gestão de invoices de cartão de crédito.
+
+---
+
+### [ ] F16-T1: Atualizar Testes e Documentação
 
 **Branch:** `chore/update-tests-reserve-refactor`
 
@@ -587,17 +618,7 @@ Atualizar todos os testes e documentação para refletir as mudanças no sistema
 
 ---
 
-## ⚙️ Fase 15: Transações de Receita e Depósito Automático de Salário
-
-**Objetivo:** Implementar suporte a transações de receita (positivas) e criar sistema de depósito automático do salário na conta configurada.
-
-**Status:** 0 / 6 tarefas concluídas
-
-**Nota:** Esta fase prepara a base para funcionalidades futuras de pagamento de faturas e gestão de invoices de cartão de crédito.
-
----
-
-### [ ] F15-T1: Implementar Sistema de Tipo de Transação
+### [ ] F16-T2: Implementar Sistema de Tipo de Transação
 
 **Branch:** `feature/transaction-income-type`
 
@@ -661,7 +682,7 @@ Adicionar suporte a transações de receita (positivas) além de despesas (negat
 
 ---
 
-### [ ] F15-T2: Criar Tabela Invoice para Gestão Futura de Faturas
+### [ ] F16-T3: Criar Tabela Invoice para Gestão Futura de Faturas
 
 **Branch:** `chore/invoice-table-foundation`
 
@@ -731,7 +752,7 @@ Criar tabela Invoice para suportar gestão futura de faturas de cartão de créd
 
 ---
 
-### [ ] F15-T3: Adicionar Configuração de Conta de Salário
+### [ ] F16-T4: Adicionar Configuração de Conta de Salário
 
 **Branch:** `feature/salary-account-config`
 
@@ -776,7 +797,7 @@ Permitir que o usuário configure para qual conta o salário deve ser depositado
 
 ---
 
-### [ ] F15-T4: Atualizar UI de Transação para Receita/Despesa
+### [ ] F16-T5: Atualizar UI de Transação para Receita/Despesa
 
 **Branch:** `feature/transaction-ui-income-expense`
 
@@ -834,7 +855,7 @@ Atualizar o bottom sheet de transação e a lista de transações para suportar 
 
 ---
 
-### [ ] F15-T5: Implementar Depósito Automático de Salário
+### [ ] F16-T6: Implementar Depósito Automático de Salário
 
 **Branch:** `feature/automatic-salary-deposit`
 
@@ -988,7 +1009,7 @@ Implementar sistema de background job para depositar automaticamente o salário 
 
 ---
 
-### [ ] F15-T6: Testes e Casos Extremos
+### [ ] F16-T7: Testes e Casos Extremos
 
 **Branch:** `chore/income-salary-tests`
 
@@ -1130,7 +1151,7 @@ As fases devem ser seguidas sequencialmente, mas dentro de cada fase há alguma 
 
 ## 🎊 Conclusão
 
-Este plano mapeia todas as **39 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
+Este plano mapeia todas as **69 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
 
 A **Fase 5** representa a primeira iteração de melhorias baseada em uso real, demonstrando a importância de testar o aplicativo e iterar sobre o design inicial.
 

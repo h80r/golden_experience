@@ -55,7 +55,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -193,6 +193,49 @@ class LocalDatabase extends _$LocalDatabase {
               ADD COLUMN exclude_from_reserve INTEGER NOT NULL DEFAULT 0
               CHECK ("exclude_from_reserve" IN (0, 1))
             ''');
+          }
+
+          // Migration from v9 to v10: Rename creditClosingDay to creditPaymentDay
+          // The concept changes: payment day is what user sets, closing day is calculated (payment - 7 days)
+          if (from <= 9) {
+            // SQLite doesn't support ALTER TABLE RENAME COLUMN directly in all versions
+            // So we'll use a table recreation approach to ensure compatibility
+
+            // Step 1: Create new accounts table with creditPaymentDay instead of creditClosingDay
+            await customStatement('''
+              CREATE TABLE accounts_new (
+                id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                is_debit INTEGER NOT NULL DEFAULT 1 CHECK ("is_debit" IN (0, 1)),
+                is_credit INTEGER NOT NULL DEFAULT 0 CHECK ("is_credit" IN (0, 1)),
+                balance REAL NOT NULL DEFAULT 0.0,
+                credit_limit REAL NOT NULL DEFAULT 0.0,
+                credit_used REAL NOT NULL DEFAULT 0.0,
+                is_default INTEGER NOT NULL DEFAULT 0 CHECK ("is_default" IN (0, 1)),
+                credit_payment_day INTEGER,
+                exclude_from_reserve INTEGER NOT NULL DEFAULT 0 CHECK ("exclude_from_reserve" IN (0, 1))
+              )
+            ''');
+
+            // Step 2: Copy data, renaming credit_closing_day to credit_payment_day
+            // Existing data represents closing day, but we're now treating it as payment day
+            // This preserves user data while changing the semantic meaning
+            await customStatement('''
+              INSERT INTO accounts_new (
+                id, name, is_debit, is_credit, balance, credit_limit, credit_used,
+                is_default, credit_payment_day, exclude_from_reserve
+              )
+              SELECT
+                id, name, is_debit, is_credit, balance, credit_limit, credit_used,
+                is_default, credit_closing_day, exclude_from_reserve
+              FROM accounts
+            ''');
+
+            // Step 3: Drop old table
+            await customStatement('DROP TABLE accounts');
+
+            // Step 4: Rename new table to original name
+            await customStatement('ALTER TABLE accounts_new RENAME TO accounts');
           }
         },
       );
