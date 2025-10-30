@@ -222,7 +222,7 @@ class _AccountFormBottomSheetState
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            // Account Type Selection (Checkboxes)
+            // Account Type Selection (Checkboxes in Row)
             Text(
               'Tipo de Conta',
               style: AppTypography.bodyLarge.copyWith(
@@ -231,49 +231,104 @@ class _AccountFormBottomSheetState
             ),
             const SizedBox(height: AppSpacing.md),
 
-            // Debit Checkbox
-            CheckboxListTile(
-              title: Text(
-                'Débito (Conta Corrente)',
-                style: AppTypography.bodyMedium,
-              ),
-              subtitle: Text(
-                'Conta com saldo e limite de débito',
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+            // Checkboxes in horizontal row
+            Row(
+              children: [
+                // Debit Checkbox
+                Expanded(
+                  flex: 1,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isDebit = !_isDebit;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: _isDebit
+                              ? AppColors.primary
+                              : AppColors.surfaceVariant,
+                          width: 2,
+                        ),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMedium),
+                      ),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _isDebit,
+                            onChanged: (value) {
+                              setState(() {
+                                _isDebit = value ?? false;
+                              });
+                            },
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Expanded(
+                            child: Text(
+                              'Débito',
+                              style: AppTypography.bodySmall.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              value: _isDebit,
-              onChanged: (value) {
-                setState(() {
-                  _isDebit = value ?? false;
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
+                const SizedBox(width: AppSpacing.md),
+                // Credit Checkbox
+                Expanded(
+                  flex: 1,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isCredit = !_isCredit;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: _isCredit
+                              ? AppColors.primary
+                              : AppColors.surfaceVariant,
+                          width: 2,
+                        ),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMedium),
+                      ),
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: _isCredit,
+                            onChanged: (value) {
+                              setState(() {
+                                _isCredit = value ?? false;
+                              });
+                            },
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Expanded(
+                            child: Text(
+                              'Crédito',
+                              style: AppTypography.bodySmall.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
-            // Credit Checkbox
-            CheckboxListTile(
-              title: Text(
-                'Crédito (Cartão de Crédito)',
-                style: AppTypography.bodyMedium,
-              ),
-              subtitle: Text(
-                'Conta com limite de crédito',
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              value: _isCredit,
-              onChanged: (value) {
-                setState(() {
-                  _isCredit = value ?? false;
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.sm),
 
             // Validation: at least one type must be selected
             if (!_isDebit && !_isCredit)
@@ -289,12 +344,13 @@ class _AccountFormBottomSheetState
 
             const SizedBox(height: AppSpacing.lg),
 
-            // Debit Balance Field
-            if (_isDebit)
+            // Conditional Input Fields Display
+            // Case 1: Only Debit checked - show balance field (full width)
+            if (_isDebit && !_isCredit)
               Column(
                 children: [
                   NubankStyleCurrencyField(
-                    label: 'Saldo Inicial (Débito)',
+                    label: 'Saldo Inicial',
                     hint: '0,00',
                     controller: _balanceController,
                     initialValue: widget.account?.balance ?? 0.0,
@@ -312,8 +368,8 @@ class _AccountFormBottomSheetState
                 ],
               ),
 
-            // Credit Limit Field
-            if (_isCredit)
+            // Case 2: Only Credit checked - show credit limit field (full width)
+            if (!_isDebit && _isCredit)
               Column(
                 children: [
                   NubankStyleCurrencyField(
@@ -330,6 +386,57 @@ class _AccountFormBottomSheetState
                       }
                       return null;
                     },
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                ],
+              ),
+
+            // Case 3: Both checked - show both fields in a row
+            if (_isDebit && _isCredit)
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      // Balance field (50% width)
+                      Expanded(
+                        flex: 1,
+                        child: NubankStyleCurrencyField(
+                          label: 'Saldo Inicial',
+                          hint: '0,00',
+                          controller: _balanceController,
+                          initialValue: widget.account?.balance ?? 0.0,
+                          onChanged: (value) {
+                            // Value is already converted by widget
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Insira um valor';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      // Credit limit field (50% width)
+                      Expanded(
+                        flex: 1,
+                        child: NubankStyleCurrencyField(
+                          label: 'Limite de Crédito',
+                          hint: '0,00',
+                          controller: _creditLimitController,
+                          initialValue: widget.account?.creditLimit ?? 0.0,
+                          onChanged: (value) {
+                            // Value is already converted by widget
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Insira um limite';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: AppSpacing.lg),
                 ],
@@ -398,9 +505,8 @@ class _AccountFormBottomSheetState
   /// Build page 2 with closing day calendar (for credit accounts)
   Widget _buildPage2() {
     // Calculate the closing day from payment day
-    final calculatedClosingDay = _creditPaymentDay != null
-        ? _creditPaymentDay! - 7
-        : null;
+    final calculatedClosingDay =
+        _creditPaymentDay != null ? _creditPaymentDay! - 7 : null;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.lg),
