@@ -625,8 +625,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _salaryPaymentMode = settings.salaryPaymentMode;
         _calendarDay = settings.salaryPaymentValue;
         // Only set workday option from saved value if mode is 'workday'
+        // Map -1 back to 'last' for UI
         _workdayOption = settings.salaryPaymentMode == 'workday'
-            ? settings.salaryPaymentValue.toString()
+            ? (settings.salaryPaymentValue == -1
+                ? 'last'
+                : settings.salaryPaymentValue.toString())
             : '1';
         _isLoading = false;
       });
@@ -781,7 +784,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     // Save immediately
     try {
       final appSettingsRepository = ref.read(appSettingsRepositoryProvider);
-      final valueToSave = int.tryParse(value) ?? 1;
+      // Map 'last' to -1 for database storage, otherwise parse as int
+      final valueToSave =
+          value == 'last' ? -1 : (int.tryParse(value) ?? 1);
       await appSettingsRepository.updateSalaryPaymentConfig(
           _salaryPaymentMode, valueToSave);
     } catch (e) {

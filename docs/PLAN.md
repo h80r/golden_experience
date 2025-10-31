@@ -60,8 +60,8 @@ main (develop)
 
 ## 📊 Progresso Geral
 
-**Total de Tarefas:** 75
-**Concluídas:** 52 / 75 (69%)
+**Total de Tarefas:** 76
+**Concluídas:** 53 / 76 (70%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -79,7 +79,7 @@ main (develop)
 - **Fase 13 - Gestão Avançada de Contas:** 6 / 6 (100%)
 - **Fase 14 - Refatoração do Sistema de Reserva:** 3 / 3 (100%)
 - **Fase 15 - Melhorias em Ciclo de Faturamento e UX:** 4 / 4 (100%)
-- **Fase 16 - Melhorias no Histórico de Transações:** 6 / 6 (100%)
+- **Fase 16 - Melhorias no Histórico de Transações:** 7 / 7 (100%)
 - **Fase 17 - Transações de Receita e Depósito Automático:** 0 / 7 (0%)
 
 ### Legenda de Status
@@ -93,7 +93,7 @@ main (develop)
 
 **Objetivo:** Aprimorar a tela de histórico de transações com filtragem por ciclo de faturamento (alinhado ao dashboard), filtros débito/crédito, card de soma total flutuante e tags visuais.
 
-**Status:** 4 / 6 tarefas concluídas
+**Status:** 7 / 7 tarefas concluídas ✅ FASE COMPLETA
 
 ---
 
@@ -362,6 +362,42 @@ Melhorar a interface do filtro de transações: converter o período em dropdown
 - [x] Filtro de tipo de transação usando seletor visual (similar ao expense sheet)
 - [x] UI consistente com padrões do app
 - [ ] Testes de widget atualizados
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F16-T7: Corrigir Persistência de Configuração de Dia de Pagamento
+
+**Branch:** `fix/salary-payday-workday-persistence`
+
+**Descrição:**
+Corrigir bug onde configurar o dia de pagamento do salário como o último dia útil do mês não persiste corretamente. Ao recarregar a página de configurações, o valor exibido volta para o 1º dia útil.
+
+**Implementação Esperada:**
+
+1. **Investigar Causa Raiz:**
+   - Verificar lógica de salvamento em `app_settings_repository.dart`
+   - Verificar se o valor correto está sendo persistido no banco de dados
+   - Verificar lógica de carregamento no widget de configurações
+   - Identificar se o problema está no save, load, ou UI state
+
+2. **Correção:**
+   - Se o problema for no save: corrigir método de update do repository
+   - Se o problema for no load: corrigir método de fetch/watch do repository
+   - Se o problema for no UI: corrigir estado inicial do dropdown/selector
+
+3. **Validação:**
+   - Testar cenários:
+     - Salvar 1º dia útil e recarregar
+     - Salvar último dia útil e recarregar
+     - Salvar 5º dia útil e recarregar
+   - Verificar persistência após fechar e reabrir o app
+
+**Definition of Done:**
+- [x] Causa raiz identificada
+- [x] Bug corrigido na camada apropriada
+- [x] Todos os valores de dia útil persistem corretamente
+- [x] Testes de integração adicionados para prevenir regressão
 - [x] Merge realizado para `develop`
 
 ---

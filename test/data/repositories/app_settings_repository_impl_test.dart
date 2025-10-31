@@ -109,5 +109,70 @@ void main() {
       final retrieved = await repository.get();
       expect(retrieved!.id, equals(1)); // Should always be 1
     });
+
+    test('should update salary payment config for calendar mode', () async {
+      await repository.updateSalaryPaymentConfig('calendar', 15);
+
+      final settings = await repository.get();
+      expect(settings!.salaryPaymentMode, equals('calendar'));
+      expect(settings.salaryPaymentValue, equals(15));
+    });
+
+    test('should update salary payment config for workday mode - numeric value',
+        () async {
+      await repository.updateSalaryPaymentConfig('workday', 5);
+
+      final settings = await repository.get();
+      expect(settings!.salaryPaymentMode, equals('workday'));
+      expect(settings.salaryPaymentValue, equals(5));
+    });
+
+    test(
+        'should update salary payment config for workday mode - last workday (-1)',
+        () async {
+      // Test saving -1 for 'last workday'
+      await repository.updateSalaryPaymentConfig('workday', -1);
+
+      final settings = await repository.get();
+      expect(settings!.salaryPaymentMode, equals('workday'));
+      expect(settings.salaryPaymentValue, equals(-1));
+    });
+
+    test('should persist last workday setting after reload', () async {
+      // Save last workday setting
+      await repository.updateSalaryPaymentConfig('workday', -1);
+
+      // Retrieve and verify
+      final settings = await repository.get();
+      expect(settings!.salaryPaymentMode, equals('workday'));
+      expect(settings.salaryPaymentValue, equals(-1));
+
+      // Simulate app reload by fetching again
+      final reloadedSettings = await repository.get();
+      expect(reloadedSettings!.salaryPaymentMode, equals('workday'));
+      expect(reloadedSettings.salaryPaymentValue, equals(-1));
+    });
+
+    test('should switch between different workday values correctly', () async {
+      // Set to 1st workday
+      await repository.updateSalaryPaymentConfig('workday', 1);
+      var settings = await repository.get();
+      expect(settings!.salaryPaymentValue, equals(1));
+
+      // Change to 5th workday
+      await repository.updateSalaryPaymentConfig('workday', 5);
+      settings = await repository.get();
+      expect(settings!.salaryPaymentValue, equals(5));
+
+      // Change to last workday
+      await repository.updateSalaryPaymentConfig('workday', -1);
+      settings = await repository.get();
+      expect(settings!.salaryPaymentValue, equals(-1));
+
+      // Change back to 1st workday
+      await repository.updateSalaryPaymentConfig('workday', 1);
+      settings = await repository.get();
+      expect(settings!.salaryPaymentValue, equals(1));
+    });
   });
 }

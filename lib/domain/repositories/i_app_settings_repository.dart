@@ -29,7 +29,7 @@ abstract class IAppSettingsRepository {
 
   /// Updates salary payment configuration (mode and value)
   /// mode: 'calendar' or 'workday'
-  /// value: 1-31 for calendar, 1-23 or 'last' for workday
+  /// value: 1-31 for calendar mode, 1-23 or -1 (last workday) for workday mode
   Future<void> updateSalaryPaymentConfig(String mode, int value);
 
   /// Initializes settings with default values if they don't exist
