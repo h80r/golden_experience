@@ -5,30 +5,35 @@ import '../../domain/parsers/i_notification_parser.dart';
 /// Parser for Santander bank notification messages
 ///
 /// Extracts transaction data from Santander's purchase approval notifications.
-/// Expected format: "Compra aprovada! Compra no cartão final 1234, de R$ 100,50,
-/// em 22/10/25, às 14:30, em aliexpress, aprovada."
+/// Expected formats:
+/// - "Compra aprovada! Compra no cartão final 1234, de R$ 100,50, em 22/10/25, às 14:30, em aliexpress, aprovada."
+/// - "Compra no cartão final 1167, de R$ 11,11, em 30/10/25, às 09:21, em UBER . PENDING, aprovada."
 class SantanderNotificationParser implements INotificationParser {
+  // Regex patterns for extracting transaction data
+  // Use lazy match and stop before ", em" to avoid capturing trailing comma
+  static final _valueRegex = RegExp(r'de\s+R\$\s*([\d.,]+?)(?=,\s+em)');
+
+  static final _dateRegex =
+      RegExp(r'em\s+(\d{1,2})/(\d{1,2})/(\d{2}),\s+às\s+(\d{1,2}):(\d{2})');
+
+  // Updated merchant regex to handle status indicators like ". PENDING"
+  // Captures merchant name after "às HH:MM, em " and before " . " or ","
+  static final _merchantRegex = RegExp(r'às\s+\d{1,2}:\d{2},\s+em\s+([^.,]+)');
+  static final _cardRegex = RegExp(r'cartão final\s+(\d+)');
+  @override
+  String get bankName => 'Santander';
   @override
   String get packageName => 'com.santander.app';
 
   @override
-  String get bankName => 'Santander';
-
-  // Regex patterns for extracting transaction data
-  static final _valueRegex = RegExp(r'de\s+R\$\s*([\d.,]+)');
-  static final _dateRegex = RegExp(r'em\s+(\d{1,2})/(\d{1,2})/(\d{2}),\s+às\s+(\d{1,2}):(\d{2})');
-  // Updated merchant regex to be more flexible
-  static final _merchantRegex = RegExp(r'às\s+\d{1,2}:\d{2},\s+em\s+([^,]+?),\s*(?:aprovada|$)');
-  static final _cardRegex = RegExp(r'cartão final\s+(\d+)');
-
-  @override
   bool canParse(NotificationEvent event) {
-    final text = event.fullText;
+    final text = event.text ?? '';
 
     // Check if this looks like a Santander purchase notification
-    return text.contains('Compra aprovada') &&
-           text.contains('cartão final') &&
-           text.contains('R\$');
+    return text.contains('Compra') &&
+        text.contains('cartão final') &&
+        text.contains('R\$') &&
+        text.contains('aprovada');
   }
 
   @override
@@ -69,8 +74,8 @@ class SantanderNotificationParser implements INotificationParser {
     if (merchantMatch != null && merchantMatch.group(1) != null) {
       merchant = merchantMatch.group(1)!.trim();
     } else {
-      // Fallback: try to find text between "em " and a comma
-      final altPattern = RegExp(r'em\s+([^,]+)(?:\s*,|\s*$)');
+      // Fallback: try to find text between "em " and a comma or dot
+      final altPattern = RegExp(r'em\s+([^.,]+)');
       final altMatch = altPattern.firstMatch(text);
       if (altMatch != null && altMatch.group(1) != null) {
         merchant = altMatch.group(1)!.trim();
@@ -80,9 +85,8 @@ class SantanderNotificationParser implements INotificationParser {
     // Try to extract card last 4 digits
     final cardMatch = _cardRegex.firstMatch(text);
     final cardLast4 = cardMatch?.group(1) ?? '';
-    final description = cardLast4.isNotEmpty
-        ? '$merchant (Cartão final $cardLast4)'
-        : merchant;
+    final description =
+        cardLast4.isNotEmpty ? '$merchant (Cartão final $cardLast4)' : merchant;
 
     return TransactionData(
       value: value,

@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 69
-**Concluídas:** 44 / 69 (64%)
+**Concluídas:** 47 / 69 (68%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -78,7 +78,7 @@ main (develop)
 - **Fase 12 - Estabilidade e Code Health:** 3 / 3 (100%)
 - **Fase 13 - Gestão Avançada de Contas:** 6 / 6 (100%)
 - **Fase 14 - Refatoração do Sistema de Reserva:** 3 / 3 (100%)
-- **Fase 15 - Melhorias em Ciclo de Faturamento e UX:** 1 / 4 (25%)
+- **Fase 15 - Melhorias em Ciclo de Faturamento e UX:** 4 / 4 (100%)
 - **Fase 16 - Transações de Receita e Depósito Automático:** 0 / 7 (0%)
 
 ### Legenda de Status
@@ -429,7 +429,7 @@ Tornar a segunda página do formulário de conta (com calendário de pagamento) 
 
 ---
 
-### [ ] F15-T4: Feature Experimental - Monitor de Notificações para Debug
+### [x] F15-T4: Feature Experimental - Monitor de Notificações para Debug
 
 **Branch:** `feature/notification-debug-monitor`
 

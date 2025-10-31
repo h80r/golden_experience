@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:developer' as dev;
 
-import 'package:notification_listener/notification_listener.dart';
 import 'package:notification_listener/models/notification.dart';
+import 'package:notification_listener/notification_listener.dart';
 
 import '../../domain/models/notification_event.dart';
 import '../parsers/notification_parser_registry.dart';
@@ -66,13 +66,15 @@ class NotificationService {
         _handleNotification,
         onError: (error) {
           // Log error but don't crash
-          dev.log('Notification listener error: $error', name: 'NotificationService');
+          dev.log('Notification listener error: $error',
+              name: 'NotificationService');
         },
       );
 
       _initialized = true;
     } catch (e) {
-      dev.log('Error initializing notification service: $e', name: 'NotificationService');
+      dev.log('Error initializing notification service: $e',
+          name: 'NotificationService');
       _initialized = true;
     }
   }
@@ -83,7 +85,8 @@ class NotificationService {
       await AndroidNotificationListener.request();
     } catch (e) {
       // Silently fail
-      dev.log('Error opening permission settings: $e', name: 'NotificationService');
+      dev.log('Error opening permission settings: $e',
+          name: 'NotificationService');
     }
   }
 
@@ -94,6 +97,18 @@ class NotificationService {
       if (event.hasRemoved == true || event.packageName == null) {
         return;
       }
+
+      // if (event.packageName == 'dev.h80r.golden_experience') {
+      //   // Ignore self notifications
+      //   return;
+      // }
+
+      // event = AndroidNotificationEvent(
+      //   packageName: 'com.santander.app',
+      //   title: 'Compra aprovada!',
+      //   content:
+      //       'Compra no cartão final 1167, de R\$ 11,11, em 30/10/25, às 09:21, em UBER . PENDING, aprovada.',
+      // ); // TODO: remove testing data
 
       // Convert ServiceNotificationEvent to our NotificationEvent model
       final notificationEvent = NotificationEvent(
