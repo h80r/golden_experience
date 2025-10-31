@@ -16,4 +16,10 @@ class Transactions extends Table {
   IntColumn get accountId => integer()();
 
   IntColumn get categoryId => integer()();
+
+  /// Transaction type: 'debit' or 'credit'
+  /// Determines whether the transaction affects account balance (debit) or credit used (credit)
+  /// This is independent of the account type - dual-type accounts can have both transaction types
+  TextColumn get transactionType =>
+      text().withDefault(const Constant('credit'))();
 }

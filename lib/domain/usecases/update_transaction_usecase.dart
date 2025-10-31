@@ -56,6 +56,7 @@ class UpdateTransactionUseCase {
   /// [date] - New date of the transaction
   /// [accountId] - ID of the account to charge (may change)
   /// [categoryId] - ID of the category for this transaction
+  /// [transactionType] - Type of transaction: 'debit' or 'credit' (may change)
   /// [notes] - Optional notes about the transaction
   ///
   /// Returns [UpdateTransactionResult] with success status or error message.
@@ -66,6 +67,7 @@ class UpdateTransactionUseCase {
     required DateTime date,
     required int accountId,
     required int categoryId,
+    required String transactionType,
     String? notes,
   }) async {
     try {
@@ -99,6 +101,7 @@ class UpdateTransactionUseCase {
           date: Value(date),
           accountId: Value(accountId),
           categoryId: Value(categoryId),
+          transactionType: Value(transactionType),
           notes: Value(notes),
         ),
       );
@@ -109,28 +112,34 @@ class UpdateTransactionUseCase {
         );
       }
 
-      // If the account changed, update both old and new accounts
-      if (oldTransaction.accountId != accountId) {
-        // Reverse the effect on the old account
+      // Determine if we need to handle account updates
+      final accountChanged = oldTransaction.accountId != accountId;
+      final typeChanged = oldTransaction.transactionType != transactionType;
+
+      if (accountChanged || typeChanged) {
+        // Changed account or transaction type - reverse old and apply new
         final oldAccount = await _accountRepository.getById(oldTransaction.accountId);
         if (oldAccount != null) {
           await _reverseAccountUpdate(
             account: oldAccount,
             transactionValue: oldTransaction.value,
+            transactionType: oldTransaction.transactionType,
           );
         }
 
-        // Apply the effect on the new account
+        // Apply the effect on the new account with new type
         await _updateAccountAfterTransaction(
           account: newAccount,
           transactionValue: value,
+          transactionType: transactionType,
         );
       } else {
-        // Same account - calculate the difference
+        // Same account and type - calculate the difference
         final valueDifference = value - oldTransaction.value;
         await _updateAccountByDifference(
           account: newAccount,
           valueDifference: valueDifference,
+          transactionType: transactionType,
         );
       }
 
@@ -160,25 +169,28 @@ class UpdateTransactionUseCase {
     return null;
   }
 
-  /// Updates the account balance/credit based on a new transaction value.
+  /// Updates the account balance/credit based on transaction type.
   ///
-  /// For debit accounts: Decreases the balance
-  /// For credit accounts: Increases the creditUsed (amount owed)
+  /// For debit transactions: Decreases the account balance
+  /// For credit transactions: Increases the creditUsed (amount owed)
   Future<bool> _updateAccountAfterTransaction({
     required AccountModel account,
     required double transactionValue,
+    required String transactionType,
   }) async {
     try {
-      // Handle debit account update
-      if (account.isDebit) {
+      // Handle debit transaction
+      if (transactionType == 'debit') {
+        if (!account.isDebit) return false;
         final newBalance = account.balance - transactionValue;
         final debitUpdateSuccess =
             await _accountRepository.updateBalance(account.id, newBalance);
         if (!debitUpdateSuccess) return false;
       }
 
-      // Handle credit account update
-      if (account.isCredit) {
+      // Handle credit transaction
+      if (transactionType == 'credit') {
+        if (!account.isCredit) return false;
         final newCreditUsed = account.creditUsed + transactionValue;
         final creditUpdateSuccess =
             await _accountRepository.updateCreditUsed(account.id, newCreditUsed);
@@ -191,25 +203,28 @@ class UpdateTransactionUseCase {
     }
   }
 
-  /// Reverses the account update for a transaction (used when changing accounts).
+  /// Reverses the account update for a transaction (used when changing accounts or type).
   ///
-  /// For debit accounts: Increases the balance (reverses deduction)
-  /// For credit accounts: Decreases the creditUsed (reverses charge)
+  /// For debit transactions: Increases the balance (reverses deduction)
+  /// For credit transactions: Decreases the creditUsed (reverses charge)
   Future<bool> _reverseAccountUpdate({
     required AccountModel account,
     required double transactionValue,
+    required String transactionType,
   }) async {
     try {
-      // Reverse debit account update
-      if (account.isDebit) {
+      // Reverse debit transaction
+      if (transactionType == 'debit') {
+        if (!account.isDebit) return false;
         final newBalance = account.balance + transactionValue;
         final debitUpdateSuccess =
             await _accountRepository.updateBalance(account.id, newBalance);
         if (!debitUpdateSuccess) return false;
       }
 
-      // Reverse credit account update
-      if (account.isCredit) {
+      // Reverse credit transaction
+      if (transactionType == 'credit') {
+        if (!account.isCredit) return false;
         final newCreditUsed = account.creditUsed - transactionValue;
         final creditUpdateSuccess =
             await _accountRepository.updateCreditUsed(account.id, newCreditUsed);
@@ -224,22 +239,25 @@ class UpdateTransactionUseCase {
 
   /// Updates the account balance/credit by the difference between old and new values.
   ///
-  /// Used when the account stays the same but the value changes.
+  /// Used when the account and type stay the same but the value changes.
   Future<bool> _updateAccountByDifference({
     required AccountModel account,
     required double valueDifference,
+    required String transactionType,
   }) async {
     try {
-      // Handle debit account update
-      if (account.isDebit) {
+      // Handle debit transaction
+      if (transactionType == 'debit') {
+        if (!account.isDebit) return false;
         final newBalance = account.balance - valueDifference;
         final debitUpdateSuccess =
             await _accountRepository.updateBalance(account.id, newBalance);
         if (!debitUpdateSuccess) return false;
       }
 
-      // Handle credit account update
-      if (account.isCredit) {
+      // Handle credit transaction
+      if (transactionType == 'credit') {
+        if (!account.isCredit) return false;
         final newCreditUsed = account.creditUsed + valueDifference;
         final creditUpdateSuccess =
             await _accountRepository.updateCreditUsed(account.id, newCreditUsed);

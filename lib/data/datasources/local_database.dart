@@ -55,7 +55,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -236,6 +236,16 @@ class LocalDatabase extends _$LocalDatabase {
 
             // Step 4: Rename new table to original name
             await customStatement('ALTER TABLE accounts_new RENAME TO accounts');
+          }
+
+          // Migration from v10 to v11: Add transactionType column to transactions
+          // This field stores whether the transaction is a 'debit' or 'credit' type transaction
+          // This is independent of the account type - dual-type accounts can have both transaction types
+          if (from <= 10) {
+            await customStatement('''
+              ALTER TABLE transactions
+              ADD COLUMN transaction_type TEXT NOT NULL DEFAULT 'credit'
+            ''');
           }
         },
       );

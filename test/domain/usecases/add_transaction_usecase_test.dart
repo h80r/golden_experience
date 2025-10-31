@@ -45,6 +45,7 @@ void main() {
           date: DateTime.now(),
           accountId: 1,
           categoryId: 1,
+          transactionType: 'debit',
         );
 
         // Assert
@@ -78,6 +79,7 @@ void main() {
           date: DateTime.now(),
           accountId: 1,
           categoryId: 1,
+          transactionType: 'debit',
         );
 
         // Assert
@@ -111,6 +113,7 @@ void main() {
           date: DateTime.now(),
           accountId: 1,
           categoryId: 1,
+          transactionType: 'debit',
         );
 
         // Assert
@@ -144,6 +147,7 @@ void main() {
           date: DateTime.now(),
           accountId: 1,
           categoryId: 1,
+          transactionType: 'debit',
         );
 
         // Assert
@@ -162,6 +166,7 @@ void main() {
           date: DateTime.now(),
           accountId: 999, // Non-existent account
           categoryId: 1,
+          transactionType: 'debit',
         );
 
         // Assert
@@ -194,6 +199,7 @@ void main() {
           date: DateTime.now(),
           accountId: 1,
           categoryId: 1,
+          transactionType: 'debit',
           notes: 'Weekly groceries',
         );
 
@@ -228,6 +234,7 @@ void main() {
           date: DateTime.now(),
           accountId: 1,
           categoryId: 1,
+          transactionType: 'debit',
         );
 
         // Assert
@@ -261,6 +268,7 @@ void main() {
           date: testDate,
           accountId: 1,
           categoryId: 2,
+          transactionType: 'debit',
           notes: 'Dinner with friends',
         );
 
@@ -300,6 +308,7 @@ void main() {
           date: DateTime.now(),
           accountId: 2,
           categoryId: 1,
+          transactionType: 'credit',
         );
 
         // Assert
@@ -333,6 +342,7 @@ void main() {
           date: DateTime.now(),
           accountId: 2,
           categoryId: 1,
+          transactionType: 'credit',
         );
 
         // Assert
@@ -367,6 +377,7 @@ void main() {
           date: DateTime.now(),
           accountId: 1,
           categoryId: 1,
+          transactionType: 'debit',
         );
 
         // Assert
@@ -405,6 +416,7 @@ void main() {
           date: DateTime.now(),
           accountId: 1,
           categoryId: 1,
+          transactionType: 'debit',
         );
 
         // Assert
@@ -437,6 +449,7 @@ void main() {
           date: DateTime.now(),
           accountId: 1,
           categoryId: 1,
+          transactionType: 'debit',
         );
 
         // Assert
@@ -469,6 +482,7 @@ void main() {
           date: DateTime.now(),
           accountId: 1,
           categoryId: 1,
+          transactionType: 'debit',
         );
 
         // Assert
@@ -501,6 +515,7 @@ void main() {
           date: DateTime.now(),
           accountId: 1,
           categoryId: 1,
+          transactionType: 'debit',
         );
 
         // Assert
@@ -652,6 +667,7 @@ class MockTransactionRepository implements ITransactionRepository {
       accountId: companion.accountId.value,
       categoryId: companion.categoryId.value,
       notes: companion.notes.value,
+      transactionType: companion.transactionType.value,
     );
     _transactions.add(model);
     return _nextId++;

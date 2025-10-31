@@ -20,6 +20,7 @@ class MockTransactionRepository implements ITransactionRepository {
     required int accountId,
     required int categoryId,
     String? notes,
+    String transactionType = 'credit',
   }) {
     _transactions.add(
       TransactionModel(
@@ -30,6 +31,7 @@ class MockTransactionRepository implements ITransactionRepository {
         accountId: accountId,
         categoryId: categoryId,
         notes: notes,
+        transactionType: transactionType,
       ),
     );
   }

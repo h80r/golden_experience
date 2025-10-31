@@ -4,8 +4,8 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F16-T2
-- **current_task_title**: Adicionar Filtro Débito/Crédito no Histórico
+- **current_task_id**: F16-T3
+- **current_task_title**: Card de Soma Total Flutuante com Transição para FAB
 - **current_task_status**: PENDING
 
 ## Step Tracking (Only for complex tasks)
@@ -21,3 +21,4 @@ This file is auto-managed and contains the minimum state required to track execu
 - **F15-T3**: ✅ COMPLETED
 - **F15-T4**: ✅ COMPLETED
 - **F16-T1**: ✅ COMPLETED
+- **F16-T2**: ✅ COMPLETED

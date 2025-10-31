@@ -59,6 +59,7 @@ class _TransactionsListScreenState
   DateTime? _customEndDate;
   Set<int> _selectedAccountIds = {};
   Set<int> _selectedCategoryIds = {};
+  TransactionTypeFilter _transactionTypeFilter = TransactionTypeFilter.all;
 
   /// Scroll controller to detect scrolling and dismiss pending toast
   final ScrollController _scrollController = ScrollController();
@@ -128,8 +129,19 @@ class _TransactionsListScreenState
                     .toList();
               }
 
+              // Filter by transaction type
+              List filteredByType = filteredByCategory;
+              if (_transactionTypeFilter != TransactionTypeFilter.all) {
+                final targetType = _transactionTypeFilter == TransactionTypeFilter.debit
+                    ? 'debit'
+                    : 'credit';
+                filteredByType = filteredByCategory
+                    .where((t) => (t as dynamic).transactionType == targetType)
+                    .toList();
+              }
+
               // Sort by date (newest first)
-              filteredByCategory.sort((a, b) => b.date.compareTo(a.date));
+              filteredByType.sort((a, b) => b.date.compareTo(a.date));
 
               // Get categories for mapping
               return categoriesAsync.when(
@@ -141,7 +153,7 @@ class _TransactionsListScreenState
                     for (var category in categories) category.id: category.name
                   };
 
-                  if (filteredByCategory.isEmpty) {
+                  if (filteredByType.isEmpty) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -189,9 +201,9 @@ class _TransactionsListScreenState
                     child: ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.all(AppSpacing.lg),
-                      itemCount: filteredByCategory.length,
+                      itemCount: filteredByType.length,
                       itemBuilder: (context, index) {
-                        final transaction = filteredByCategory[index];
+                        final transaction = filteredByType[index];
                         final cardData = TransactionCardData(
                           id: transaction.id,
                           value: transaction.value,
@@ -468,6 +480,7 @@ class _TransactionsListScreenState
             date: date,
             accountId: accountId,
             categoryId: categoryId,
+            transactionType: transactionType,
             notes: notes,
           );
 
@@ -526,12 +539,14 @@ class _TransactionsListScreenState
         initialCustomEndDate: _customEndDate,
         initialSelectedAccountIds: _selectedAccountIds,
         initialSelectedCategoryIds: _selectedCategoryIds,
+        initialTransactionTypeFilter: _transactionTypeFilter,
         onFiltersChanged: ({
           required period,
           required customStartDate,
           required customEndDate,
           required selectedAccountIds,
           required selectedCategoryIds,
+          required transactionTypeFilter,
         }) {
           setState(() {
             _filterPeriod = period;
@@ -539,6 +554,7 @@ class _TransactionsListScreenState
             _customEndDate = customEndDate;
             _selectedAccountIds = selectedAccountIds;
             _selectedCategoryIds = selectedCategoryIds;
+            _transactionTypeFilter = transactionTypeFilter;
           });
         },
       ),

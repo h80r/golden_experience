@@ -62,6 +62,7 @@ class AddTransactionUseCase {
   /// [date] - Date of the transaction
   /// [accountId] - ID of the account to charge
   /// [categoryId] - ID of the category for this transaction
+  /// [transactionType] - Type of transaction: 'debit' or 'credit'
   /// [notes] - Optional notes about the transaction
   ///
   /// Returns [AddTransactionResult] with success status and transaction ID or error message.
@@ -71,6 +72,7 @@ class AddTransactionUseCase {
     required DateTime date,
     required int accountId,
     required int categoryId,
+    required String transactionType,
     String? notes,
   }) async {
     try {
@@ -98,13 +100,14 @@ class AddTransactionUseCase {
           accountId: accountId,
           categoryId: categoryId,
           notes: Value(notes),
-        ),
+        ).copyWith(transactionType: Value(transactionType)),
       );
 
-      // Update account balance/limit based on account type
+      // Update account balance/limit based on transaction type
       final updateSuccess = await _updateAccountAfterTransaction(
         account: account,
         transactionValue: value,
+        transactionType: transactionType,
       );
 
       if (!updateSuccess) {
@@ -125,25 +128,37 @@ class AddTransactionUseCase {
 
   /// Updates the account balance (debit) and/or creditUsed (credit) after a transaction.
   ///
-  /// For debit accounts: Decreases the balance
-  /// For credit accounts: Increases the creditUsed (amount owed)
+  /// For debit transactions: Decreases the account balance
+  /// For credit transactions: Increases the creditUsed (amount owed)
+  ///
+  /// Note: The transaction type determines behavior, not the account type.
+  /// This allows dual-type accounts to have both debit and credit transactions.
   ///
   /// Returns true if the update was successful, false otherwise.
   Future<bool> _updateAccountAfterTransaction({
     required AccountModel account,
     required double transactionValue,
+    required String transactionType,
   }) async {
     try {
-      // Handle debit account update
-      if (account.isDebit) {
+      // Handle debit transaction
+      if (transactionType == 'debit') {
+        if (!account.isDebit) {
+          // Account doesn't support debit transactions
+          return false;
+        }
         final newBalance = account.balance - transactionValue;
         final debitUpdateSuccess =
             await _accountRepository.updateBalance(account.id, newBalance);
         if (!debitUpdateSuccess) return false;
       }
 
-      // Handle credit account update
-      if (account.isCredit) {
+      // Handle credit transaction
+      if (transactionType == 'credit') {
+        if (!account.isCredit) {
+          // Account doesn't support credit transactions
+          return false;
+        }
         final newCreditUsed = account.creditUsed + transactionValue;
         final creditUpdateSuccess = await _accountRepository.updateCreditUsed(
             account.id, newCreditUsed);

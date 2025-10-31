@@ -855,6 +855,7 @@ class MockTransactionRepository implements ITransactionRepository {
       accountId: companion.accountId.value,
       categoryId: companion.categoryId.value,
       notes: companion.notes.value,
+      transactionType: companion.transactionType.value,
     );
     _transactions.add(model);
     return _nextId++;

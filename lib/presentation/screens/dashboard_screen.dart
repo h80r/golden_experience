@@ -90,6 +90,7 @@ class DashboardScreen extends ConsumerWidget {
               notes: notes,
               accountId: accountId,
               categoryId: categoryId,
+              transactionType: transactionType,
               date: date,
             );
 

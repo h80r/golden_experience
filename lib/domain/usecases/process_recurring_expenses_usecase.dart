@@ -152,6 +152,15 @@ class ProcessRecurringExpensesUseCase {
               continue;
             }
 
+            // Determine transaction type based on account type
+            // For dual-type accounts, recurring expenses default to credit (billing cycle)
+            // For debit-only accounts, use debit
+            // For credit-only accounts, use credit
+            String transactionType = 'credit';
+            if (account.isDebit && !account.isCredit) {
+              transactionType = 'debit';
+            }
+
             // Create the automatic transaction
             final transactionId = await _transactionRepository.create(
               TransactionModelCompanion.insert(
@@ -161,13 +170,14 @@ class ProcessRecurringExpensesUseCase {
                 accountId: expense.accountId,
                 categoryId: expense.categoryId,
                 notes: const Value('[Processada automaticamente]'),
-              ),
+              ).copyWith(transactionType: Value(transactionType)),
             );
 
-            // Update account balance/limit
+            // Update account balance/limit based on transaction type
             await _updateAccountAfterTransaction(
               account: account,
               transactionValue: expense.value,
+              transactionType: transactionType,
             );
 
             createdTransactionIds.add(transactionId);
@@ -228,23 +238,29 @@ class ProcessRecurringExpensesUseCase {
 
   /// Updates the account balance (debit) and/or creditUsed (credit) after a transaction.
   ///
-  /// For debit accounts: Decreases the balance
-  /// For credit accounts: Increases the creditUsed (amount owed)
+  /// For debit transactions: Decreases the account balance
+  /// For credit transactions: Increases the creditUsed (amount owed)
+  ///
+  /// Note: The transaction type determines behavior, not the account type.
+  /// This allows dual-type accounts to have both debit and credit transactions.
   ///
   /// This is a direct copy of the logic in AddTransactionUseCase to maintain consistency.
   Future<void> _updateAccountAfterTransaction({
     required AccountModel account,
     required double transactionValue,
+    required String transactionType,
   }) async {
     try {
-      // Handle debit account update
-      if (account.isDebit) {
+      // Handle debit transaction
+      if (transactionType == 'debit') {
+        if (!account.isDebit) return;
         final newBalance = account.balance - transactionValue;
         await _accountRepository.updateBalance(account.id, newBalance);
       }
 
-      // Handle credit account update
-      if (account.isCredit) {
+      // Handle credit transaction
+      if (transactionType == 'credit') {
+        if (!account.isCredit) return;
         final newCreditUsed = account.creditUsed + transactionValue;
         await _accountRepository.updateCreditUsed(account.id, newCreditUsed);
       }

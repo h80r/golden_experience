@@ -15,6 +15,16 @@ enum FilterPeriod {
   const FilterPeriod(this.label);
 }
 
+/// Transaction type filter options
+enum TransactionTypeFilter {
+  all('Todas'),
+  debit('Débito'),
+  credit('Crédito');
+
+  final String label;
+  const TransactionTypeFilter(this.label);
+}
+
 /// Callback with filter results
 typedef OnFiltersChanged = void Function({
   required FilterPeriod period,
@@ -22,6 +32,7 @@ typedef OnFiltersChanged = void Function({
   required DateTime? customEndDate,
   required Set<int> selectedAccountIds,
   required Set<int> selectedCategoryIds,
+  required TransactionTypeFilter transactionTypeFilter,
 });
 
 /// Bottom sheet widget for filtering transactions
@@ -34,6 +45,7 @@ class TransactionFiltersSheet extends StatefulWidget {
   final DateTime? initialCustomEndDate;
   final Set<int> initialSelectedAccountIds;
   final Set<int> initialSelectedCategoryIds;
+  final TransactionTypeFilter initialTransactionTypeFilter;
 
   const TransactionFiltersSheet({
     super.key,
@@ -45,6 +57,7 @@ class TransactionFiltersSheet extends StatefulWidget {
     this.initialCustomEndDate,
     this.initialSelectedAccountIds = const {},
     this.initialSelectedCategoryIds = const {},
+    this.initialTransactionTypeFilter = TransactionTypeFilter.all,
   });
 
   @override
@@ -58,6 +71,7 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
   late DateTime? _customEndDate;
   late Set<int> _selectedAccountIds;
   late Set<int> _selectedCategoryIds;
+  late TransactionTypeFilter _transactionTypeFilter;
 
   @override
   void initState() {
@@ -67,6 +81,7 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
     _customEndDate = widget.initialCustomEndDate;
     _selectedAccountIds = Set.from(widget.initialSelectedAccountIds);
     _selectedCategoryIds = Set.from(widget.initialSelectedCategoryIds);
+    _transactionTypeFilter = widget.initialTransactionTypeFilter;
   }
 
   Future<void> _selectDate(bool isStartDate) async {
@@ -94,6 +109,7 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
       customEndDate: _customEndDate,
       selectedAccountIds: _selectedAccountIds,
       selectedCategoryIds: _selectedCategoryIds,
+      transactionTypeFilter: _transactionTypeFilter,
     );
     Navigator.of(context).pop();
   }
@@ -105,6 +121,7 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
       _customEndDate = null;
       _selectedAccountIds.clear();
       _selectedCategoryIds.clear();
+      _transactionTypeFilter = TransactionTypeFilter.all;
     });
   }
 
@@ -182,6 +199,29 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                       onPressed: () => _selectDate(false),
                     ),
                   ],
+                  // Transaction Type filter
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Tipo de Transação',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: AppColors.textPrimary,
+                        ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  SegmentedButton<TransactionTypeFilter>(
+                    segments: TransactionTypeFilter.values.map((type) {
+                      return ButtonSegment<TransactionTypeFilter>(
+                        value: type,
+                        label: Text(type.label),
+                      );
+                    }).toList(),
+                    selected: {_transactionTypeFilter},
+                    onSelectionChanged: (Set<TransactionTypeFilter> newSelection) {
+                      setState(() {
+                        _transactionTypeFilter = newSelection.first;
+                      });
+                    },
+                  ),
                   // Accounts filter
                   const SizedBox(height: AppSpacing.lg),
                   Text(

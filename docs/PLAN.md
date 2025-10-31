@@ -60,8 +60,8 @@ main (develop)
 
 ## 📊 Progresso Geral
 
-**Total de Tarefas:** 73
-**Concluídas:** 48 / 73 (66%)
+**Total de Tarefas:** 75
+**Concluídas:** 48 / 75 (64%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -79,7 +79,7 @@ main (develop)
 - **Fase 13 - Gestão Avançada de Contas:** 6 / 6 (100%)
 - **Fase 14 - Refatoração do Sistema de Reserva:** 3 / 3 (100%)
 - **Fase 15 - Melhorias em Ciclo de Faturamento e UX:** 4 / 4 (100%)
-- **Fase 16 - Melhorias no Histórico de Transações:** 1 / 4 (25%)
+- **Fase 16 - Melhorias no Histórico de Transações:** 1 / 6 (17%)
 - **Fase 17 - Transações de Receita e Depósito Automático:** 0 / 7 (0%)
 
 ### Legenda de Status
@@ -93,7 +93,7 @@ main (develop)
 
 **Objetivo:** Aprimorar a tela de histórico de transações com filtragem por ciclo de faturamento (alinhado ao dashboard), filtros débito/crédito, card de soma total flutuante e tags visuais.
 
-**Status:** 1 / 4 tarefas concluídas
+**Status:** 1 / 6 tarefas concluídas
 
 ---
 
@@ -125,12 +125,12 @@ Alterar a lógica de exibição do histórico de transações para mostrar, por 
 - [x] Filtro de período (Ciclo/Mês/Todos) implementado
 - [x] UI mostra claramente qual período está sendo exibido
 - [x] Lógica alinhada com cálculos do dashboard
-- [ ] Testes de integração para diferentes tipos de conta
-- [ ] Merge realizado para `develop`
+- [x] Testes de integração para diferentes tipos de conta
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F16-T2: Adicionar Filtro Débito/Crédito no Histórico
+### [x] F16-T2: Adicionar Filtro Débito/Crédito no Histórico
 
 **Branch:** `feature/transaction-history-account-type-filter`
 
@@ -165,12 +165,12 @@ Implementar filtro para mostrar apenas transações de contas de débito ou cré
    - Animação suave ao trocar filtros
 
 **Definition of Done:**
-- [ ] Filtro débito/crédito implementado na UI
-- [ ] Repository method criado
-- [ ] Query filtra corretamente por tipo de conta
-- [ ] Contagem de transações atualiza dinamicamente
-- [ ] Testes unitários para query
-- [ ] Testes de widget para filtro
+- [x] Filtro débito/crédito implementado na UI
+- [x] Repository method criado
+- [x] Query filtra corretamente por tipo de conta
+- [x] Contagem de transações atualiza dinamicamente
+- [x] Testes unitários para query
+- [x] Testes de widget para filtro
 - [ ] Merge realizado para `develop`
 
 ---
@@ -331,6 +331,37 @@ Adicionar tags visuais (badges) em cada transação do histórico indicando se �
 - [ ] Tags aparecem em todas as transações
 - [ ] Estilo consistente com design do app
 - [ ] Testes de widget
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F16-T5: Corrigir Tipo de Transação ao Editar
+
+**Branch:** `fix/transaction-edit-type-mismatch`
+
+**Descrição:**
+Corrigir bug onde o modal de edição de transação não respeita o tipo de conta da transação, sempre defaultando para crédito mesmo quando a transação é de débito.
+
+**Definition of Done:**
+- [ ] Modal de edição carrega o tipo correto da transação (débito/crédito)
+- [ ] Tipo de transação é preservado durante a edição
+- [ ] Testes de widget para verificar o comportamento
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F16-T6: Melhorar UI dos Filtros do Histórico
+
+**Branch:** `feature/transaction-filters-ui-improvements`
+
+**Descrição:**
+Melhorar a interface do filtro de transações: converter o período em dropdown e usar um seletor visual similar ao seletor débito/crédito do expense sheet para o tipo de transação.
+
+**Definition of Done:**
+- [ ] Filtro de período convertido para dropdown
+- [ ] Filtro de tipo de transação usando seletor visual (similar ao expense sheet)
+- [ ] UI consistente com padrões do app
+- [ ] Testes de widget atualizados
 - [ ] Merge realizado para `develop`
 
 ---
