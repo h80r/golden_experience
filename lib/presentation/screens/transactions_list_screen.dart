@@ -495,6 +495,7 @@ class _TransactionsListScreenState
         initialAccountId: transaction.accountId,
         initialCategoryId: transaction.categoryId,
         initialDate: transaction.date,
+        initialTransactionType: transaction.transactionType,
         isEditMode: true,
         onSave: ({
           required value,

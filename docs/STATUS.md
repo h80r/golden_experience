@@ -4,8 +4,8 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F16-T5
-- **current_task_title**: Corrigir Tipo de Transação ao Editar
+- **current_task_id**: F16-T6
+- **current_task_title**: Melhorar UI dos Filtros do Histórico
 - **current_task_status**: PENDING
 
 ## Step Tracking (Only for complex tasks)
@@ -24,3 +24,4 @@ This file is auto-managed and contains the minimum state required to track execu
 - **F16-T2**: ✅ COMPLETED
 - **F16-T3**: ✅ COMPLETED
 - **F16-T4**: ✅ COMPLETED
+- **F16-T5**: ✅ COMPLETED

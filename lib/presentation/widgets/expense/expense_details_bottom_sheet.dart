@@ -22,6 +22,7 @@ class ExpenseDetailsBottomSheet extends StatefulWidget {
   final int? initialAccountId;
   final int? initialCategoryId;
   final DateTime? initialDate;
+  final String? initialTransactionType;
   final Map<int, String>? accounts;
   final Map<int, String>? categories;
   final bool isEditMode;
@@ -43,6 +44,7 @@ class ExpenseDetailsBottomSheet extends StatefulWidget {
     this.initialAccountId,
     this.initialCategoryId,
     this.initialDate,
+    this.initialTransactionType,
     this.accounts,
     this.categories,
     this.isEditMode = false,
@@ -269,6 +271,11 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
     // Initialize date
     if (widget.initialDate != null) {
       _selectedDate = widget.initialDate!;
+    }
+
+    // Initialize transaction type
+    if (widget.initialTransactionType != null) {
+      _transactionType = widget.initialTransactionType!;
     }
 
     // Request focus on the value field after the widget is built (only if not in edit mode)
