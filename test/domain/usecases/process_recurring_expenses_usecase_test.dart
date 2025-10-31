@@ -128,7 +128,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            excludeFromReserve: false,
+          excludeFromReserve: false,
           isDefault: false,
         );
 
@@ -191,7 +191,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            excludeFromReserve: false,
+          excludeFromReserve: false,
           isDefault: false,
         );
 
@@ -260,7 +260,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            excludeFromReserve: false,
+          excludeFromReserve: false,
           isDefault: false,
         );
 
@@ -331,7 +331,7 @@ void main() {
           balance: 0.0,
           creditLimit: 5000.0,
           creditUsed: 0.0,
-            excludeFromReserve: false,
+          excludeFromReserve: false,
           isDefault: false,
         );
 
@@ -435,7 +435,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            excludeFromReserve: false,
+          excludeFromReserve: false,
           isDefault: false,
         );
 
@@ -536,7 +536,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            excludeFromReserve: false,
+          excludeFromReserve: false,
           isDefault: false,
         );
 
@@ -591,7 +591,7 @@ void main() {
           balance: 1000.0,
           creditLimit: 0.0,
           creditUsed: 0.0,
-            excludeFromReserve: false,
+          excludeFromReserve: false,
           isDefault: false,
         );
 

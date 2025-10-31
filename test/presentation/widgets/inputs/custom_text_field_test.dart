@@ -59,8 +59,7 @@ void main() {
       expect(changedValue, 'Changed');
     });
 
-    testWidgets('validates input with validator',
-        (WidgetTester tester) async {
+    testWidgets('validates input with validator', (WidgetTester tester) async {
       final formKey = GlobalKey<FormState>();
 
       await tester.pumpWidget(
@@ -162,7 +161,8 @@ void main() {
         ),
       );
 
-      await tester.enterText(find.byType(CustomTextField), 'Line 1\nLine 2\nLine 3');
+      await tester.enterText(
+          find.byType(CustomTextField), 'Line 1\nLine 2\nLine 3');
       await tester.pumpAndSettle();
 
       expect(find.byType(CustomTextField), findsOneWidget);

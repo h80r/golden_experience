@@ -35,9 +35,9 @@ class CategoryRepositoryImpl implements ICategoryRepository {
   @override
   Future<bool> delete(int id) async {
     try {
-      final result =
-          await (_db.delete(_db.categories)..where((c) => c.id.equals(id)))
-              .go();
+      final result = await (_db.delete(_db.categories)
+            ..where((c) => c.id.equals(id)))
+          .go();
       return result > 0;
     } catch (e) {
       return false;
@@ -57,9 +57,9 @@ class CategoryRepositoryImpl implements ICategoryRepository {
       }
 
       // Safe to delete
-      final result =
-          await (_db.delete(_db.categories)..where((c) => c.id.equals(id)))
-              .go();
+      final result = await (_db.delete(_db.categories)
+            ..where((c) => c.id.equals(id)))
+          .go();
       return result > 0;
     } catch (e) {
       return false;
@@ -74,8 +74,7 @@ class CategoryRepositoryImpl implements ICategoryRepository {
       if (category == null) return false;
 
       // Unset all current default categories
-      await (_db.update(_db.categories)
-            ..where((c) => c.isDefault.equals(true)))
+      await (_db.update(_db.categories)..where((c) => c.isDefault.equals(true)))
           .write(const CategoryModelCompanion(isDefault: Value(false)));
 
       // Set the new default category

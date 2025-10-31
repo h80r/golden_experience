@@ -118,7 +118,8 @@ class UpdateTransactionUseCase {
 
       if (accountChanged || typeChanged) {
         // Changed account or transaction type - reverse old and apply new
-        final oldAccount = await _accountRepository.getById(oldTransaction.accountId);
+        final oldAccount =
+            await _accountRepository.getById(oldTransaction.accountId);
         if (oldAccount != null) {
           await _reverseAccountUpdate(
             account: oldAccount,
@@ -192,8 +193,8 @@ class UpdateTransactionUseCase {
       if (transactionType == 'credit') {
         if (!account.isCredit) return false;
         final newCreditUsed = account.creditUsed + transactionValue;
-        final creditUpdateSuccess =
-            await _accountRepository.updateCreditUsed(account.id, newCreditUsed);
+        final creditUpdateSuccess = await _accountRepository.updateCreditUsed(
+            account.id, newCreditUsed);
         if (!creditUpdateSuccess) return false;
       }
 
@@ -226,8 +227,8 @@ class UpdateTransactionUseCase {
       if (transactionType == 'credit') {
         if (!account.isCredit) return false;
         final newCreditUsed = account.creditUsed - transactionValue;
-        final creditUpdateSuccess =
-            await _accountRepository.updateCreditUsed(account.id, newCreditUsed);
+        final creditUpdateSuccess = await _accountRepository.updateCreditUsed(
+            account.id, newCreditUsed);
         if (!creditUpdateSuccess) return false;
       }
 
@@ -259,8 +260,8 @@ class UpdateTransactionUseCase {
       if (transactionType == 'credit') {
         if (!account.isCredit) return false;
         final newCreditUsed = account.creditUsed + valueDifference;
-        final creditUpdateSuccess =
-            await _accountRepository.updateCreditUsed(account.id, newCreditUsed);
+        final creditUpdateSuccess = await _accountRepository.updateCreditUsed(
+            account.id, newCreditUsed);
         if (!creditUpdateSuccess) return false;
       }
 

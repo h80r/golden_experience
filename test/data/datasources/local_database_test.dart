@@ -3,7 +3,8 @@ import 'package:golden_experience/data/datasources/local_database.dart';
 
 void main() {
   group('LocalDatabase', () {
-    test('should throw error when accessing instance before initialization', () {
+    test('should throw error when accessing instance before initialization',
+        () {
       // Arrange - Ensure database is not initialized
       expect(LocalDatabase.isInitialized, false);
 

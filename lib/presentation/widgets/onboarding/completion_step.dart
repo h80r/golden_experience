@@ -50,7 +50,8 @@ class _CompletionStepState extends State<CompletionStep>
           // Animated checkmark
           ScaleTransition(
             scale: Tween<double>(begin: 0, end: 1).animate(
-              CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+              CurvedAnimation(
+                  parent: _animationController, curve: Curves.elasticOut),
             ),
             child: Container(
               width: 100,

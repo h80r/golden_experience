@@ -46,10 +46,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final dashboardView = ref.watch(dashboardViewProvider);
 
     return PopScope(
-      canPop: !(_selectedIndex == 0 && dashboardView == DashboardView.transactions),
+      canPop:
+          !(_selectedIndex == 0 && dashboardView == DashboardView.transactions),
       onPopInvokedWithResult: (didPop, result) {
         // If we're on the Início tab and viewing transactions, go back to dashboard
-        if (!didPop && _selectedIndex == 0 && dashboardView == DashboardView.transactions) {
+        if (!didPop &&
+            _selectedIndex == 0 &&
+            dashboardView == DashboardView.transactions) {
           final notifier = ref.read(dashboardViewProvider.notifier);
           notifier.showDashboard();
         }

@@ -176,8 +176,10 @@ class GetDashboardDataUseCase {
 
       if (isCredit && creditPaymentDay != null) {
         // Credit account with billing cycle - use payment day to determine current cycle
-        final cycle = calculateCurrentBillingCycleFromPaymentDay(creditPaymentDay, referenceDate);
-        final transactions = await _transactionRepository.getByAccountAndDateRange(
+        final cycle = calculateCurrentBillingCycleFromPaymentDay(
+            creditPaymentDay, referenceDate);
+        final transactions =
+            await _transactionRepository.getByAccountAndDateRange(
           accountId,
           cycle.start,
           cycle.end,
@@ -188,7 +190,8 @@ class GetDashboardDataUseCase {
         final startDate = DateTime(referenceDate.year, referenceDate.month, 1);
         final endDate = DateTime(referenceDate.year, referenceDate.month + 1, 1)
             .subtract(const Duration(seconds: 1));
-        final transactions = await _transactionRepository.getByAccountAndDateRange(
+        final transactions =
+            await _transactionRepository.getByAccountAndDateRange(
           accountId,
           startDate,
           endDate,

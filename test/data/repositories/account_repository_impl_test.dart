@@ -36,7 +36,7 @@ void main() {
         balance: Value(1000.0),
         creditLimit: Value(0.0),
         creditUsed: Value(0.0),
-            isDefault: const Value(false),
+        isDefault: const Value(false),
       );
 
       final id = await repository.create(account);
@@ -51,7 +51,7 @@ void main() {
         balance: Value(0.0),
         creditLimit: Value(5000.0),
         creditUsed: Value(0.0),
-            isDefault: const Value(false),
+        isDefault: const Value(false),
       );
 
       final id = await repository.create(account);
@@ -66,7 +66,7 @@ void main() {
         balance: Value(1000.0),
         creditLimit: Value(5000.0),
         creditUsed: Value(0.0),
-            isDefault: const Value(false),
+        isDefault: const Value(false),
       );
 
       final id = await repository.create(account);
@@ -81,7 +81,7 @@ void main() {
         balance: Value(0.0),
         creditLimit: Value(5000.0),
         creditUsed: Value(0.0),
-            isDefault: const Value(false),
+        isDefault: const Value(false),
       );
 
       final id = await repository.create(account);
@@ -111,7 +111,7 @@ void main() {
         balance: Value(500.0),
         creditLimit: Value(0.0),
         creditUsed: Value(0.0),
-            isDefault: const Value(false),
+        isDefault: const Value(false),
       );
 
       final id = await repository.create(account);
@@ -134,7 +134,7 @@ void main() {
         balance: Value(1000.0),
         creditLimit: Value(0.0),
         creditUsed: Value(0.0),
-            isDefault: const Value(false),
+        isDefault: const Value(false),
       );
 
       final id = await repository.create(account);
@@ -154,7 +154,7 @@ void main() {
         balance: Value(0.0),
         creditLimit: Value(2000.0),
         creditUsed: Value(0.0),
-            isDefault: const Value(false),
+        isDefault: const Value(false),
       );
 
       final id = await repository.create(account);
@@ -174,7 +174,7 @@ void main() {
         balance: Value(0.0),
         creditLimit: Value(2000.0),
         creditUsed: Value(0.0),
-            isDefault: const Value(false),
+        isDefault: const Value(false),
       );
 
       final id = await repository.create(account);
@@ -194,7 +194,7 @@ void main() {
         balance: Value(100.0),
         creditLimit: Value(0.0),
         creditUsed: Value(0.0),
-            isDefault: const Value(false),
+        isDefault: const Value(false),
       );
 
       final id = await repository.create(account);

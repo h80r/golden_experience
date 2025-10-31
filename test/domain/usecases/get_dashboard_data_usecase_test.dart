@@ -290,7 +290,7 @@ void main() {
         creditLimit: 0.0,
         creditUsed: 0.0,
         isDefault: false,
-        creditPaymentDay:null,
+        creditPaymentDay: null,
         excludeFromReserve: false,
       ));
 
@@ -302,7 +302,8 @@ void main() {
     });
 
     group('Basic Functionality', () {
-      test('should throw exception when settings are not initialized', () async {
+      test('should throw exception when settings are not initialized',
+          () async {
         // Act & Assert
         expect(
           () => useCase.execute(),
@@ -446,7 +447,8 @@ void main() {
     });
 
     group('Calculation: Partial Result', () {
-      test('should calculate partial result (Salary - Spent) correctly', () async {
+      test('should calculate partial result (Salary - Spent) correctly',
+          () async {
         // Arrange
         final now = DateTime.now();
         appSettingsRepository.setSettings(
@@ -1141,7 +1143,8 @@ void main() {
         expect(result.totalSpent, 3300.0);
         expect(result.partialResult, -300.0); // 3000 - 3300
         expect(result.finalReserve, 1700.0); // 2000 - 300
-        expect(result.reserveUsagePercentage, closeTo(30.0, 0.01)); // 300/1000 = 30%
+        expect(result.reserveUsagePercentage,
+            closeTo(30.0, 0.01)); // 300/1000 = 30%
       });
 
       test('Scenario: Critical: Reserve almost depleted', () async {
@@ -1181,7 +1184,8 @@ void main() {
     });
 
     group('Exclude From Reserve Feature', () {
-      test('should exclude accounts with excludeFromReserve=true from reserve calculation',
+      test(
+          'should exclude accounts with excludeFromReserve=true from reserve calculation',
           () async {
         // Arrange: Clear default accounts and add custom setup
         accountRepository.clearAccounts();
@@ -1196,7 +1200,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditPaymentDay:null,
+          creditPaymentDay: null,
           excludeFromReserve: false,
         ));
 
@@ -1210,7 +1214,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditPaymentDay:null,
+          creditPaymentDay: null,
           excludeFromReserve: true,
         ));
 
@@ -1249,7 +1253,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditPaymentDay:null,
+          creditPaymentDay: null,
           excludeFromReserve: false,
         ));
 
@@ -1262,7 +1266,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditPaymentDay:null,
+          creditPaymentDay: null,
           excludeFromReserve: false,
         ));
 
@@ -1301,7 +1305,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditPaymentDay:null,
+          creditPaymentDay: null,
           excludeFromReserve: true,
         ));
 
@@ -1314,7 +1318,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditPaymentDay:null,
+          creditPaymentDay: null,
           excludeFromReserve: true,
         ));
 
@@ -1339,7 +1343,8 @@ void main() {
         expect(result.finalReserve, 0.0);
       });
 
-      test('should not exclude credit accounts from any calculations', () async {
+      test('should not exclude credit accounts from any calculations',
+          () async {
         // Arrange: Clear default accounts and add custom setup
         accountRepository.clearAccounts();
 
@@ -1353,7 +1358,7 @@ void main() {
           creditLimit: 0.0,
           creditUsed: 0.0,
           isDefault: false,
-          creditPaymentDay:null,
+          creditPaymentDay: null,
           excludeFromReserve: false,
         ));
 
@@ -1367,8 +1372,9 @@ void main() {
           creditLimit: 5000.0,
           creditUsed: 1000.0,
           isDefault: false,
-          creditPaymentDay:10,
-          excludeFromReserve: true, // This flag is irrelevant for credit accounts
+          creditPaymentDay: 10,
+          excludeFromReserve:
+              true, // This flag is irrelevant for credit accounts
         ));
 
         appSettingsRepository.setSettings(

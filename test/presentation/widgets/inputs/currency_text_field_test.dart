@@ -119,8 +119,7 @@ void main() {
       expect(changedValue, greaterThan(100));
     });
 
-    testWidgets('initializes with initial value',
-        (WidgetTester tester) async {
+    testWidgets('initializes with initial value', (WidgetTester tester) async {
       final controller = TextEditingController();
 
       await tester.pumpWidget(
@@ -230,8 +229,7 @@ void main() {
       expect(textField, findsOneWidget);
     });
 
-    testWidgets('handles empty input gracefully',
-        (WidgetTester tester) async {
+    testWidgets('handles empty input gracefully', (WidgetTester tester) async {
       final controller = TextEditingController();
       double? changedValue;
 
@@ -277,8 +275,7 @@ void main() {
       expect(controller.text.contains(RegExp(r'[a-zA-Z]')), false);
     });
 
-    testWidgets('handles large values correctly',
-        (WidgetTester tester) async {
+    testWidgets('handles large values correctly', (WidgetTester tester) async {
       double? changedValue;
 
       await tester.pumpWidget(
@@ -294,8 +291,7 @@ void main() {
         ),
       );
 
-      await tester.enterText(
-          find.byType(TextFormField), '999999,99');
+      await tester.enterText(find.byType(TextFormField), '999999,99');
       await tester.pumpAndSettle();
 
       expect(changedValue, equals(999999.99));
@@ -323,8 +319,7 @@ void main() {
       expect(controller.text, contains('1.234,5'));
     });
 
-    testWidgets('focuses and unfocuses correctly',
-        (WidgetTester tester) async {
+    testWidgets('focuses and unfocuses correctly', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -342,7 +337,8 @@ void main() {
       expect(find.byType(TextFormField), findsOneWidget);
     });
 
-    testWidgets('works with TextEditingController', (WidgetTester tester) async {
+    testWidgets('works with TextEditingController',
+        (WidgetTester tester) async {
       final controller = TextEditingController(text: '1000,00');
 
       await tester.pumpWidget(
@@ -359,8 +355,7 @@ void main() {
       expect(controller.text, contains('1000'));
     });
 
-    testWidgets('shows hint text when provided',
-        (WidgetTester tester) async {
+    testWidgets('shows hint text when provided', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

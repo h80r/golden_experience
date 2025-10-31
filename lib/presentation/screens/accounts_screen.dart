@@ -480,7 +480,8 @@ class _AccountCardStatefulState extends State<_AccountCardStateful> {
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xs),
-                        _buildBillingCycleInfo(widget.account.creditPaymentDay!),
+                        _buildBillingCycleInfo(
+                            widget.account.creditPaymentDay!),
                       ],
                     ],
                   ),

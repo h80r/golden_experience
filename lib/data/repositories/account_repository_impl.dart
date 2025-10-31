@@ -110,8 +110,7 @@ class AccountRepositoryImpl implements IAccountRepository {
       // Use transaction to ensure atomicity (only one default at a time)
       await _db.transaction(() async {
         // Clear all default flags
-        await (_db.update(_db.accounts)
-              ..where((a) => a.isDefault.equals(true)))
+        await (_db.update(_db.accounts)..where((a) => a.isDefault.equals(true)))
             .write(const AccountModelCompanion(isDefault: Value(false)));
 
         // Set new default
@@ -127,8 +126,7 @@ class AccountRepositoryImpl implements IAccountRepository {
   @override
   Future<bool> clearDefaultAccount() async {
     try {
-      await (_db.update(_db.accounts)
-            ..where((a) => a.isDefault.equals(true)))
+      await (_db.update(_db.accounts)..where((a) => a.isDefault.equals(true)))
           .write(const AccountModelCompanion(isDefault: Value(false)));
       return true;
     } catch (e) {

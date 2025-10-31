@@ -746,7 +746,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     });
   }
 
-
   Future<void> _onSalaryPaymentModeChanged() async {
     // Save immediately
     try {
@@ -814,5 +813,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
     }
   }
-
 }

@@ -13,8 +13,7 @@ class TransactionRepositoryImpl implements ITransactionRepository {
 
   @override
   Future<TransactionModel?> getById(int id) async {
-    return await (_db.select(_db.transactions)
-          ..where((t) => t.id.equals(id)))
+    return await (_db.select(_db.transactions)..where((t) => t.id.equals(id)))
         .getSingleOrNull();
   }
 
@@ -64,7 +63,8 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   Stream<List<TransactionModel>> watchCurrentMonth() {
     final now = DateTime.now();
     final startDate = DateTime(now.year, now.month, 1);
-    final endDate = DateTime(now.year, now.month + 1, 1).subtract(Duration(seconds: 1));
+    final endDate =
+        DateTime(now.year, now.month + 1, 1).subtract(Duration(seconds: 1));
 
     return (_db.select(_db.transactions)
           ..where((t) => t.date.isBetweenValues(startDate, endDate)))
@@ -77,11 +77,14 @@ class TransactionRepositoryImpl implements ITransactionRepository {
     DateTime endDate,
   ) async {
     // Normalize to start of day for startDate and end of day for endDate
-    final normalizedStart = DateTime(startDate.year, startDate.month, startDate.day);
-    final normalizedEnd = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+    final normalizedStart =
+        DateTime(startDate.year, startDate.month, startDate.day);
+    final normalizedEnd =
+        DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
 
     return await (_db.select(_db.transactions)
-          ..where((t) => t.date.isBetweenValues(normalizedStart, normalizedEnd)))
+          ..where(
+              (t) => t.date.isBetweenValues(normalizedStart, normalizedEnd)))
         .get();
   }
 
@@ -91,11 +94,14 @@ class TransactionRepositoryImpl implements ITransactionRepository {
     DateTime endDate,
   ) {
     // Normalize to start of day for startDate and end of day for endDate
-    final normalizedStart = DateTime(startDate.year, startDate.month, startDate.day);
-    final normalizedEnd = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+    final normalizedStart =
+        DateTime(startDate.year, startDate.month, startDate.day);
+    final normalizedEnd =
+        DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
 
     return (_db.select(_db.transactions)
-          ..where((t) => t.date.isBetweenValues(normalizedStart, normalizedEnd)))
+          ..where(
+              (t) => t.date.isBetweenValues(normalizedStart, normalizedEnd)))
         .watch();
   }
 
@@ -106,8 +112,10 @@ class TransactionRepositoryImpl implements ITransactionRepository {
     DateTime endDate,
   ) async {
     // Normalize to start of day for startDate and end of day for endDate
-    final normalizedStart = DateTime(startDate.year, startDate.month, startDate.day);
-    final normalizedEnd = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+    final normalizedStart =
+        DateTime(startDate.year, startDate.month, startDate.day);
+    final normalizedEnd =
+        DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
 
     return await (_db.select(_db.transactions)
           ..where((t) =>
@@ -123,8 +131,10 @@ class TransactionRepositoryImpl implements ITransactionRepository {
     DateTime endDate,
   ) {
     // Normalize to start of day for startDate and end of day for endDate
-    final normalizedStart = DateTime(startDate.year, startDate.month, startDate.day);
-    final normalizedEnd = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+    final normalizedStart =
+        DateTime(startDate.year, startDate.month, startDate.day);
+    final normalizedEnd =
+        DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
 
     return (_db.select(_db.transactions)
           ..where((t) =>

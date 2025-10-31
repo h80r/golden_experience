@@ -97,7 +97,8 @@ class LocalDatabase extends _$LocalDatabase {
             await customStatement('DROP TABLE accounts');
 
             // Step 4: Rename new table to original name
-            await customStatement('ALTER TABLE accounts_new RENAME TO accounts');
+            await customStatement(
+                'ALTER TABLE accounts_new RENAME TO accounts');
           }
 
           // Migration from v2 to v3: Add isAutoCaptureEnabled column to app_settings
@@ -183,7 +184,8 @@ class LocalDatabase extends _$LocalDatabase {
             await customStatement('DROP TABLE app_settings');
 
             // Step 4: Rename new table to original name
-            await customStatement('ALTER TABLE app_settings_new RENAME TO app_settings');
+            await customStatement(
+                'ALTER TABLE app_settings_new RENAME TO app_settings');
           }
 
           // Migration from v8 to v9: Add excludeFromReserve column to accounts
@@ -235,7 +237,8 @@ class LocalDatabase extends _$LocalDatabase {
             await customStatement('DROP TABLE accounts');
 
             // Step 4: Rename new table to original name
-            await customStatement('ALTER TABLE accounts_new RENAME TO accounts');
+            await customStatement(
+                'ALTER TABLE accounts_new RENAME TO accounts');
           }
 
           // Migration from v10 to v11: Add transactionType column to transactions

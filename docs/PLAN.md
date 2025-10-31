@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 75
-**Concluídas:** 48 / 75 (64%)
+**Concluídas:** 49 / 75 (65%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -79,7 +79,7 @@ main (develop)
 - **Fase 13 - Gestão Avançada de Contas:** 6 / 6 (100%)
 - **Fase 14 - Refatoração do Sistema de Reserva:** 3 / 3 (100%)
 - **Fase 15 - Melhorias em Ciclo de Faturamento e UX:** 4 / 4 (100%)
-- **Fase 16 - Melhorias no Histórico de Transações:** 1 / 6 (17%)
+- **Fase 16 - Melhorias no Histórico de Transações:** 3 / 6 (50%)
 - **Fase 17 - Transações de Receita e Depósito Automático:** 0 / 7 (0%)
 
 ### Legenda de Status
@@ -93,7 +93,7 @@ main (develop)
 
 **Objetivo:** Aprimorar a tela de histórico de transações com filtragem por ciclo de faturamento (alinhado ao dashboard), filtros débito/crédito, card de soma total flutuante e tags visuais.
 
-**Status:** 1 / 6 tarefas concluídas
+**Status:** 3 / 6 tarefas concluídas
 
 ---
 
@@ -171,11 +171,11 @@ Implementar filtro para mostrar apenas transações de contas de débito ou cré
 - [x] Contagem de transações atualiza dinamicamente
 - [x] Testes unitários para query
 - [x] Testes de widget para filtro
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F16-T3: Card de Soma Total Flutuante com Transição para FAB
+### [x] F16-T3: Card de Soma Total Flutuante com Transição para FAB
 
 **Branch:** `feature/transaction-history-floating-sum-card`
 
@@ -241,11 +241,11 @@ Criar um card pequeno flutuante no rodapé do histórico mostrando a soma total 
    ```
 
 **Definition of Done:**
-- [ ] Sum card flutuante implementado
-- [ ] Cálculo de soma total funcional
-- [ ] Animação de transição para FAB suave
-- [ ] Cores dinâmicas (verde/vermelho) conforme saldo
-- [ ] Funcionalidade de adicionar transação mantida
+- [x] Sum card flutuante implementado
+- [x] Cálculo de soma total funcional
+- [x] Animação de transição para FAB suave
+- [x] Cores dinâmicas (verde/vermelho) conforme saldo
+- [x] Funcionalidade de adicionar transação mantida
 - [ ] Testes de widget
 - [ ] Merge realizado para `develop`
 

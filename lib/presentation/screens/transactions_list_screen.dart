@@ -12,6 +12,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/common/standard_app_bar.dart';
 import '../widgets/expense/expense_details_bottom_sheet.dart';
+import '../widgets/transactions/floating_sum_card.dart';
 import '../widgets/transactions/transaction_card.dart';
 import '../widgets/transactions/transaction_filters_sheet.dart';
 
@@ -132,9 +133,10 @@ class _TransactionsListScreenState
               // Filter by transaction type
               List filteredByType = filteredByCategory;
               if (_transactionTypeFilter != TransactionTypeFilter.all) {
-                final targetType = _transactionTypeFilter == TransactionTypeFilter.debit
-                    ? 'debit'
-                    : 'credit';
+                final targetType =
+                    _transactionTypeFilter == TransactionTypeFilter.debit
+                        ? 'debit'
+                        : 'credit';
                 filteredByType = filteredByCategory
                     .where((t) => (t as dynamic).transactionType == targetType)
                     .toList();
@@ -193,71 +195,97 @@ class _TransactionsListScreenState
                     );
                   }
 
-                  return GestureDetector(
-                    onTap: () {
-                      // Tapping anywhere on the list closes the undo snackbar and executes deletion
-                      _dismissPendingToast();
-                    },
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      itemCount: filteredByType.length,
-                      itemBuilder: (context, index) {
-                        final transaction = filteredByType[index];
-                        final cardData = TransactionCardData(
-                          id: transaction.id,
-                          value: transaction.value,
-                          description: transaction.description,
-                          date: transaction.date,
-                          accountId: transaction.accountId,
-                          accountName: accountsMap[transaction.accountId] ??
-                              'Desconhecida',
-                          categoryId: transaction.categoryId,
-                          categoryName: categoriesMap[transaction.categoryId] ??
-                              'Sem categoria',
-                          notes: transaction.notes,
-                        );
+                  // Calculate total sum of filtered transactions
+                  final totalSum = filteredByType.fold<double>(
+                    0.0,
+                    (sum, transaction) => sum + (transaction as dynamic).value,
+                  );
 
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                          child: Dismissible(
-                            key: Key(transaction.id.toString()),
-                            // Only allow swipe from right to left (delete)
-                            direction: DismissDirection.endToStart,
-                            background: Container(),
-                            secondaryBackground: Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.error,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              alignment: Alignment.centerRight,
-                              padding:
-                                  const EdgeInsets.only(right: AppSpacing.lg),
-                              child: const Icon(
-                                Icons.delete,
-                                color: AppColors.background,
-                              ),
-                            ),
-                            confirmDismiss: (direction) async {
-                              return await _handleDismissConfirmation(
-                                  cardData, index);
-                            },
-                            child: TransactionCard(
-                              transaction: cardData,
-                              onTap: () {
-                                // Dismiss any pending toast before opening edit sheet
-                                _dismissPendingToast();
-                                _handleEditTransaction(
-                                  cardData,
-                                  accountsMap,
-                                  categoriesMap,
-                                );
-                              },
-                            ),
+                  return Stack(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          // Tapping anywhere on the list closes the undo snackbar and executes deletion
+                          _dismissPendingToast();
+                        },
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.only(
+                            left: AppSpacing.lg,
+                            right: AppSpacing.lg,
+                            top: AppSpacing.lg,
+                            bottom: 96, // Extra padding for floating sum card
                           ),
-                        );
-                      },
-                    ),
+                          itemCount: filteredByType.length,
+                          itemBuilder: (context, index) {
+                            final transaction = filteredByType[index];
+                            final cardData = TransactionCardData(
+                              id: transaction.id,
+                              value: transaction.value,
+                              description: transaction.description,
+                              date: transaction.date,
+                              accountId: transaction.accountId,
+                              accountName: accountsMap[transaction.accountId] ??
+                                  'Desconhecida',
+                              categoryId: transaction.categoryId,
+                              categoryName:
+                                  categoriesMap[transaction.categoryId] ??
+                                      'Sem categoria',
+                              notes: transaction.notes,
+                            );
+
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.only(bottom: AppSpacing.md),
+                              child: Dismissible(
+                                key: Key(transaction.id.toString()),
+                                // Only allow swipe from right to left (delete)
+                                direction: DismissDirection.endToStart,
+                                background: Container(),
+                                secondaryBackground: Container(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.error,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(
+                                      right: AppSpacing.lg),
+                                  child: const Icon(
+                                    Icons.delete,
+                                    color: AppColors.background,
+                                  ),
+                                ),
+                                confirmDismiss: (direction) async {
+                                  return await _handleDismissConfirmation(
+                                      cardData, index);
+                                },
+                                child: TransactionCard(
+                                  transaction: cardData,
+                                  onTap: () {
+                                    // Dismiss any pending toast before opening edit sheet
+                                    _dismissPendingToast();
+                                    _handleEditTransaction(
+                                      cardData,
+                                      accountsMap,
+                                      categoriesMap,
+                                    );
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      // Floating sum card positioned at bottom center
+                      Positioned(
+                        bottom: AppSpacing.lg,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: FloatingSumCard(totalSum: totalSum),
+                        ),
+                      ),
+                    ],
                   );
                 },
                 loading: () => const Center(
@@ -343,9 +371,12 @@ class _TransactionsListScreenState
   }
 
   /// Filter transactions by billing cycle for credit accounts and calendar month for debit accounts
-  List<dynamic> _filterByBillingCycle(List<dynamic> transactions, List<dynamic> accounts) {
+  List<dynamic> _filterByBillingCycle(
+      List<dynamic> transactions, List<dynamic> accounts) {
     final now = DateTime.now();
-    final accountsMap = {for (var account in accounts) (account as dynamic).id as int: account};
+    final accountsMap = {
+      for (var account in accounts) (account as dynamic).id as int: account
+    };
 
     return transactions.where((transaction) {
       final accountId = (transaction as dynamic).accountId as int;
@@ -358,15 +389,18 @@ class _TransactionsListScreenState
 
       if (isCredit && creditPaymentDay != null) {
         // Credit account with billing cycle - filter by current billing cycle
-        final cycle = calculateCurrentBillingCycleFromPaymentDay(creditPaymentDay, now);
+        final cycle =
+            calculateCurrentBillingCycleFromPaymentDay(creditPaymentDay, now);
         return cycle.contains((transaction).date as DateTime);
       } else {
         // Debit account or credit without payment day - filter by calendar month
         final transactionDate = (transaction).date as DateTime;
         final monthStart = DateTime(now.year, now.month, 1);
-        final monthEnd = DateTime(now.year, now.month + 1, 1).subtract(const Duration(seconds: 1));
-        return transactionDate.isAfter(monthStart.subtract(const Duration(seconds: 1))) &&
-               transactionDate.isBefore(monthEnd.add(const Duration(seconds: 1)));
+        final monthEnd = DateTime(now.year, now.month + 1, 1)
+            .subtract(const Duration(seconds: 1));
+        return transactionDate
+                .isAfter(monthStart.subtract(const Duration(seconds: 1))) &&
+            transactionDate.isBefore(monthEnd.add(const Duration(seconds: 1)));
       }
     }).toList();
   }
@@ -376,7 +410,7 @@ class _TransactionsListScreenState
     final dateRange = _getDateRange();
     return transactions.where((t) {
       return (t as dynamic).date.isAfter(dateRange.start) &&
-             t.date.isBefore(dateRange.end);
+          t.date.isBefore(dateRange.end);
     }).toList();
   }
 

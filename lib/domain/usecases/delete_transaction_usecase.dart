@@ -113,8 +113,8 @@ class DeleteTransactionUseCase {
       // Reverse credit account update
       if (account.isCredit) {
         final newCreditUsed = account.creditUsed - transactionValue;
-        final creditUpdateSuccess =
-            await _accountRepository.updateCreditUsed(account.id, newCreditUsed);
+        final creditUpdateSuccess = await _accountRepository.updateCreditUsed(
+            account.id, newCreditUsed);
         if (!creditUpdateSuccess) return false;
       }
 

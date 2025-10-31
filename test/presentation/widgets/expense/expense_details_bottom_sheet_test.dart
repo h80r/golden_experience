@@ -118,7 +118,8 @@ void main() {
       expect(find.text('Conta'), findsOneWidget);
     });
 
-    testWidgets('renders category dropdown on page 1', (WidgetTester tester) async {
+    testWidgets('renders category dropdown on page 1',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -145,7 +146,8 @@ void main() {
       expect(find.text('Categoria'), findsOneWidget);
     });
 
-    testWidgets('renders transaction type selector', (WidgetTester tester) async {
+    testWidgets('renders transaction type selector',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -199,7 +201,8 @@ void main() {
       expect(find.byIcon(Icons.calendar_today), findsOneWidget);
     });
 
-    testWidgets('renders page 1 with icon buttons and save', (WidgetTester tester) async {
+    testWidgets('renders page 1 with icon buttons and save',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -228,7 +231,8 @@ void main() {
       expect(find.text('Salvar'), findsOneWidget);
     });
 
-    testWidgets('renders page 2 with icon buttons after clicking edit_note', (WidgetTester tester) async {
+    testWidgets('renders page 2 with icon buttons after clicking edit_note',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -254,7 +258,8 @@ void main() {
       // Find and fill the description field on page 1
       final textFields = find.byType(TextField);
       await tester.enterText(
-        textFields.at(1), // Description field is the 2nd TextField (after value)
+        textFields
+            .at(1), // Description field is the 2nd TextField (after value)
         'Almoço',
       );
       await tester.pumpAndSettle();

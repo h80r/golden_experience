@@ -31,7 +31,8 @@ class RecurringExpenseRepositoryImpl implements IRecurringExpenseRepository {
   }
 
   @override
-  Future<bool> update(Insertable<RecurringExpenseModel> recurringExpense) async {
+  Future<bool> update(
+      Insertable<RecurringExpenseModel> recurringExpense) async {
     try {
       final result =
           await _db.update(_db.recurringExpenses).replace(recurringExpense);

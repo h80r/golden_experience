@@ -114,7 +114,8 @@ class _MyAppState extends ConsumerState<MyApp> {
             child: CircularProgressIndicator(),
           ),
         ),
-        error: (error, stack) => const MainScreen(), // Fallback to main screen on error
+        error: (error, stack) =>
+            const MainScreen(), // Fallback to main screen on error
       ),
     );
   }

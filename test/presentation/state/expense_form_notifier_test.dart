@@ -70,7 +70,9 @@ void main() {
 
     group('updateDescription', () {
       test('should update description correctly', () {
-        container.read(expenseFormProvider.notifier).updateDescription('Lunch expense');
+        container
+            .read(expenseFormProvider.notifier)
+            .updateDescription('Lunch expense');
         final state = container.read(expenseFormProvider);
         expect(state.description, 'Lunch expense');
       });
@@ -105,7 +107,9 @@ void main() {
 
     group('updateNotes', () {
       test('should update notes correctly', () {
-        container.read(expenseFormProvider.notifier).updateNotes('Some additional notes');
+        container
+            .read(expenseFormProvider.notifier)
+            .updateNotes('Some additional notes');
         final state = container.read(expenseFormProvider);
         expect(state.notes, 'Some additional notes');
       });
@@ -157,26 +161,34 @@ void main() {
 
     group('updateTransactionType', () {
       test('should update transaction type to debit', () {
-        container.read(expenseFormProvider.notifier).updateTransactionType('debit');
+        container
+            .read(expenseFormProvider.notifier)
+            .updateTransactionType('debit');
         final state = container.read(expenseFormProvider);
         expect(state.transactionType, 'debit');
       });
 
       test('should update transaction type to credit', () {
-        container.read(expenseFormProvider.notifier).updateTransactionType('credit');
+        container
+            .read(expenseFormProvider.notifier)
+            .updateTransactionType('credit');
         final state = container.read(expenseFormProvider);
         expect(state.transactionType, 'credit');
       });
 
       test('should throw error for invalid transaction type', () {
         expect(
-          () => container.read(expenseFormProvider.notifier).updateTransactionType('invalid'),
+          () => container
+              .read(expenseFormProvider.notifier)
+              .updateTransactionType('invalid'),
           throwsArgumentError,
         );
       });
 
       test('should trigger validation', () {
-        container.read(expenseFormProvider.notifier).updateTransactionType('credit');
+        container
+            .read(expenseFormProvider.notifier)
+            .updateTransactionType('credit');
         final state = container.read(expenseFormProvider);
         // Should still be invalid due to other missing fields
         expect(state.isValid, false);
@@ -225,7 +237,9 @@ void main() {
         final initialState = container.read(expenseFormProvider);
         final initialIsValid = initialState.isValid;
 
-        container.read(expenseFormProvider.notifier).updateDate(DateTime(2025, 1, 15));
+        container
+            .read(expenseFormProvider.notifier)
+            .updateDate(DateTime(2025, 1, 15));
         final state = container.read(expenseFormProvider);
         expect(state.isValid, initialIsValid);
       });
@@ -293,7 +307,8 @@ void main() {
         expect(state.errorMessage, contains('descrição'));
       });
 
-      test('should show account error when value and description are valid', () {
+      test('should show account error when value and description are valid',
+          () {
         final notifier = container.read(expenseFormProvider.notifier);
         notifier.updateValue(100.0);
         notifier.updateDescription('Lunch');
@@ -333,13 +348,17 @@ void main() {
 
       test('should handle long descriptions', () {
         final longDescription = 'A' * 1000;
-        container.read(expenseFormProvider.notifier).updateDescription(longDescription);
+        container
+            .read(expenseFormProvider.notifier)
+            .updateDescription(longDescription);
         final state = container.read(expenseFormProvider);
         expect(state.description, longDescription);
       });
 
       test('should handle special characters in description', () {
-        container.read(expenseFormProvider.notifier).updateDescription('Café & Restaurant! @123');
+        container
+            .read(expenseFormProvider.notifier)
+            .updateDescription('Café & Restaurant! @123');
         final state = container.read(expenseFormProvider);
         expect(state.description, 'Café & Restaurant! @123');
       });

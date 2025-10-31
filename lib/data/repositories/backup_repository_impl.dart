@@ -197,7 +197,8 @@ class BackupRepositoryImpl implements IBackupRepository {
           DateTime lastRecurringCheck;
           final lastRecurringCheckValue = settingData['lastRecurringCheck'];
           if (lastRecurringCheckValue is int) {
-            lastRecurringCheck = DateTime.fromMillisecondsSinceEpoch(lastRecurringCheckValue);
+            lastRecurringCheck =
+                DateTime.fromMillisecondsSinceEpoch(lastRecurringCheckValue);
           } else if (lastRecurringCheckValue is String) {
             lastRecurringCheck = DateTime.parse(lastRecurringCheckValue);
           } else {
@@ -211,8 +212,8 @@ class BackupRepositoryImpl implements IBackupRepository {
             maxReserveUsagePercentage: Value(
                 (settingData['maxReserveUsagePercentage'] as num).toDouble()),
             lastRecurringCheck: Value(lastRecurringCheck),
-            hasCompletedOnboarding: Value(
-                (settingData['hasCompletedOnboarding'] as bool?) ?? true),
+            hasCompletedOnboarding:
+                Value((settingData['hasCompletedOnboarding'] as bool?) ?? true),
           );
           await _db.into(_db.appSettings).insert(companion);
         }

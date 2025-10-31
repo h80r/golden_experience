@@ -40,8 +40,7 @@ class DashboardScreen extends ConsumerWidget {
 
       // Convert lists to maps for the bottom sheet
       final accountsMap = {
-        for (var account in accounts)
-          account.id as int: account.name as String
+        for (var account in accounts) account.id as int: account.name as String
       };
       final categoriesMap = {
         for (var category in categories)
@@ -115,7 +114,8 @@ class DashboardScreen extends ConsumerWidget {
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(result.errorMessage ?? 'Erro ao salvar transação'),
+                  content:
+                      Text(result.errorMessage ?? 'Erro ao salvar transação'),
                   backgroundColor: Colors.red,
                   duration: const Duration(seconds: 3),
                 ),

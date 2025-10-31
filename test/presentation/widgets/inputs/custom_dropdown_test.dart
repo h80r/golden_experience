@@ -11,7 +11,8 @@ void main() {
             body: CustomDropdown<String>(
               label: 'Test Dropdown',
               items: [
-                const DropdownMenuItem(value: 'option1', child: Text('Option 1')),
+                const DropdownMenuItem(
+                    value: 'option1', child: Text('Option 1')),
               ],
             ),
           ),
@@ -28,8 +29,10 @@ void main() {
             body: CustomDropdown<String>(
               label: 'Test Dropdown',
               items: [
-                const DropdownMenuItem(value: 'option1', child: Text('Option 1')),
-                const DropdownMenuItem(value: 'option2', child: Text('Option 2')),
+                const DropdownMenuItem(
+                    value: 'option1', child: Text('Option 1')),
+                const DropdownMenuItem(
+                    value: 'option2', child: Text('Option 2')),
               ],
             ),
           ),
@@ -50,8 +53,10 @@ void main() {
             body: CustomDropdown<String>(
               label: 'Test Dropdown',
               items: [
-                const DropdownMenuItem(value: 'option1', child: Text('Option 1')),
-                const DropdownMenuItem(value: 'option2', child: Text('Option 2')),
+                const DropdownMenuItem(
+                    value: 'option1', child: Text('Option 1')),
+                const DropdownMenuItem(
+                    value: 'option2', child: Text('Option 2')),
               ],
               onChanged: (value) {
                 selectedValue = value;
@@ -78,8 +83,10 @@ void main() {
               label: 'Test Dropdown',
               value: 'option1',
               items: [
-                const DropdownMenuItem(value: 'option1', child: Text('Option 1')),
-                const DropdownMenuItem(value: 'option2', child: Text('Option 2')),
+                const DropdownMenuItem(
+                    value: 'option1', child: Text('Option 1')),
+                const DropdownMenuItem(
+                    value: 'option2', child: Text('Option 2')),
               ],
             ),
           ),
@@ -99,8 +106,10 @@ void main() {
             body: CustomDropdown<String>(
               label: 'Test Dropdown',
               items: [
-                const DropdownMenuItem(value: 'option1', child: Text('Option 1')),
-                const DropdownMenuItem(value: 'option2', child: Text('Option 2')),
+                const DropdownMenuItem(
+                    value: 'option1', child: Text('Option 1')),
+                const DropdownMenuItem(
+                    value: 'option2', child: Text('Option 2')),
               ],
               onChanged: (value) {
                 changedValue = value;
@@ -127,7 +136,8 @@ void main() {
               label: 'Test Dropdown',
               prefixIcon: Icons.category,
               items: [
-                const DropdownMenuItem(value: 'option1', child: Text('Option 1')),
+                const DropdownMenuItem(
+                    value: 'option1', child: Text('Option 1')),
               ],
             ),
           ),
@@ -137,8 +147,7 @@ void main() {
       expect(find.byIcon(Icons.category), findsOneWidget);
     });
 
-    testWidgets('validates input with validator',
-        (WidgetTester tester) async {
+    testWidgets('validates input with validator', (WidgetTester tester) async {
       final formKey = GlobalKey<FormState>();
 
       await tester.pumpWidget(
@@ -149,7 +158,8 @@ void main() {
               child: CustomDropdown<String>(
                 label: 'Test Dropdown',
                 items: [
-                  const DropdownMenuItem(value: 'option1', child: Text('Option 1')),
+                  const DropdownMenuItem(
+                      value: 'option1', child: Text('Option 1')),
                 ],
                 validator: (value) {
                   if (value == null) {

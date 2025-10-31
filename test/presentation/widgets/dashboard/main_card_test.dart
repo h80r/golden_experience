@@ -119,8 +119,7 @@ void main() {
       expect(container, findsWidgets);
 
       // Verify container exists with proper styling
-      final containerWidget =
-          tester.widget<Container>(container.first);
+      final containerWidget = tester.widget<Container>(container.first);
       final decoration = containerWidget.decoration as BoxDecoration;
       expect(decoration.color, equals(AppColors.surface));
     });

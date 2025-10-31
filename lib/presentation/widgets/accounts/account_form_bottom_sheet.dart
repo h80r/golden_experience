@@ -322,7 +322,8 @@ class _AccountFormBottomSheetState
                                 _isCredit = value ?? false;
                                 // Auto-navigate back to page 1 if credit is unchecked while on page 2
                                 if (!_isCredit && _currentPageIndex == 1) {
-                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
                                     _goToPreviousPage();
                                   });
                                 }

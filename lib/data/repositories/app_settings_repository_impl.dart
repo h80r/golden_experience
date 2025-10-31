@@ -22,48 +22,43 @@ class AppSettingsRepositoryImpl implements IAppSettingsRepository {
 
   @override
   Future<void> updateMonthlySalary(double salary) async {
-    await (_db.update(_db.appSettings)
-          ..where((s) => s.id.equals(_settingsId)))
+    await (_db.update(_db.appSettings)..where((s) => s.id.equals(_settingsId)))
         .write(AppSettingsModelCompanion(monthlySalary: Value(salary)));
   }
 
   @override
   Future<void> updateMaxReserveUsagePercentage(double percentage) async {
-    await (_db.update(_db.appSettings)
-          ..where((s) => s.id.equals(_settingsId)))
+    await (_db.update(_db.appSettings)..where((s) => s.id.equals(_settingsId)))
         .write(AppSettingsModelCompanion(
             maxReserveUsagePercentage: Value(percentage)));
   }
 
   @override
   Future<void> updateLastRecurringCheck(DateTime date) async {
-    await (_db.update(_db.appSettings)
-          ..where((s) => s.id.equals(_settingsId)))
+    await (_db.update(_db.appSettings)..where((s) => s.id.equals(_settingsId)))
         .write(AppSettingsModelCompanion(lastRecurringCheck: Value(date)));
   }
 
   @override
   Future<void> updateHasCompletedOnboarding(bool completed) async {
-    await (_db.update(_db.appSettings)
-          ..where((s) => s.id.equals(_settingsId)))
-        .write(AppSettingsModelCompanion(hasCompletedOnboarding: Value(completed)));
+    await (_db.update(_db.appSettings)..where((s) => s.id.equals(_settingsId)))
+        .write(AppSettingsModelCompanion(
+            hasCompletedOnboarding: Value(completed)));
   }
 
   @override
   Future<void> updateIsAutoCaptureEnabled(bool enabled) async {
-    await (_db.update(_db.appSettings)
-          ..where((s) => s.id.equals(_settingsId)))
+    await (_db.update(_db.appSettings)..where((s) => s.id.equals(_settingsId)))
         .write(AppSettingsModelCompanion(isAutoCaptureEnabled: Value(enabled)));
   }
 
   @override
   Future<void> updateSalaryPaymentConfig(String mode, int value) async {
-    await (_db.update(_db.appSettings)
-          ..where((s) => s.id.equals(_settingsId)))
+    await (_db.update(_db.appSettings)..where((s) => s.id.equals(_settingsId)))
         .write(AppSettingsModelCompanion(
-          salaryPaymentMode: Value(mode),
-          salaryPaymentValue: Value(value),
-        ));
+      salaryPaymentMode: Value(mode),
+      salaryPaymentValue: Value(value),
+    ));
   }
 
   @override
@@ -87,8 +82,7 @@ class AppSettingsRepositoryImpl implements IAppSettingsRepository {
 
   @override
   Stream<AppSettingsModel?> watch() {
-    return (_db.select(_db.appSettings)
-          ..where((s) => s.id.equals(_settingsId)))
+    return (_db.select(_db.appSettings)..where((s) => s.id.equals(_settingsId)))
         .watchSingleOrNull();
   }
 }

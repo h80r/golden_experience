@@ -54,7 +54,8 @@ void main() {
       );
     }
 
-    testWidgets('Settings screen renders correctly', (WidgetTester tester) async {
+    testWidgets('Settings screen renders correctly',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
@@ -219,9 +220,11 @@ void main() {
       expect(find.byType(Slider), findsOneWidget);
 
       // Verify slider widget exists and renders
-      expect(find.byWidgetPredicate(
-        (widget) => widget is Slider,
-      ), findsOneWidget);
+      expect(
+          find.byWidgetPredicate(
+            (widget) => widget is Slider,
+          ),
+          findsOneWidget);
     });
 
     testWidgets('Monetary fields accept decimal values',
@@ -260,22 +263,28 @@ void main() {
       expect(find.text('Salvar'), findsOneWidget);
     });
 
-    testWidgets('Input fields have correct labels', (WidgetTester tester) async {
+    testWidgets('Input fields have correct labels',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
       // Verify hint texts are present
-      expect(find.byWidgetPredicate(
-        (widget) =>
-            widget is TextField &&
-            widget.decoration?.hintText == 'Digite seu salário mensal',
-      ), findsOneWidget);
+      expect(
+          find.byWidgetPredicate(
+            (widget) =>
+                widget is TextField &&
+                widget.decoration?.hintText == 'Digite seu salário mensal',
+          ),
+          findsOneWidget);
 
-      expect(find.byWidgetPredicate(
-        (widget) =>
-            widget is TextField &&
-            widget.decoration?.hintText == 'Digite o saldo inicial da reserva',
-      ), findsOneWidget);
+      expect(
+          find.byWidgetPredicate(
+            (widget) =>
+                widget is TextField &&
+                widget.decoration?.hintText ==
+                    'Digite o saldo inicial da reserva',
+          ),
+          findsOneWidget);
 
       // Verify slider is present instead of text field for percentage
       expect(find.byType(Slider), findsOneWidget);

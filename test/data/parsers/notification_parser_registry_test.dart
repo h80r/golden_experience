@@ -208,8 +208,7 @@ void main() {
         final banks = registry.supportedBanks;
 
         // Should still only have one MockBank entry
-        final mockBankCount =
-            banks.where((b) => b == 'MockBank').length;
+        final mockBankCount = banks.where((b) => b == 'MockBank').length;
         expect(mockBankCount, 1);
       });
     });
@@ -371,7 +370,8 @@ void main() {
 
         final santanderEvent = NotificationEvent(
           packageName: 'com.santander.app',
-          text: 'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 10/10/25, às 12:00, em teste, aprovada.',
+          text:
+              'Compra aprovada! Compra no cartão final 1111, de R\$ 100,00, em 10/10/25, às 12:00, em teste, aprovada.',
           timestamp: DateTime.now(),
         );
 

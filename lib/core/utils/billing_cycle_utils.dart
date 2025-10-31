@@ -349,7 +349,8 @@ BillingCyclePeriod calculateIdealPurchasePeriod(
 
   // Calculate the ideal period for the target month
   final closingDate = calculateClosingDate(paymentDay, targetMonth);
-  final paymentDate = _getClosingDate(targetMonth.year, targetMonth.month, paymentDay);
+  final paymentDate =
+      _getClosingDate(targetMonth.year, targetMonth.month, paymentDay);
   final startDate = closingDate.add(const Duration(days: 1));
 
   return BillingCyclePeriod(start: startDate, end: paymentDate);
@@ -405,7 +406,8 @@ BillingCyclePeriod calculateCurrentBillingCycleFromPaymentDay(
     // Cycle start is the day after previous month's closing
     final prevMonth = now.month == 1 ? 12 : now.month - 1;
     final prevYear = now.month == 1 ? now.year - 1 : now.year;
-    final prevClosingDate = calculateClosingDate(paymentDay, DateTime(prevYear, prevMonth, 1));
+    final prevClosingDate =
+        calculateClosingDate(paymentDay, DateTime(prevYear, prevMonth, 1));
     final cycleStart = prevClosingDate.add(const Duration(days: 1));
 
     return BillingCyclePeriod(start: cycleStart, end: cycleEnd);
@@ -414,7 +416,8 @@ BillingCyclePeriod calculateCurrentBillingCycleFromPaymentDay(
     // → Current cycle ends next month (this is the next bill we'll need to pay)
     final nextMonth = now.month == 12 ? 1 : now.month + 1;
     final nextYear = now.month == 12 ? now.year + 1 : now.year;
-    final nextMonthClosingDate = calculateClosingDate(paymentDay, DateTime(nextYear, nextMonth, 1));
+    final nextMonthClosingDate =
+        calculateClosingDate(paymentDay, DateTime(nextYear, nextMonth, 1));
     final cycleEnd = nextMonthClosingDate;
 
     // Cycle start is the day after this month's closing

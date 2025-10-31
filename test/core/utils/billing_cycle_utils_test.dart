@@ -276,7 +276,9 @@ void main() {
   });
 
   group('getBillingCycleForMonth', () {
-    test('returns correct cycle for target month (November 2024, closing day 25)', () {
+    test(
+        'returns correct cycle for target month (November 2024, closing day 25)',
+        () {
       final cycle = getBillingCycleForMonth(2024, 11, 25);
 
       expect(cycle.start, DateTime(2024, 10, 26));
@@ -333,7 +335,8 @@ void main() {
       expect(cycle.end, DateTime(2024, 2, 29)); // Feb has 29 days in leap year
     });
 
-    test('handles transition from month with 31 days to month with 30 days', () {
+    test('handles transition from month with 31 days to month with 30 days',
+        () {
       // May has 31 days, June has 30 days
       final cycle = calculateCurrentBillingCycle(
         31,

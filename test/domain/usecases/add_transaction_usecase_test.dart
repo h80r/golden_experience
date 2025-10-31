@@ -574,8 +574,8 @@ class MockAccountRepository implements IAccountRepository {
       balance: newBalance,
       creditLimit: account.creditLimit,
       creditUsed: account.creditUsed,
-            excludeFromReserve: false,
-            isDefault: false,
+      excludeFromReserve: false,
+      isDefault: false,
     );
     return true;
   }
@@ -595,8 +595,8 @@ class MockAccountRepository implements IAccountRepository {
       balance: account.balance,
       creditLimit: newLimit,
       creditUsed: account.creditUsed,
-            excludeFromReserve: false,
-            isDefault: false,
+      excludeFromReserve: false,
+      isDefault: false,
     );
     return true;
   }
@@ -616,8 +616,8 @@ class MockAccountRepository implements IAccountRepository {
       balance: account.balance,
       creditLimit: account.creditLimit,
       creditUsed: newCreditUsed,
-            excludeFromReserve: false,
-            isDefault: false,
+      excludeFromReserve: false,
+      isDefault: false,
     );
     return true;
   }

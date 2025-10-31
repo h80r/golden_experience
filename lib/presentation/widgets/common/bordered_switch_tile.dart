@@ -32,8 +32,7 @@ class BorderedSwitchTile extends StatelessWidget {
         onChanged: onChanged,
         title: Text(title),
         subtitle: subtitle != null ? Text(subtitle!) : null,
-        contentPadding:
-            contentPadding ?? const EdgeInsets.all(AppSpacing.md),
+        contentPadding: contentPadding ?? const EdgeInsets.all(AppSpacing.md),
       ),
     );
   }

@@ -4,7 +4,8 @@ import 'package:golden_experience/presentation/widgets/inputs/reserve_percentage
 
 void main() {
   group('ReservePercentageSlider', () {
-    testWidgets('displays initial value correctly', (WidgetTester tester) async {
+    testWidgets('displays initial value correctly',
+        (WidgetTester tester) async {
       double currentValue = 50.0;
 
       await tester.pumpWidget(
@@ -77,7 +78,8 @@ void main() {
       expect(find.text('100%'), findsOneWidget);
     });
 
-    testWidgets('calls onChanged when slider moves', (WidgetTester tester) async {
+    testWidgets('calls onChanged when slider moves',
+        (WidgetTester tester) async {
       double capturedValue = 50.0;
 
       await tester.pumpWidget(
@@ -100,7 +102,8 @@ void main() {
       );
 
       // Find the slider and move it
-      final Slider slider = find.byType(Slider).evaluate().first.widget as Slider;
+      final Slider slider =
+          find.byType(Slider).evaluate().first.widget as Slider;
       expect(slider.value, 50.0);
 
       // Simulate slider drag to 75%
@@ -123,7 +126,8 @@ void main() {
         ),
       );
 
-      final Slider slider = find.byType(Slider).evaluate().first.widget as Slider;
+      final Slider slider =
+          find.byType(Slider).evaluate().first.widget as Slider;
       expect(slider.min, 0.0);
       expect(slider.max, 100.0);
     });
@@ -141,7 +145,8 @@ void main() {
         ),
       );
 
-      final Slider slider = find.byType(Slider).evaluate().first.widget as Slider;
+      final Slider slider =
+          find.byType(Slider).evaluate().first.widget as Slider;
       expect(slider.divisions, 100);
     });
 

@@ -4,8 +4,8 @@ This file is auto-managed and contains the minimum state required to track execu
 
 ## Current Task Details
 
-- **current_task_id**: F16-T3
-- **current_task_title**: Card de Soma Total Flutuante com Transição para FAB
+- **current_task_id**: F16-T4
+- **current_task_title**: Adicionar Tags Visuais de Débito/Crédito nas Transações
 - **current_task_status**: PENDING
 
 ## Step Tracking (Only for complex tasks)
@@ -22,3 +22,4 @@ This file is auto-managed and contains the minimum state required to track execu
 - **F15-T4**: ✅ COMPLETED
 - **F16-T1**: ✅ COMPLETED
 - **F16-T2**: ✅ COMPLETED
+- **F16-T3**: ✅ COMPLETED

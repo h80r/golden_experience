@@ -12,7 +12,11 @@ class BrazilianHolidays {
     6: [20], // Corpus Christi (varies)
     9: [7], // Independence Day
     10: [12], // Our Lady Aparecida
-    11: [2, 15, 20], // All Souls' Day, Proclamation of the Republic, Black Consciousness Day
+    11: [
+      2,
+      15,
+      20
+    ], // All Souls' Day, Proclamation of the Republic, Black Consciousness Day
     12: [25], // Christmas
   };
 
@@ -93,7 +97,8 @@ class BrazilianHolidays {
     var workDayCount = 0;
     var currentDate = firstDay;
 
-    while (currentDate.isBefore(lastDay) || currentDate.isAtSameMomentAs(lastDay)) {
+    while (currentDate.isBefore(lastDay) ||
+        currentDate.isAtSameMomentAs(lastDay)) {
       if (isWorkDay(currentDate)) {
         workDayCount++;
         if (workDayCount == n) {

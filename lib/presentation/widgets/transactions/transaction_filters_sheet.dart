@@ -87,7 +87,9 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
   Future<void> _selectDate(bool isStartDate) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: isStartDate ? _customStartDate ?? DateTime.now() : _customEndDate ?? DateTime.now(),
+      initialDate: isStartDate
+          ? _customStartDate ?? DateTime.now()
+          : _customEndDate ?? DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
@@ -216,7 +218,8 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                       );
                     }).toList(),
                     selected: {_transactionTypeFilter},
-                    onSelectionChanged: (Set<TransactionTypeFilter> newSelection) {
+                    onSelectionChanged:
+                        (Set<TransactionTypeFilter> newSelection) {
                       setState(() {
                         _transactionTypeFilter = newSelection.first;
                       });
@@ -258,7 +261,8 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   ...widget.categories.map((category) {
-                    final isSelected = _selectedCategoryIds.contains(category.id);
+                    final isSelected =
+                        _selectedCategoryIds.contains(category.id);
                     return CheckboxListTile(
                       title: Text(category.name),
                       value: isSelected,

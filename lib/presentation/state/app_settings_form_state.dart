@@ -29,7 +29,8 @@ class AppSettingsFormState {
   }) {
     return AppSettingsFormState(
       monthlySalary: monthlySalary ?? this.monthlySalary,
-      maxReserveUsagePercentage: maxReserveUsagePercentage ?? this.maxReserveUsagePercentage,
+      maxReserveUsagePercentage:
+          maxReserveUsagePercentage ?? this.maxReserveUsagePercentage,
       isValid: isValid ?? this.isValid,
       errorMessage: errorMessage ?? this.errorMessage,
     );

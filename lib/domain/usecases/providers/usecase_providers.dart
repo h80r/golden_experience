@@ -93,8 +93,7 @@ final processRecurringExpensesUseCaseProvider =
 ///   error: (error, stack) => Text('Error: $error'),
 /// );
 /// ```
-final appSettingsStreamProvider =
-    StreamProvider<AppSettingsModel?>((ref) {
+final appSettingsStreamProvider = StreamProvider<AppSettingsModel?>((ref) {
   final repository = ref.read(appSettingsRepositoryProvider);
   return repository.watch();
 });

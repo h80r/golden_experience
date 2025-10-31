@@ -21,7 +21,8 @@ class TransactionNotificationService {
   static Future<void> initialize() async {
     if (_initialized) return;
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -98,7 +99,8 @@ class TransactionNotificationService {
         payload: jsonEncode(data.toJson()),
       );
     } catch (e) {
-      dev.log('Error showing transaction notification: $e', name: 'TransactionNotificationService');
+      dev.log('Error showing transaction notification: $e',
+          name: 'TransactionNotificationService');
     }
   }
 
@@ -107,7 +109,8 @@ class TransactionNotificationService {
     try {
       await _notificationsPlugin.cancelAll();
     } catch (e) {
-      dev.log('Error canceling notifications: $e', name: 'TransactionNotificationService');
+      dev.log('Error canceling notifications: $e',
+          name: 'TransactionNotificationService');
     }
   }
 
@@ -116,7 +119,8 @@ class TransactionNotificationService {
     try {
       await _notificationsPlugin.cancel(id);
     } catch (e) {
-      dev.log('Error canceling notification: $e', name: 'TransactionNotificationService');
+      dev.log('Error canceling notification: $e',
+          name: 'TransactionNotificationService');
     }
   }
 }
