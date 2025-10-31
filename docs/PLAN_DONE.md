@@ -2999,3 +2999,473 @@ Filtrar transações de crédito para incluir apenas aquelas dentro do ciclo de 
 - [x] Merge realizado para `develop`
 
 ---
+
+## ⚙️ Fase 15: Melhorias em Ciclo de Faturamento e UX de Formulários
+
+**Objetivo:** Refinar o sistema de ciclo de faturamento de crédito para separar conceitos de fechamento vs pagamento, melhorar a experiência do formulário de contas, e adicionar ferramentas de debug para notificações.
+
+**Status:** 1 / 4 tarefas concluídas
+
+---
+
+### [x] F15-T1: Implementar Sistema de Data de Fechamento e Pagamento Separados
+
+**Branch:** `refactor/closing-vs-payment-dates`
+
+**Descrição:**
+Separar os conceitos de "data de fechamento" (quando a fatura fecha) e "data de pagamento" (quando a fatura vence) para cartões de crédito. O fechamento ocorre automaticamente uma semana antes do pagamento, criando uma janela de "período ideal de compra" onde as transações não impactam o ciclo atual.
+
+**Problema Atual:**
+- Sistema atual usa apenas `creditClosingDay` que representa o fechamento
+- Não há conceito de data de pagamento separada
+- Usuários não visualizam o "período ideal de compra" (janela entre fechamento e pagamento)
+- Ciclo de faturamento usa apenas a data de fechamento, sem considerar o pagamento
+
+**Implementação Esperada:**
+
+1. **Database Migration (v9→v10):**
+   ```dart
+   // Renomear e adicionar campos na tabela Accounts
+   // - Renomear `creditClosingDay` para `creditPaymentDay` (mantém valores existentes)
+   // - Calcular `creditClosingDay` automaticamente como paymentDay - 7
+   // Migration preserva dados: creditPaymentDay = creditClosingDay atual
+   ```
+
+2. **Atualizar Account Model:**
+   - Campo `creditPaymentDay` (int 1-31, nullable) - dia do vencimento da fatura
+   - Campo `creditClosingDay` - CALCULADO automaticamente (paymentDay - 7)
+   - Se paymentDay < 8, ajustar para mês anterior (ex: paymentDay=5 → closingDay=28 do mês anterior)
+
+3. **Lógica de Cálculo de Datas:**
+   ```dart
+   // Em billing_cycle_utils.dart
+
+   /// Calcula a data de fechamento baseada na data de pagamento
+   /// Regra: fechamento = pagamento - 7 dias
+   DateTime calculateClosingDate(int paymentDay, DateTime referenceMonth) {
+     final paymentDate = DateTime(referenceMonth.year, referenceMonth.month, paymentDay);
+     return paymentDate.subtract(Duration(days: 7));
+   }
+
+   /// Identifica o "período ideal de compra" (entre fechamento e pagamento)
+   /// Compras neste período não impactam a fatura atual
+   DateTimeRange calculateIdealPurchasePeriod(int paymentDay, DateTime now) {
+     final closingDate = calculateClosingDate(paymentDay, now);
+     final paymentDate = DateTime(now.year, now.month, paymentDay);
+
+     return DateTimeRange(
+       start: closingDate.add(Duration(days: 1)),
+       end: paymentDate,
+     );
+   }
+   ```
+
+4. **Atualizar Billing Cycle Logic:**
+   ```dart
+   // Ciclo de faturamento atual:
+   // - Início: dia após fechamento ANTERIOR (inclusive)
+   // - Fim: data de fechamento ATUAL (exclusive)
+   //
+   // Exemplo com paymentDay = 15:
+   // - Fechamento: dia 8 (15 - 7)
+   // - Ciclo atual (se hoje é 10/11): 09/10 até 07/11
+   // - Período ideal: 08/11 até 15/11 (compras aqui vão para próxima fatura)
+
+   BillingCyclePeriod calculateCurrentBillingCycle(int paymentDay, DateTime today) {
+     final closingDay = _calculateClosingDay(paymentDay);
+
+     // Determinar qual mês de referência usar
+     DateTime referenceMonth;
+     if (today.day > closingDay) {
+       // Após o fechamento: ciclo atual vai do fechamento deste mês até próximo
+       referenceMonth = DateTime(today.year, today.month);
+     } else {
+       // Antes do fechamento: ciclo atual começou no mês anterior
+       referenceMonth = DateTime(today.year, today.month - 1);
+     }
+
+     final cycleStart = DateTime(referenceMonth.year, referenceMonth.month, closingDay)
+         .add(Duration(days: 1));
+     final cycleEnd = DateTime(referenceMonth.year, referenceMonth.month + 1, closingDay);
+
+     return BillingCyclePeriod(start: cycleStart, end: cycleEnd);
+   }
+   ```
+
+5. **UI Updates - Account Form:**
+   - Remover seletor de "Dia de Fechamento"
+   - Adicionar seletor de "Dia de Pagamento" (usando InlineCalendar)
+   - Mostrar fechamento calculado: "Fechamento automático: dia X" (read-only)
+   - Tooltip explicativo: "Sua fatura fecha 7 dias antes do pagamento"
+
+6. **UI Updates - Accounts Screen:**
+   - Expandir informações exibidas no tile expandido:
+     - "Pagamento: dia X"
+     - "Fechamento: dia Y"
+     - "Período ideal: dd/mm - dd/mm" (destacado em verde/azul)
+   - Tooltip no período ideal: "Compras neste período vão para a próxima fatura"
+
+7. **Edge Cases:**
+   - PaymentDay 1-7: fechamento fica no mês anterior
+     - Ex: paymentDay=5 → closingDay=28 (ou 29/30/31 dependendo do mês anterior)
+   - Fevereiro: ajustar dias inválidos
+   - Dia 31 em meses com 30 dias: usar último dia válido
+
+**Definition of Done:**
+- [x] Migration v9→v10 implementada (rename + preserva dados)
+- [x] Campo `creditPaymentDay` adicionado ao model
+- [x] Campo `creditClosingDay` calculado automaticamente
+- [x] Funções de cálculo de fechamento e período ideal criadas
+- [x] `calculateCurrentBillingCycle()` atualizado para usar lógica correta
+- [x] UI do formulário atualizada (payment day selector)
+- [x] Accounts screen exibe fechamento, pagamento e período ideal
+- [x] Edge cases tratados (dias inválidos, mudança de mês)
+- [x] Testes unitários para todas as funções de cálculo
+- [x] Testes de integração para billing cycle com nova lógica
+- [x] Todos os testes passando (atualizar mocks para usar paymentDay)
+- [x] Documentação atualizada (CLAUDE.md)
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F15-T2: Melhorias de Layout no Formulário de Conta
+
+**Branch:** `feature/account-form-layout-improvements`
+
+**Descrição:**
+Otimizar o layout do formulário de conta para reduzir altura vertical e melhorar usabilidade, colocando checkboxes e inputs relacionados na mesma linha.
+
+**Problema Atual:**
+- Checkboxes de débito e crédito ocupam linhas separadas
+- Inputs de saldo e limite ocupam linhas separadas
+- Formulário muito extenso verticalmente
+- Desperdício de espaço horizontal
+
+**Implementação Esperada:**
+
+1. **Página 1 - Reorganização de Layout:**
+   ```dart
+   // ANTES:
+   // [ ] Conta de Débito
+   // [ ] Conta de Crédito
+   // [Campo: Saldo Inicial]
+   // [Campo: Limite de Crédito]
+
+   // DEPOIS:
+   // Row: [ ] Conta de Débito    [ ] Conta de Crédito
+   // Row: [Campo: Saldo]    [Campo: Limite]
+   ```
+
+2. **Implementação de Row para Checkboxes:**
+   ```dart
+   Row(
+     children: [
+       Expanded(
+         child: CheckboxListTile(
+           title: Text('Conta de Débito'),
+           value: _isDebit,
+           onChanged: (value) => setState(() => _isDebit = value ?? false),
+         ),
+       ),
+       Expanded(
+         child: CheckboxListTile(
+           title: Text('Conta de Crédito'),
+           value: _isCredit,
+           onChanged: (value) => setState(() => _isCredit = value ?? false),
+         ),
+       ),
+     ],
+   )
+   ```
+
+3. **Implementação de Row para Inputs Monetários:**
+   ```dart
+   Row(
+     children: [
+       Expanded(
+         child: NubankStyleCurrencyField(
+           label: 'Saldo Inicial',
+           enabled: _isDebit,
+           controller: _balanceController,
+         ),
+       ),
+       SizedBox(width: AppSpacing.md),
+       Expanded(
+         child: NubankStyleCurrencyField(
+           label: 'Limite de Crédito',
+           enabled: _isCredit,
+           controller: _creditLimitController,
+         ),
+       ),
+     ],
+   )
+   ```
+
+4. **Lógica de Enable/Disable:**
+   - Campo "Saldo" enabled apenas se `_isDebit == true`
+   - Campo "Limite" enabled apenas se `_isCredit == true`
+   - Ambos desabilitados se nenhum checkbox marcado
+   - Visual feedback: campos disabled ficam com opacidade reduzida
+
+5. **Responsividade:**
+   - Em telas menores (<360px width), manter layout vertical
+   - Usar `LayoutBuilder` para decidir entre Row e Column
+
+**Definition of Done:**
+- [x] Checkboxes de débito/crédito na mesma linha
+- [x] Inputs de saldo/limite na mesma linha
+- [x] Lógica de enable/disable funcionando corretamente
+- [x] Visual feedback para campos desabilitados
+- [x] Layout responsivo (vertical em telas pequenas)
+- [x] Testes de widget atualizados
+- [x] Aparência consistente com design system
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F15-T3: Remover Página de Calendário Condicional para Contas Não-Crédito
+
+**Branch:** `feature/conditional-calendar-page`
+
+**Descrição:**
+Tornar a segunda página do formulário de conta (com calendário de pagamento) visível apenas quando o checkbox de crédito está marcado, eliminando navegação desnecessária para contas de débito.
+
+**Problema Atual:**
+- Formulário tem 2 páginas (PageView com 2 children)
+- Usuário pode fazer um swipe para a página do calendário mesmo se não for relevante
+
+**Implementação Esperada:**
+
+1. **Lógica Condicional de Páginas:**
+   ```dart
+   // Em _buildPageView()
+   Widget _buildPageView() {
+     final pages = <Widget>[
+       _buildPage1(scrollController, isEditing),
+       if (_isCredit) _buildPage2(), // Só adiciona se crédito marcado
+     ];
+
+     return PageView(
+       controller: _pageController,
+       children: pages,
+     );
+   }
+   ```
+
+2. **Atualização do Botão de Navegação:**
+   ```dart
+   // Na Página 1
+   Widget _buildNavigationButton() {
+     if (!_isCredit) {
+       // Sem crédito: mostrar apenas botão "Salvar"
+       return PrimaryButton(
+         text: _isLoading ? 'Salvando...' : 'Salvar',
+         onPressed: _isLoading ? null : _handleSave,
+       );
+     } else {
+       // Com crédito: mostrar botão "Próximo" para ir ao calendário
+       return Row(
+         children: [
+           Expanded(
+             child: OutlinedButton(
+               onPressed: () => _pageController.nextPage(
+                 duration: Duration(milliseconds: 300),
+                 curve: Curves.easeInOut,
+               ),
+               child: Text('Próximo'),
+             ),
+           ),
+         ],
+       );
+     }
+   }
+   ```
+
+3. **Validação de Salvamento:**
+   ```dart
+   Future<void> _handleSave() async {
+     // Validar que pelo menos um tipo está marcado
+     if (!_isDebit && !_isCredit) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(content: Text('Selecione ao menos um tipo de conta')),
+       );
+       return;
+     }
+
+     // Se crédito marcado mas não selecionou dia de pagamento
+     if (_isCredit && _creditPaymentDay == null) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(content: Text('Selecione o dia de pagamento do crédito')),
+       );
+       return;
+     }
+
+     // Prosseguir com salvamento...
+   }
+   ```
+
+4. **Atualização Dinâmica:**
+   - Ao desmarcar checkbox de crédito na página 1, resetar `_creditPaymentDay = null`
+   - Se usuário estiver na página 2 e desmarcar crédito, voltar para página 1
+   - Listener no checkbox de crédito:
+   ```dart
+   onChanged: (value) {
+     setState(() {
+       _isCredit = value ?? false;
+       if (!_isCredit) {
+         _creditPaymentDay = null;
+         if (_pageController.page == 1.0) {
+           _pageController.previousPage(
+             duration: Duration(milliseconds: 300),
+             curve: Curves.easeInOut,
+           );
+         }
+       }
+     });
+   }
+   ```
+
+5. **Indicador de Página:**
+   - Mostrar indicador de página apenas se houver 2 páginas (`_isCredit == true`)
+   - Ocultar se apenas 1 página (débito only)
+
+**Definition of Done:**
+- [x] Segunda página (calendário) só aparece se `_isCredit == true`
+- [x] Botão de navegação adapta-se ao número de páginas
+- [x] Desmarcar crédito volta para página 1 se necessário
+- [x] Validação impede salvar crédito sem dia de pagamento
+- [x] Indicador de página condicional implementado
+- [x] UX suave com animações apropriadas
+- [x] Testes de widget para fluxos de 1 e 2 páginas
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F15-T4: Feature Experimental - Monitor de Notificações para Debug
+
+**Branch:** `feature/notification-debug-monitor`
+
+**Descrição:**
+Criar ferramenta de debug experimental que exibe uma notificação do app contendo metadados de qualquer notificação recebida, útil para testar e desenvolver futuros parsers de notificações bancárias.
+
+**Problema/Objetivo:**
+- Facilitar desenvolvimento de parsers de notificações bancárias
+- Permitir visualizar metadados de notificações sem conectar debugger
+- Ferramenta útil para testar captura de transações automáticas
+- Não é feature de produção, mas sim debugging tool
+
+**Implementação Esperada:**
+
+1. **Adicionar Toggle nas Configurações:**
+   ```dart
+   // Settings Screen - Developer Options (nova seção)
+   SwitchListTile(
+     title: Text('Monitor de Notificações (Debug)'),
+     subtitle: Text('Mostra metadados de notificações recebidas'),
+     value: _notificationDebugEnabled,
+     onChanged: (value) async {
+       await ref.read(appSettingsRepositoryProvider)
+           .updateNotificationDebugMode(value);
+       setState(() => _notificationDebugEnabled = value);
+     },
+   )
+   ```
+
+2. **Database Field:**
+   - Adicionar campo `notificationDebugMode` (boolean, default: false) em `AppSettings`
+   - Migration necessária (v10→v11 ou ajustar conforme numeração atual)
+
+3. **Notification Listener Service:**
+   ```dart
+   // lib/data/services/notification_monitor_service.dart
+   class NotificationMonitorService {
+     final FlutterLocalNotificationsPlugin _localNotifications;
+     final IAppSettingsRepository _settingsRepo;
+
+     // Chamado pelo NotificationListenerService quando notificação é recebida
+     Future<void> onNotificationReceived(Map<String, dynamic> metadata) async {
+       final settings = await _settingsRepo.get();
+
+       if (!settings.notificationDebugMode) {
+         return; // Debug mode desabilitado
+       }
+
+       // Criar notificação do app com metadados
+       await _showDebugNotification(metadata);
+     }
+
+     Future<void> _showDebugNotification(Map<String, dynamic> metadata) async {
+       final title = 'Notificação Capturada';
+       final body = '''
+   App: ${metadata['appName'] ?? 'Desconhecido'}
+   Título: ${metadata['title'] ?? 'N/A'}
+   Texto: ${metadata['text'] ?? 'N/A'}
+   Timestamp: ${metadata['timestamp'] ?? 'N/A'}
+   Package: ${metadata['packageName'] ?? 'N/A'}
+       '''.trim();
+
+       await _localNotifications.show(
+         metadata['id'] ?? DateTime.now().millisecondsSinceEpoch,
+         title,
+         body,
+         NotificationDetails(
+           android: AndroidNotificationDetails(
+             'notification_debug',
+             'Debug de Notificações',
+             channelDescription: 'Notificações de debug do monitor',
+             importance: Importance.high,
+             priority: Priority.high,
+             icon: '@mipmap/ic_launcher',
+           ),
+           iOS: DarwinNotificationDetails(),
+         ),
+       );
+     }
+   }
+   ```
+
+4. **Integração com Listener Existente:**
+   ```dart
+   // No NotificationListenerService existente (de F8-T4)
+   @override
+   void onNotificationPosted(StatusBarNotification sbn) {
+     final metadata = {
+       'id': sbn.id,
+       'appName': sbn.packageName,
+       'title': sbn.notification?.extras?.getString('android.title'),
+       'text': sbn.notification?.extras?.getString('android.text'),
+       'timestamp': DateTime.now().toIso8601String(),
+       'packageName': sbn.packageName,
+     };
+
+     // Enviar para monitor (se habilitado)
+     NotificationMonitorService.instance.onNotificationReceived(metadata);
+
+     // Continuar com lógica de parsing normal...
+   }
+   ```
+
+5. **UI Feedback:**
+   - Badge "EXPERIMENTAL" ao lado do toggle
+   - Texto de aviso: "⚠️ Apenas para desenvolvimento. Pode gerar muitas notificações."
+   - Opção de "Limpar notificações de debug" (botão)
+
+6. **Limitações e Boas Práticas:**
+   - Limitar a 50 notificações de debug por sessão (counter em memória)
+   - Auto-desabilitar após 24h (opcional)
+   - Logs detalhados para facilitar desenvolvimento
+
+**Definition of Done:**
+- [ ] Campo `notificationDebugMode` adicionado a AppSettings
+- [ ] Toggle implementado em Settings (seção Developer Options)
+- [ ] NotificationMonitorService criado e funcional
+- [ ] Integração com NotificationListenerService existente
+- [ ] Notificações de debug exibem metadados corretamente
+- [ ] Limitação de quantidade implementada
+- [ ] UI com badges e avisos apropriados
+- [ ] Botão para limpar notificações de debug
+- [ ] Testes de integração (mock de notificações)
+- [ ] Documentação de uso para debug
+- [ ] Merge realizado para `develop`
+
+---

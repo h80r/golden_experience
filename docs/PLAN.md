@@ -60,8 +60,8 @@ main (develop)
 
 ## 📊 Progresso Geral
 
-**Total de Tarefas:** 69
-**Concluídas:** 47 / 69 (68%)
+**Total de Tarefas:** 73
+**Concluídas:** 48 / 73 (66%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -79,7 +79,8 @@ main (develop)
 - **Fase 13 - Gestão Avançada de Contas:** 6 / 6 (100%)
 - **Fase 14 - Refatoração do Sistema de Reserva:** 3 / 3 (100%)
 - **Fase 15 - Melhorias em Ciclo de Faturamento e UX:** 4 / 4 (100%)
-- **Fase 16 - Transações de Receita e Depósito Automático:** 0 / 7 (0%)
+- **Fase 16 - Melhorias no Histórico de Transações:** 1 / 4 (25%)
+- **Fase 17 - Transações de Receita e Depósito Automático:** 0 / 7 (0%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -88,477 +89,253 @@ main (develop)
 
 ---
 
-## ⚙️ Fase 15: Melhorias em Ciclo de Faturamento e UX de Formulários
+## 🔍 Fase 16: Melhorias no Histórico de Transações
 
-**Objetivo:** Refinar o sistema de ciclo de faturamento de crédito para separar conceitos de fechamento vs pagamento, melhorar a experiência do formulário de contas, e adicionar ferramentas de debug para notificações.
+**Objetivo:** Aprimorar a tela de histórico de transações com filtragem por ciclo de faturamento (alinhado ao dashboard), filtros débito/crédito, card de soma total flutuante e tags visuais.
 
 **Status:** 1 / 4 tarefas concluídas
 
 ---
 
-### [x] F15-T1: Implementar Sistema de Data de Fechamento e Pagamento Separados
+### [x] F16-T1: Filtrar Transações por Ciclo de Faturamento
 
-**Branch:** `refactor/closing-vs-payment-dates`
+**Branch:** `feature/transaction-history-billing-cycle-filter`
 
 **Descrição:**
-Separar os conceitos de "data de fechamento" (quando a fatura fecha) e "data de pagamento" (quando a fatura vence) para cartões de crédito. O fechamento ocorre automaticamente uma semana antes do pagamento, criando uma janela de "período ideal de compra" onde as transações não impactam o ciclo atual.
-
-**Problema Atual:**
-- Sistema atual usa apenas `creditClosingDay` que representa o fechamento
-- Não há conceito de data de pagamento separada
-- Usuários não visualizam o "período ideal de compra" (janela entre fechamento e pagamento)
-- Ciclo de faturamento usa apenas a data de fechamento, sem considerar o pagamento
+Alterar a lógica de exibição do histórico de transações para mostrar, por padrão, as transações do ciclo de faturamento atual (como calculado na página principal), em vez de simplesmente filtrar por mês.
 
 **Implementação Esperada:**
 
-1. **Database Migration (v9→v10):**
-   ```dart
-   // Renomear e adicionar campos na tabela Accounts
-   // - Renomear `creditClosingDay` para `creditPaymentDay` (mantém valores existentes)
-   // - Calcular `creditClosingDay` automaticamente como paymentDay - 7
-   // Migration preserva dados: creditPaymentDay = creditClosingDay atual
-   ```
+1. **Lógica de Filtro:**
+   - Para contas de **crédito**: usar o período entre closing date e payment day do ciclo atual
+   - Para contas de **débito**: usar mês atual (comportamento existente)
+   - O filtro deve respeitar a mesma lógica usada no dashboard para calcular "quanto ainda posso gastar"
 
-2. **Atualizar Account Model:**
-   - Campo `creditPaymentDay` (int 1-31, nullable) - dia do vencimento da fatura
-   - Campo `creditClosingDay` - CALCULADO automaticamente (paymentDay - 7)
-   - Se paymentDay < 8, ajustar para mês anterior (ex: paymentDay=5 → closingDay=28 do mês anterior)
+2. **UI Updates:**
+   - Adicionar chip/badge mostrando o período atual: "Ciclo: 15/out - 14/nov"
+   - Botão para alternar entre: "Ciclo Atual" / "Mês Atual" / "Todos"
+   - Manter funcionalidade de navegação entre períodos (setas < >)
 
-3. **Lógica de Cálculo de Datas:**
-   ```dart
-   // Em billing_cycle_utils.dart
-
-   /// Calcula a data de fechamento baseada na data de pagamento
-   /// Regra: fechamento = pagamento - 7 dias
-   DateTime calculateClosingDate(int paymentDay, DateTime referenceMonth) {
-     final paymentDate = DateTime(referenceMonth.year, referenceMonth.month, paymentDay);
-     return paymentDate.subtract(Duration(days: 7));
-   }
-
-   /// Identifica o "período ideal de compra" (entre fechamento e pagamento)
-   /// Compras neste período não impactam a fatura atual
-   DateTimeRange calculateIdealPurchasePeriod(int paymentDay, DateTime now) {
-     final closingDate = calculateClosingDate(paymentDay, now);
-     final paymentDate = DateTime(now.year, now.month, paymentDay);
-
-     return DateTimeRange(
-       start: closingDate.add(Duration(days: 1)),
-       end: paymentDate,
-     );
-   }
-   ```
-
-4. **Atualizar Billing Cycle Logic:**
-   ```dart
-   // Ciclo de faturamento atual:
-   // - Início: dia após fechamento ANTERIOR (inclusive)
-   // - Fim: data de fechamento ATUAL (exclusive)
-   //
-   // Exemplo com paymentDay = 15:
-   // - Fechamento: dia 8 (15 - 7)
-   // - Ciclo atual (se hoje é 10/11): 09/10 até 07/11
-   // - Período ideal: 08/11 até 15/11 (compras aqui vão para próxima fatura)
-
-   BillingCyclePeriod calculateCurrentBillingCycle(int paymentDay, DateTime today) {
-     final closingDay = _calculateClosingDay(paymentDay);
-
-     // Determinar qual mês de referência usar
-     DateTime referenceMonth;
-     if (today.day > closingDay) {
-       // Após o fechamento: ciclo atual vai do fechamento deste mês até próximo
-       referenceMonth = DateTime(today.year, today.month);
-     } else {
-       // Antes do fechamento: ciclo atual começou no mês anterior
-       referenceMonth = DateTime(today.year, today.month - 1);
-     }
-
-     final cycleStart = DateTime(referenceMonth.year, referenceMonth.month, closingDay)
-         .add(Duration(days: 1));
-     final cycleEnd = DateTime(referenceMonth.year, referenceMonth.month + 1, closingDay);
-
-     return BillingCyclePeriod(start: cycleStart, end: cycleEnd);
-   }
-   ```
-
-5. **UI Updates - Account Form:**
-   - Remover seletor de "Dia de Fechamento"
-   - Adicionar seletor de "Dia de Pagamento" (usando InlineCalendar)
-   - Mostrar fechamento calculado: "Fechamento automático: dia X" (read-only)
-   - Tooltip explicativo: "Sua fatura fecha 7 dias antes do pagamento"
-
-6. **UI Updates - Accounts Screen:**
-   - Expandir informações exibidas no tile expandido:
-     - "Pagamento: dia X"
-     - "Fechamento: dia Y"
-     - "Período ideal: dd/mm - dd/mm" (destacado em verde/azul)
-   - Tooltip no período ideal: "Compras neste período vão para a próxima fatura"
-
-7. **Edge Cases:**
-   - PaymentDay 1-7: fechamento fica no mês anterior
-     - Ex: paymentDay=5 → closingDay=28 (ou 29/30/31 dependendo do mês anterior)
-   - Fevereiro: ajustar dias inválidos
-   - Dia 31 em meses com 30 dias: usar último dia válido
+3. **Repository/Use Case:**
+   - Criar método `getTransactionsByBillingCycle(accountId, startDate, endDate)`
+   - Reutilizar lógica de cálculo de ciclo do dashboard
 
 **Definition of Done:**
-- [x] Migration v9→v10 implementada (rename + preserva dados)
-- [x] Campo `creditPaymentDay` adicionado ao model
-- [x] Campo `creditClosingDay` calculado automaticamente
-- [x] Funções de cálculo de fechamento e período ideal criadas
-- [x] `calculateCurrentBillingCycle()` atualizado para usar lógica correta
-- [x] UI do formulário atualizada (payment day selector)
-- [x] Accounts screen exibe fechamento, pagamento e período ideal
-- [x] Edge cases tratados (dias inválidos, mudança de mês)
-- [x] Testes unitários para todas as funções de cálculo
-- [x] Testes de integração para billing cycle com nova lógica
-- [x] Todos os testes passando (atualizar mocks para usar paymentDay)
-- [x] Documentação atualizada (CLAUDE.md)
-- [x] Merge realizado para `develop`
-
----
-
-### [x] F15-T2: Melhorias de Layout no Formulário de Conta
-
-**Branch:** `feature/account-form-layout-improvements`
-
-**Descrição:**
-Otimizar o layout do formulário de conta para reduzir altura vertical e melhorar usabilidade, colocando checkboxes e inputs relacionados na mesma linha.
-
-**Problema Atual:**
-- Checkboxes de débito e crédito ocupam linhas separadas
-- Inputs de saldo e limite ocupam linhas separadas
-- Formulário muito extenso verticalmente
-- Desperdício de espaço horizontal
-
-**Implementação Esperada:**
-
-1. **Página 1 - Reorganização de Layout:**
-   ```dart
-   // ANTES:
-   // [ ] Conta de Débito
-   // [ ] Conta de Crédito
-   // [Campo: Saldo Inicial]
-   // [Campo: Limite de Crédito]
-
-   // DEPOIS:
-   // Row: [ ] Conta de Débito    [ ] Conta de Crédito
-   // Row: [Campo: Saldo]    [Campo: Limite]
-   ```
-
-2. **Implementação de Row para Checkboxes:**
-   ```dart
-   Row(
-     children: [
-       Expanded(
-         child: CheckboxListTile(
-           title: Text('Conta de Débito'),
-           value: _isDebit,
-           onChanged: (value) => setState(() => _isDebit = value ?? false),
-         ),
-       ),
-       Expanded(
-         child: CheckboxListTile(
-           title: Text('Conta de Crédito'),
-           value: _isCredit,
-           onChanged: (value) => setState(() => _isCredit = value ?? false),
-         ),
-       ),
-     ],
-   )
-   ```
-
-3. **Implementação de Row para Inputs Monetários:**
-   ```dart
-   Row(
-     children: [
-       Expanded(
-         child: NubankStyleCurrencyField(
-           label: 'Saldo Inicial',
-           enabled: _isDebit,
-           controller: _balanceController,
-         ),
-       ),
-       SizedBox(width: AppSpacing.md),
-       Expanded(
-         child: NubankStyleCurrencyField(
-           label: 'Limite de Crédito',
-           enabled: _isCredit,
-           controller: _creditLimitController,
-         ),
-       ),
-     ],
-   )
-   ```
-
-4. **Lógica de Enable/Disable:**
-   - Campo "Saldo" enabled apenas se `_isDebit == true`
-   - Campo "Limite" enabled apenas se `_isCredit == true`
-   - Ambos desabilitados se nenhum checkbox marcado
-   - Visual feedback: campos disabled ficam com opacidade reduzida
-
-5. **Responsividade:**
-   - Em telas menores (<360px width), manter layout vertical
-   - Usar `LayoutBuilder` para decidir entre Row e Column
-
-**Definition of Done:**
-- [x] Checkboxes de débito/crédito na mesma linha
-- [x] Inputs de saldo/limite na mesma linha
-- [x] Lógica de enable/disable funcionando corretamente
-- [x] Visual feedback para campos desabilitados
-- [x] Layout responsivo (vertical em telas pequenas)
-- [x] Testes de widget atualizados
-- [x] Aparência consistente com design system
-- [x] Merge realizado para `develop`
-
----
-
-### [x] F15-T3: Remover Página de Calendário Condicional para Contas Não-Crédito
-
-**Branch:** `feature/conditional-calendar-page`
-
-**Descrição:**
-Tornar a segunda página do formulário de conta (com calendário de pagamento) visível apenas quando o checkbox de crédito está marcado, eliminando navegação desnecessária para contas de débito.
-
-**Problema Atual:**
-- Formulário tem 2 páginas (PageView com 2 children)
-- Usuário pode fazer um swipe para a página do calendário mesmo se não for relevante
-
-**Implementação Esperada:**
-
-1. **Lógica Condicional de Páginas:**
-   ```dart
-   // Em _buildPageView()
-   Widget _buildPageView() {
-     final pages = <Widget>[
-       _buildPage1(scrollController, isEditing),
-       if (_isCredit) _buildPage2(), // Só adiciona se crédito marcado
-     ];
-
-     return PageView(
-       controller: _pageController,
-       children: pages,
-     );
-   }
-   ```
-
-2. **Atualização do Botão de Navegação:**
-   ```dart
-   // Na Página 1
-   Widget _buildNavigationButton() {
-     if (!_isCredit) {
-       // Sem crédito: mostrar apenas botão "Salvar"
-       return PrimaryButton(
-         text: _isLoading ? 'Salvando...' : 'Salvar',
-         onPressed: _isLoading ? null : _handleSave,
-       );
-     } else {
-       // Com crédito: mostrar botão "Próximo" para ir ao calendário
-       return Row(
-         children: [
-           Expanded(
-             child: OutlinedButton(
-               onPressed: () => _pageController.nextPage(
-                 duration: Duration(milliseconds: 300),
-                 curve: Curves.easeInOut,
-               ),
-               child: Text('Próximo'),
-             ),
-           ),
-         ],
-       );
-     }
-   }
-   ```
-
-3. **Validação de Salvamento:**
-   ```dart
-   Future<void> _handleSave() async {
-     // Validar que pelo menos um tipo está marcado
-     if (!_isDebit && !_isCredit) {
-       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text('Selecione ao menos um tipo de conta')),
-       );
-       return;
-     }
-
-     // Se crédito marcado mas não selecionou dia de pagamento
-     if (_isCredit && _creditPaymentDay == null) {
-       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text('Selecione o dia de pagamento do crédito')),
-       );
-       return;
-     }
-
-     // Prosseguir com salvamento...
-   }
-   ```
-
-4. **Atualização Dinâmica:**
-   - Ao desmarcar checkbox de crédito na página 1, resetar `_creditPaymentDay = null`
-   - Se usuário estiver na página 2 e desmarcar crédito, voltar para página 1
-   - Listener no checkbox de crédito:
-   ```dart
-   onChanged: (value) {
-     setState(() {
-       _isCredit = value ?? false;
-       if (!_isCredit) {
-         _creditPaymentDay = null;
-         if (_pageController.page == 1.0) {
-           _pageController.previousPage(
-             duration: Duration(milliseconds: 300),
-             curve: Curves.easeInOut,
-           );
-         }
-       }
-     });
-   }
-   ```
-
-5. **Indicador de Página:**
-   - Mostrar indicador de página apenas se houver 2 páginas (`_isCredit == true`)
-   - Ocultar se apenas 1 página (débito only)
-
-**Definition of Done:**
-- [x] Segunda página (calendário) só aparece se `_isCredit == true`
-- [x] Botão de navegação adapta-se ao número de páginas
-- [x] Desmarcar crédito volta para página 1 se necessário
-- [x] Validação impede salvar crédito sem dia de pagamento
-- [x] Indicador de página condicional implementado
-- [x] UX suave com animações apropriadas
-- [x] Testes de widget para fluxos de 1 e 2 páginas
-- [x] Merge realizado para `develop`
-
----
-
-### [x] F15-T4: Feature Experimental - Monitor de Notificações para Debug
-
-**Branch:** `feature/notification-debug-monitor`
-
-**Descrição:**
-Criar ferramenta de debug experimental que exibe uma notificação do app contendo metadados de qualquer notificação recebida, útil para testar e desenvolver futuros parsers de notificações bancárias.
-
-**Problema/Objetivo:**
-- Facilitar desenvolvimento de parsers de notificações bancárias
-- Permitir visualizar metadados de notificações sem conectar debugger
-- Ferramenta útil para testar captura de transações automáticas
-- Não é feature de produção, mas sim debugging tool
-
-**Implementação Esperada:**
-
-1. **Adicionar Toggle nas Configurações:**
-   ```dart
-   // Settings Screen - Developer Options (nova seção)
-   SwitchListTile(
-     title: Text('Monitor de Notificações (Debug)'),
-     subtitle: Text('Mostra metadados de notificações recebidas'),
-     value: _notificationDebugEnabled,
-     onChanged: (value) async {
-       await ref.read(appSettingsRepositoryProvider)
-           .updateNotificationDebugMode(value);
-       setState(() => _notificationDebugEnabled = value);
-     },
-   )
-   ```
-
-2. **Database Field:**
-   - Adicionar campo `notificationDebugMode` (boolean, default: false) em `AppSettings`
-   - Migration necessária (v10→v11 ou ajustar conforme numeração atual)
-
-3. **Notification Listener Service:**
-   ```dart
-   // lib/data/services/notification_monitor_service.dart
-   class NotificationMonitorService {
-     final FlutterLocalNotificationsPlugin _localNotifications;
-     final IAppSettingsRepository _settingsRepo;
-
-     // Chamado pelo NotificationListenerService quando notificação é recebida
-     Future<void> onNotificationReceived(Map<String, dynamic> metadata) async {
-       final settings = await _settingsRepo.get();
-
-       if (!settings.notificationDebugMode) {
-         return; // Debug mode desabilitado
-       }
-
-       // Criar notificação do app com metadados
-       await _showDebugNotification(metadata);
-     }
-
-     Future<void> _showDebugNotification(Map<String, dynamic> metadata) async {
-       final title = 'Notificação Capturada';
-       final body = '''
-   App: ${metadata['appName'] ?? 'Desconhecido'}
-   Título: ${metadata['title'] ?? 'N/A'}
-   Texto: ${metadata['text'] ?? 'N/A'}
-   Timestamp: ${metadata['timestamp'] ?? 'N/A'}
-   Package: ${metadata['packageName'] ?? 'N/A'}
-       '''.trim();
-
-       await _localNotifications.show(
-         metadata['id'] ?? DateTime.now().millisecondsSinceEpoch,
-         title,
-         body,
-         NotificationDetails(
-           android: AndroidNotificationDetails(
-             'notification_debug',
-             'Debug de Notificações',
-             channelDescription: 'Notificações de debug do monitor',
-             importance: Importance.high,
-             priority: Priority.high,
-             icon: '@mipmap/ic_launcher',
-           ),
-           iOS: DarwinNotificationDetails(),
-         ),
-       );
-     }
-   }
-   ```
-
-4. **Integração com Listener Existente:**
-   ```dart
-   // No NotificationListenerService existente (de F8-T4)
-   @override
-   void onNotificationPosted(StatusBarNotification sbn) {
-     final metadata = {
-       'id': sbn.id,
-       'appName': sbn.packageName,
-       'title': sbn.notification?.extras?.getString('android.title'),
-       'text': sbn.notification?.extras?.getString('android.text'),
-       'timestamp': DateTime.now().toIso8601String(),
-       'packageName': sbn.packageName,
-     };
-
-     // Enviar para monitor (se habilitado)
-     NotificationMonitorService.instance.onNotificationReceived(metadata);
-
-     // Continuar com lógica de parsing normal...
-   }
-   ```
-
-5. **UI Feedback:**
-   - Badge "EXPERIMENTAL" ao lado do toggle
-   - Texto de aviso: "⚠️ Apenas para desenvolvimento. Pode gerar muitas notificações."
-   - Opção de "Limpar notificações de debug" (botão)
-
-6. **Limitações e Boas Práticas:**
-   - Limitar a 50 notificações de debug por sessão (counter em memória)
-   - Auto-desabilitar após 24h (opcional)
-   - Logs detalhados para facilitar desenvolvimento
-
-**Definition of Done:**
-- [ ] Campo `notificationDebugMode` adicionado a AppSettings
-- [ ] Toggle implementado em Settings (seção Developer Options)
-- [ ] NotificationMonitorService criado e funcional
-- [ ] Integração com NotificationListenerService existente
-- [ ] Notificações de debug exibem metadados corretamente
-- [ ] Limitação de quantidade implementada
-- [ ] UI com badges e avisos apropriados
-- [ ] Botão para limpar notificações de debug
-- [ ] Testes de integração (mock de notificações)
-- [ ] Documentação de uso para debug
+- [x] Histórico exibe transações do ciclo de faturamento por padrão
+- [x] Filtro de período (Ciclo/Mês/Todos) implementado
+- [x] UI mostra claramente qual período está sendo exibido
+- [x] Lógica alinhada com cálculos do dashboard
+- [ ] Testes de integração para diferentes tipos de conta
 - [ ] Merge realizado para `develop`
 
 ---
 
-## ⚙️ Fase 16: Transações de Receita e Depósito Automático de Salário
+### [ ] F16-T2: Adicionar Filtro Débito/Crédito no Histórico
+
+**Branch:** `feature/transaction-history-account-type-filter`
+
+**Descrição:**
+Implementar filtro para mostrar apenas transações de contas de débito ou crédito no histórico.
+
+**Implementação Esperada:**
+
+1. **Filter UI:**
+   - Adicionar SegmentedButton ou FilterChips abaixo do período:
+     - "Todas" (padrão)
+     - "Débito"
+     - "Crédito"
+   - Manter estado do filtro durante a sessão
+
+2. **Repository Method:**
+   ```dart
+   Future<List<TransactionModel>> getTransactionsByAccountType({
+     required DateTime startDate,
+     required DateTime endDate,
+     String? accountType, // 'debit', 'credit', null for all
+   });
+   ```
+
+3. **Query Logic:**
+   - Join com tabela Accounts
+   - Filtrar por `account.isDebit` ou `account.isCredit` conforme seleção
+   - Considerar contas dual-type (tanto débito quanto crédito)
+
+4. **UX Details:**
+   - Mostrar contagem: "12 transações (Débito)"
+   - Animação suave ao trocar filtros
+
+**Definition of Done:**
+- [ ] Filtro débito/crédito implementado na UI
+- [ ] Repository method criado
+- [ ] Query filtra corretamente por tipo de conta
+- [ ] Contagem de transações atualiza dinamicamente
+- [ ] Testes unitários para query
+- [ ] Testes de widget para filtro
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F16-T3: Card de Soma Total Flutuante com Transição para FAB
+
+**Branch:** `feature/transaction-history-floating-sum-card`
+
+**Descrição:**
+Criar um card pequeno flutuante no rodapé do histórico mostrando a soma total das transações filtradas. Ao tocar, o card se transforma no FAB para adicionar nova transação.
+
+**Implementação Esperada:**
+
+1. **Floating Sum Card:**
+   ```dart
+   // Posição: bottom-center, acima do FAB
+   Container(
+     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+     decoration: BoxDecoration(
+       color: AppColors.surface,
+       borderRadius: BorderRadius.circular(24),
+       boxShadow: [AppShadows.medium],
+     ),
+     child: Row(
+       mainAxisSize: MainAxisSize.min,
+       children: [
+         Text('Total: ', style: AppTypography.bodySmall),
+         Text('R$ 1.234,56', style: AppTypography.titleMedium.copyWith(
+           color: isNegative ? Colors.red : Colors.green,
+         )),
+         SizedBox(width: 8),
+         Icon(Icons.expand_less, size: 16),
+       ],
+     ),
+   )
+   ```
+
+2. **Animation Logic:**
+   - Estado inicial: SumCard visível, FAB oculto
+   - Ao tocar no SumCard:
+     - SumCard escala e move para posição do FAB
+     - Transforma em FAB circular com ícone "+"
+     - AnimatedContainer com duration: 300ms
+   - Ao fechar bottom sheet: animação reversa
+
+3. **Cálculo da Soma:**
+   - Somar valores de todas as transações visíveis (após filtros)
+   - Para receitas: valor positivo
+   - Para despesas: valor negativo
+   - Cor verde se líquido positivo, vermelho se negativo
+
+4. **Stack Layout:**
+   ```dart
+   Stack(
+     children: [
+       TransactionList(),
+       Positioned(
+         bottom: 16,
+         left: 0,
+         right: 0,
+         child: AnimatedSwitcher(
+           duration: Duration(milliseconds: 300),
+           child: _showingSumCard ? SumCard() : AddTransactionFAB(),
+         ),
+       ),
+     ],
+   )
+   ```
+
+**Definition of Done:**
+- [ ] Sum card flutuante implementado
+- [ ] Cálculo de soma total funcional
+- [ ] Animação de transição para FAB suave
+- [ ] Cores dinâmicas (verde/vermelho) conforme saldo
+- [ ] Funcionalidade de adicionar transação mantida
+- [ ] Testes de widget
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F16-T4: Adicionar Tags Visuais de Débito/Crédito nas Transações
+
+**Branch:** `feature/transaction-debit-credit-tags`
+
+**Descrição:**
+Adicionar tags visuais (badges) em cada transação do histórico indicando se é débito ou crédito.
+
+**Implementação Esperada:**
+
+1. **Tag Design:**
+   ```dart
+   // Débito
+   Container(
+     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+     decoration: BoxDecoration(
+       color: AppColors.debitTag.withOpacity(0.1),
+       borderRadius: BorderRadius.circular(8),
+     ),
+     child: Text(
+       'Débito',
+       style: AppTypography.labelSmall.copyWith(
+         color: AppColors.debitTag,
+         fontWeight: FontWeight.w600,
+       ),
+     ),
+   )
+
+   // Crédito
+   Container(
+     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+     decoration: BoxDecoration(
+       color: AppColors.creditTag.withOpacity(0.1),
+       borderRadius: BorderRadius.circular(8),
+     ),
+     child: Text(
+       'Crédito',
+       style: AppTypography.labelSmall.copyWith(
+         color: AppColors.creditTag,
+         fontWeight: FontWeight.w600,
+       ),
+     ),
+   )
+   ```
+
+2. **Transaction List Item Layout:**
+   ```dart
+   // Estrutura do item:
+   ListTile(
+     leading: CategoryIcon(),
+     title: Row(
+       children: [
+         Text(description),
+         SizedBox(width: 8),
+         DebitCreditTag(account: transaction.account),
+       ],
+     ),
+     subtitle: Text(date),
+     trailing: Text(value),
+   )
+   ```
+
+3. **Color Palette Update:**
+   - Adicionar cores ao `app_colors.dart`:
+   ```dart
+   static const debitTag = Color(0xFF2196F3); // Blue
+   static const creditTag = Color(0xFFFF9800); // Orange
+   ```
+
+4. **Positioning:**
+   - Tag ao lado da descrição da transação
+   - Tamanho pequeno e discreto
+   - Não interferir na leitura do valor principal
+
+**Definition of Done:**
+- [ ] Tags visuais implementadas
+- [ ] Cores adicionadas ao design system
+- [ ] Layout do item de transação atualizado
+- [ ] Tags aparecem em todas as transações
+- [ ] Estilo consistente com design do app
+- [ ] Testes de widget
+- [ ] Merge realizado para `develop`
+
+---
+
+## ⚙️ Fase 17: Transações de Receita e Depósito Automático de Salário
 
 **Objetivo:** Implementar suporte a transações de receita (positivas) e criar sistema de depósito automático do salário na conta configurada.
 
@@ -568,7 +345,7 @@ Criar ferramenta de debug experimental que exibe uma notificação do app conten
 
 ---
 
-### [ ] F16-T1: Atualizar Testes e Documentação
+### [ ] F17-T1: Atualizar Testes e Documentação
 
 **Branch:** `chore/update-tests-reserve-refactor`
 
@@ -616,7 +393,7 @@ Atualizar todos os testes e documentação para refletir as mudanças no sistema
 
 ---
 
-### [ ] F16-T2: Implementar Sistema de Tipo de Transação
+### [ ] F17-T2: Implementar Sistema de Tipo de Transação
 
 **Branch:** `feature/transaction-income-type`
 
@@ -680,7 +457,7 @@ Adicionar suporte a transações de receita (positivas) além de despesas (negat
 
 ---
 
-### [ ] F16-T3: Criar Tabela Invoice para Gestão Futura de Faturas
+### [ ] F17-T3: Criar Tabela Invoice para Gestão Futura de Faturas
 
 **Branch:** `chore/invoice-table-foundation`
 
@@ -750,7 +527,7 @@ Criar tabela Invoice para suportar gestão futura de faturas de cartão de créd
 
 ---
 
-### [ ] F16-T4: Adicionar Configuração de Conta de Salário
+### [ ] F17-T4: Adicionar Configuração de Conta de Salário
 
 **Branch:** `feature/salary-account-config`
 
@@ -795,7 +572,7 @@ Permitir que o usuário configure para qual conta o salário deve ser depositado
 
 ---
 
-### [ ] F16-T5: Atualizar UI de Transação para Receita/Despesa
+### [ ] F17-T5: Atualizar UI de Transação para Receita/Despesa
 
 **Branch:** `feature/transaction-ui-income-expense`
 
@@ -853,7 +630,7 @@ Atualizar o bottom sheet de transação e a lista de transações para suportar 
 
 ---
 
-### [ ] F16-T6: Implementar Depósito Automático de Salário
+### [ ] F17-T6: Implementar Depósito Automático de Salário
 
 **Branch:** `feature/automatic-salary-deposit`
 
@@ -1007,7 +784,7 @@ Implementar sistema de background job para depositar automaticamente o salário 
 
 ---
 
-### [ ] F16-T7: Testes e Casos Extremos
+### [ ] F17-T7: Testes e Casos Extremos
 
 **Branch:** `chore/income-salary-tests`
 
@@ -1149,7 +926,7 @@ As fases devem ser seguidas sequencialmente, mas dentro de cada fase há alguma 
 
 ## 🎊 Conclusão
 
-Este plano mapeia todas as **69 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
+Este plano mapeia todas as **73 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
 
 A **Fase 5** representa a primeira iteração de melhorias baseada em uso real, demonstrando a importância de testar o aplicativo e iterar sobre o design inicial.
 

@@ -4,9 +4,11 @@ import '../../theme/app_spacing.dart';
 
 /// Filter period options
 enum FilterPeriod {
+  billingCycle('Ciclo de Faturamento'),
   today('Hoje'),
   thisWeek('Esta semana'),
   thisMonth('Este mês'),
+  all('Todos'),
   custom('Personalizado');
 
   final String label;
@@ -38,7 +40,7 @@ class TransactionFiltersSheet extends StatefulWidget {
     required this.accounts,
     required this.categories,
     required this.onFiltersChanged,
-    this.initialPeriod = FilterPeriod.thisMonth,
+    this.initialPeriod = FilterPeriod.billingCycle,
     this.initialCustomStartDate,
     this.initialCustomEndDate,
     this.initialSelectedAccountIds = const {},
@@ -98,7 +100,7 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
 
   void _clearFilters() {
     setState(() {
-      _selectedPeriod = FilterPeriod.thisMonth;
+      _selectedPeriod = FilterPeriod.billingCycle;
       _customStartDate = null;
       _customEndDate = null;
       _selectedAccountIds.clear();

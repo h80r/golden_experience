@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/utils/billing_cycle_utils.dart';
 import '../../data/providers/repository_providers.dart';
 import '../../domain/usecases/providers/usecase_providers.dart';
 import '../state/dashboard_view_notifier.dart';
@@ -53,7 +54,7 @@ class TransactionsListScreen extends ConsumerStatefulWidget {
 
 class _TransactionsListScreenState
     extends ConsumerState<TransactionsListScreen> {
-  FilterPeriod _filterPeriod = FilterPeriod.thisMonth;
+  FilterPeriod _filterPeriod = FilterPeriod.billingCycle;
   DateTime? _customStartDate;
   DateTime? _customEndDate;
   Set<int> _selectedAccountIds = {};
@@ -101,37 +102,36 @@ class _TransactionsListScreenState
       backgroundColor: AppColors.background,
       body: transactionsAsync.when(
         data: (transactions) {
-          // Get date range
-          final dateRange = _getDateRange();
-
-          // Filter transactions by date
-          final filteredByDate = transactions.where((t) {
-            return t.date.isAfter(dateRange.start) &&
-                t.date.isBefore(dateRange.end);
-          }).toList();
-
-          // Filter by accounts
-          List filteredByAccount = filteredByDate;
-          if (_selectedAccountIds.isNotEmpty) {
-            filteredByAccount = filteredByDate
-                .where((t) => _selectedAccountIds.contains(t.accountId))
-                .toList();
-          }
-
-          // Filter by categories
-          List filteredByCategory = filteredByAccount;
-          if (_selectedCategoryIds.isNotEmpty) {
-            filteredByCategory = filteredByAccount
-                .where((t) => _selectedCategoryIds.contains(t.categoryId))
-                .toList();
-          }
-
-          // Sort by date (newest first)
-          filteredByCategory.sort((a, b) => b.date.compareTo(a.date));
-
-          // Get accounts and categories for mapping
+          // Get accounts to determine billing cycle filtering
           return accountsAsync.when(
             data: (accounts) {
+              // Filter transactions by period (billing cycle or calendar date)
+              final filteredByDate = _filterPeriod == FilterPeriod.billingCycle
+                  ? _filterByBillingCycle(transactions, accounts)
+                  : _filterPeriod == FilterPeriod.all
+                      ? transactions
+                      : _filterByDateRange(transactions);
+
+              // Filter by accounts
+              List filteredByAccount = filteredByDate;
+              if (_selectedAccountIds.isNotEmpty) {
+                filteredByAccount = filteredByDate
+                    .where((t) => _selectedAccountIds.contains(t.accountId))
+                    .toList();
+              }
+
+              // Filter by categories
+              List filteredByCategory = filteredByAccount;
+              if (_selectedCategoryIds.isNotEmpty) {
+                filteredByCategory = filteredByAccount
+                    .where((t) => _selectedCategoryIds.contains(t.categoryId))
+                    .toList();
+              }
+
+              // Sort by date (newest first)
+              filteredByCategory.sort((a, b) => b.date.compareTo(a.date));
+
+              // Get categories for mapping
               return categoriesAsync.when(
                 data: (categories) {
                   final accountsMap = {
@@ -330,12 +330,56 @@ class _TransactionsListScreenState
     }
   }
 
+  /// Filter transactions by billing cycle for credit accounts and calendar month for debit accounts
+  List<dynamic> _filterByBillingCycle(List<dynamic> transactions, List<dynamic> accounts) {
+    final now = DateTime.now();
+    final accountsMap = {for (var account in accounts) (account as dynamic).id as int: account};
+
+    return transactions.where((transaction) {
+      final accountId = (transaction as dynamic).accountId as int;
+      final account = accountsMap[accountId];
+
+      if (account == null) return false;
+
+      final isCredit = (account).isCredit as bool;
+      final creditPaymentDay = (account).creditPaymentDay as int?;
+
+      if (isCredit && creditPaymentDay != null) {
+        // Credit account with billing cycle - filter by current billing cycle
+        final cycle = calculateCurrentBillingCycleFromPaymentDay(creditPaymentDay, now);
+        return cycle.contains((transaction).date as DateTime);
+      } else {
+        // Debit account or credit without payment day - filter by calendar month
+        final transactionDate = (transaction).date as DateTime;
+        final monthStart = DateTime(now.year, now.month, 1);
+        final monthEnd = DateTime(now.year, now.month + 1, 1).subtract(const Duration(seconds: 1));
+        return transactionDate.isAfter(monthStart.subtract(const Duration(seconds: 1))) &&
+               transactionDate.isBefore(monthEnd.add(const Duration(seconds: 1)));
+      }
+    }).toList();
+  }
+
+  /// Filter transactions by date range (for non-billing-cycle filters)
+  List<dynamic> _filterByDateRange(List<dynamic> transactions) {
+    final dateRange = _getDateRange();
+    return transactions.where((t) {
+      return (t as dynamic).date.isAfter(dateRange.start) &&
+             t.date.isBefore(dateRange.end);
+    }).toList();
+  }
+
   /// Get date range based on selected filter period
   ({DateTime start, DateTime end}) _getDateRange() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
     switch (_filterPeriod) {
+      case FilterPeriod.billingCycle:
+        // For billing cycle, return current month as fallback
+        // (actual filtering is done per-account in _filterByBillingCycle)
+        final monthStart = DateTime(now.year, now.month, 1);
+        final monthEnd = DateTime(now.year, now.month + 1, 1);
+        return (start: monthStart, end: monthEnd);
       case FilterPeriod.today:
         return (start: today, end: today.add(const Duration(days: 1)));
       case FilterPeriod.thisWeek:
@@ -349,6 +393,9 @@ class _TransactionsListScreenState
         final monthStart = DateTime(now.year, now.month, 1);
         final monthEnd = DateTime(now.year, now.month + 1, 1);
         return (start: monthStart, end: monthEnd);
+      case FilterPeriod.all:
+        // Return a wide date range that includes all transactions
+        return (start: DateTime(1970), end: DateTime(2100));
       case FilterPeriod.custom:
         return (
           start: _customStartDate ?? today,
