@@ -52,7 +52,7 @@ class TransactionCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Description
+                        // Description with tag
                         Text(
                           transaction.description,
                           style:
@@ -102,22 +102,50 @@ class TransactionCard extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               // Footer: Category badge
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  transaction.categoryName,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: transaction.transactionType == 'credit'
+                          ? AppColors.warningWithOpacity
+                          : AppColors.successWithOpacity,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      transaction.transactionType == 'credit'
+                          ? 'Crédito'
+                          : 'Débito',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: transaction.transactionType == 'credit'
+                                ? AppColors.warning
+                                : AppColors.success,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                  ),
+                  SizedBox(width: AppSpacing.sm),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      transaction.categoryName,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -138,6 +166,7 @@ class TransactionCardData {
   final int categoryId;
   final String categoryName;
   final String? notes;
+  final String transactionType;
 
   const TransactionCardData({
     required this.id,
@@ -149,5 +178,6 @@ class TransactionCardData {
     required this.categoryId,
     required this.categoryName,
     this.notes,
+    required this.transactionType,
   });
 }

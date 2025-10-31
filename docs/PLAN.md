@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 75
-**Concluídas:** 49 / 75 (65%)
+**Concluídas:** 50 / 75 (67%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -79,7 +79,7 @@ main (develop)
 - **Fase 13 - Gestão Avançada de Contas:** 6 / 6 (100%)
 - **Fase 14 - Refatoração do Sistema de Reserva:** 3 / 3 (100%)
 - **Fase 15 - Melhorias em Ciclo de Faturamento e UX:** 4 / 4 (100%)
-- **Fase 16 - Melhorias no Histórico de Transações:** 3 / 6 (50%)
+- **Fase 16 - Melhorias no Histórico de Transações:** 4 / 6 (67%)
 - **Fase 17 - Transações de Receita e Depósito Automático:** 0 / 7 (0%)
 
 ### Legenda de Status
@@ -93,7 +93,7 @@ main (develop)
 
 **Objetivo:** Aprimorar a tela de histórico de transações com filtragem por ciclo de faturamento (alinhado ao dashboard), filtros débito/crédito, card de soma total flutuante e tags visuais.
 
-**Status:** 3 / 6 tarefas concluídas
+**Status:** 4 / 6 tarefas concluídas
 
 ---
 
@@ -247,11 +247,11 @@ Criar um card pequeno flutuante no rodapé do histórico mostrando a soma total 
 - [x] Cores dinâmicas (verde/vermelho) conforme saldo
 - [x] Funcionalidade de adicionar transação mantida
 - [ ] Testes de widget
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F16-T4: Adicionar Tags Visuais de Débito/Crédito nas Transações
+### [x] F16-T4: Adicionar Tags Visuais de Débito/Crédito nas Transações
 
 **Branch:** `feature/transaction-debit-credit-tags`
 
@@ -325,13 +325,13 @@ Adicionar tags visuais (badges) em cada transação do histórico indicando se �
    - Não interferir na leitura do valor principal
 
 **Definition of Done:**
-- [ ] Tags visuais implementadas
-- [ ] Cores adicionadas ao design system
-- [ ] Layout do item de transação atualizado
-- [ ] Tags aparecem em todas as transações
-- [ ] Estilo consistente com design do app
+- [x] Tags visuais implementadas
+- [x] Cores adicionadas ao design system
+- [x] Layout do item de transação atualizado
+- [x] Tags aparecem em todas as transações
+- [x] Estilo consistente com design do app
 - [ ] Testes de widget
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 

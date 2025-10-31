@@ -232,6 +232,7 @@ class _TransactionsListScreenState
                                   categoriesMap[transaction.categoryId] ??
                                       'Sem categoria',
                               notes: transaction.notes,
+                              transactionType: transaction.transactionType,
                             );
 
                             return Padding(
