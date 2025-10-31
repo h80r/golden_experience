@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
+import '../inputs/custom_dropdown.dart';
 
 /// Filter period options
 enum FilterPeriod {
@@ -127,6 +128,117 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
     });
   }
 
+  /// Build a three-option visual selector for transaction type
+  Widget _buildTransactionTypeSelector() {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Stack(
+        children: [
+          // Sliding indicator - outlined blue style
+          AnimatedAlign(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            alignment: _transactionTypeFilter == TransactionTypeFilter.all
+                ? Alignment.centerLeft
+                : _transactionTypeFilter == TransactionTypeFilter.debit
+                    ? Alignment.center
+                    : Alignment.centerRight,
+            child: FractionallySizedBox(
+              widthFactor: 1 / 3,
+              child: Container(
+                margin: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  border: Border.all(
+                    color: AppColors.primary,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+                ),
+              ),
+            ),
+          ),
+          // Buttons
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _transactionTypeFilter = TransactionTypeFilter.all;
+                    });
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Center(
+                    child: Text(
+                      TransactionTypeFilter.all.label,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: _transactionTypeFilter ==
+                                    TransactionTypeFilter.all
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _transactionTypeFilter = TransactionTypeFilter.debit;
+                    });
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Center(
+                    child: Text(
+                      TransactionTypeFilter.debit.label,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: _transactionTypeFilter ==
+                                    TransactionTypeFilter.debit
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _transactionTypeFilter = TransactionTypeFilter.credit;
+                    });
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Center(
+                    child: Text(
+                      TransactionTypeFilter.credit.label,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: _transactionTypeFilter ==
+                                    TransactionTypeFilter.credit
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -170,18 +282,21 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                         ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  ...FilterPeriod.values.map((period) {
-                    return CheckboxListTile(
-                      title: Text(period.label),
-                      value: _selectedPeriod == period,
-                      onChanged: (value) {
-                        if (value ?? false) {
-                          setState(() => _selectedPeriod = period);
-                        }
-                      },
-                      activeColor: AppColors.primary,
-                    );
-                  }),
+                  CustomDropdown<FilterPeriod>(
+                    label: 'Selecione o período',
+                    value: _selectedPeriod,
+                    items: FilterPeriod.values
+                        .map((period) => DropdownMenuItem(
+                              value: period,
+                              child: Text(period.label),
+                            ))
+                        .toList(),
+                    onChanged: (period) {
+                      if (period != null) {
+                        setState(() => _selectedPeriod = period);
+                      }
+                    },
+                  ),
                   // Custom date range (only if custom period selected)
                   if (_selectedPeriod == FilterPeriod.custom) ...[
                     const SizedBox(height: AppSpacing.md),
@@ -210,21 +325,7 @@ class _TransactionFiltersSheetState extends State<TransactionFiltersSheet> {
                         ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  SegmentedButton<TransactionTypeFilter>(
-                    segments: TransactionTypeFilter.values.map((type) {
-                      return ButtonSegment<TransactionTypeFilter>(
-                        value: type,
-                        label: Text(type.label),
-                      );
-                    }).toList(),
-                    selected: {_transactionTypeFilter},
-                    onSelectionChanged:
-                        (Set<TransactionTypeFilter> newSelection) {
-                      setState(() {
-                        _transactionTypeFilter = newSelection.first;
-                      });
-                    },
-                  ),
+                  _buildTransactionTypeSelector(),
                   // Accounts filter
                   const SizedBox(height: AppSpacing.lg),
                   Text(

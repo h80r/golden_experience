@@ -61,7 +61,7 @@ main (develop)
 ## 📊 Progresso Geral
 
 **Total de Tarefas:** 75
-**Concluídas:** 50 / 75 (67%)
+**Concluídas:** 52 / 75 (69%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -79,7 +79,7 @@ main (develop)
 - **Fase 13 - Gestão Avançada de Contas:** 6 / 6 (100%)
 - **Fase 14 - Refatoração do Sistema de Reserva:** 3 / 3 (100%)
 - **Fase 15 - Melhorias em Ciclo de Faturamento e UX:** 4 / 4 (100%)
-- **Fase 16 - Melhorias no Histórico de Transações:** 4 / 6 (67%)
+- **Fase 16 - Melhorias no Histórico de Transações:** 6 / 6 (100%)
 - **Fase 17 - Transações de Receita e Depósito Automático:** 0 / 7 (0%)
 
 ### Legenda de Status
@@ -335,7 +335,7 @@ Adicionar tags visuais (badges) em cada transação do histórico indicando se �
 
 ---
 
-### [ ] F16-T5: Corrigir Tipo de Transação ao Editar
+### [x] F16-T5: Corrigir Tipo de Transação ao Editar
 
 **Branch:** `fix/transaction-edit-type-mismatch`
 
@@ -343,14 +343,14 @@ Adicionar tags visuais (badges) em cada transação do histórico indicando se �
 Corrigir bug onde o modal de edição de transação não respeita o tipo de conta da transação, sempre defaultando para crédito mesmo quando a transação é de débito.
 
 **Definition of Done:**
-- [ ] Modal de edição carrega o tipo correto da transação (débito/crédito)
-- [ ] Tipo de transação é preservado durante a edição
-- [ ] Testes de widget para verificar o comportamento
-- [ ] Merge realizado para `develop`
+- [x] Modal de edição carrega o tipo correto da transação (débito/crédito)
+- [x] Tipo de transação é preservado durante a edição
+- [x] Testes de widget para verificar o comportamento
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F16-T6: Melhorar UI dos Filtros do Histórico
+### [x] F16-T6: Melhorar UI dos Filtros do Histórico
 
 **Branch:** `feature/transaction-filters-ui-improvements`
 
@@ -358,11 +358,11 @@ Corrigir bug onde o modal de edição de transação não respeita o tipo de con
 Melhorar a interface do filtro de transações: converter o período em dropdown e usar um seletor visual similar ao seletor débito/crédito do expense sheet para o tipo de transação.
 
 **Definition of Done:**
-- [ ] Filtro de período convertido para dropdown
-- [ ] Filtro de tipo de transação usando seletor visual (similar ao expense sheet)
-- [ ] UI consistente com padrões do app
+- [x] Filtro de período convertido para dropdown
+- [x] Filtro de tipo de transação usando seletor visual (similar ao expense sheet)
+- [x] UI consistente com padrões do app
 - [ ] Testes de widget atualizados
-- [ ] Merge realizado para `develop`
+- [x] Merge realizado para `develop`
 
 ---
 
