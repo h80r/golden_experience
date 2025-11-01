@@ -158,9 +158,12 @@ class GetDashboardDataUseCase {
   /// and by calendar month for debit accounts
   ///
   /// For each account:
-  /// - If it's a credit account with a creditPaymentDay, fetch transactions
-  ///   within the current billing cycle (calculated from payment - 7)
+  /// - If it's a credit account with a creditPaymentDay:
+  ///   - Fetch transactions for the current billing cycle
   /// - Otherwise, fetch transactions for the calendar month
+  ///
+  /// Note: Transactions are always included based on their date period,
+  /// regardless of whether the invoice has been marked as paid or not.
   ///
   /// Returns a combined list of all filtered transactions
   Future<List<dynamic>> _getFilteredTransactions(
@@ -175,9 +178,10 @@ class GetDashboardDataUseCase {
       final creditPaymentDay = (account).creditPaymentDay as int?;
 
       if (isCredit && creditPaymentDay != null) {
-        // Credit account with billing cycle - use payment day to determine current cycle
+        // Credit account with billing cycle
         final cycle = calculateCurrentBillingCycleFromPaymentDay(
             creditPaymentDay, referenceDate);
+
         final transactions =
             await _transactionRepository.getByAccountAndDateRange(
           accountId,

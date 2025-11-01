@@ -8,7 +8,6 @@ import '../database/accounts_table.dart';
 import '../database/categories_table.dart';
 import '../database/recurring_expenses_table.dart';
 import '../database/app_settings_table.dart';
-import '../database/invoices_table.dart';
 
 part 'local_database.g.dart';
 
@@ -19,7 +18,6 @@ part 'local_database.g.dart';
   Categories,
   RecurringExpenses,
   AppSettings,
-  Invoices,
 ])
 class LocalDatabase extends _$LocalDatabase {
   static LocalDatabase? _instance;
@@ -57,7 +55,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -250,33 +248,6 @@ class LocalDatabase extends _$LocalDatabase {
             await customStatement('''
               ALTER TABLE transactions
               ADD COLUMN transaction_type TEXT NOT NULL DEFAULT 'credit'
-            ''');
-          }
-
-          // Migration from v11 to v12: Add Invoices and InvoiceItems tables
-          if (from <= 11) {
-            await m.createTable($InvoicesTable(this));
-            // Note: InvoiceItems table was removed in v13
-          }
-
-          // Migration from v12 to v13: Simplify Invoices table schema
-          // Remove InvoiceItems table and simplify Invoices to only store period + isPaid
-          if (from <= 12) {
-            // Drop InvoiceItems table if it exists (cascade delete will handle foreign keys)
-            await customStatement('DROP TABLE IF EXISTS invoice_items');
-
-            // Recreate Invoices table with simplified schema
-            await customStatement('DROP TABLE IF EXISTS invoices');
-
-            // Create new Invoices table with only startDate, endDate, isPaid
-            await customStatement('''
-              CREATE TABLE invoices (
-                id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                start_date INTEGER NOT NULL,
-                end_date INTEGER NOT NULL,
-                is_paid INTEGER NOT NULL DEFAULT 0 CHECK ("is_paid" IN (0, 1)),
-                UNIQUE(start_date, end_date)
-              )
             ''');
           }
         },

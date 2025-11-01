@@ -4,6 +4,8 @@ import '../widgets/expense/expense_details_bottom_sheet.dart';
 import '../widgets/dashboard/main_card.dart';
 import '../widgets/dashboard/secondary_card.dart';
 import '../widgets/common/standard_app_bar.dart';
+import '../widgets/dashboard/invoice_manager_card.dart';
+import 'invoice_history_screen.dart';
 import '../state/expense_form_notifier.dart';
 import '../../domain/usecases/providers/usecase_providers.dart';
 import '../../data/providers/repository_providers.dart';
@@ -170,6 +172,18 @@ class DashboardScreen extends ConsumerWidget {
                 partialResult: dashboardData.partialResult,
                 finalReserve: dashboardData.finalReserve,
                 isLoading: false,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Invoice Manager Card - Credit card billing cycle management
+              InvoiceManagerCard(
+                onViewHistory: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const InvoiceHistoryScreen(),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: AppSpacing.xl),
 

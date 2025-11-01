@@ -427,3 +427,87 @@ BillingCyclePeriod calculateCurrentBillingCycleFromPaymentDay(
     return BillingCyclePeriod(start: cycleStart, end: cycleEnd);
   }
 }
+
+/// Calculates a unified invoice period across all credit accounts.
+///
+/// **F17-T1 Implementation**: Invoice Manager with Time Navigation
+///
+/// This function creates a single unified billing period that spans all credit
+/// accounts by taking the **earliest start date** and **latest end date** among
+/// all credit cards. This ensures all transactions from all credit accounts
+/// during a billing cycle are included in a single invoice.
+///
+/// **Logic:**
+/// 1. For each credit account with a creditPaymentDay:
+///    - Calculate its billing cycle using calculateCurrentBillingCycleFromPaymentDay
+/// 2. Find the EARLIEST start date among all cycles
+/// 3. Find the LATEST end date among all cycles
+/// 4. Return a BillingCyclePeriod with these unified dates
+///
+/// **Parameters:**
+/// - [creditAccounts]: List of account objects that have isCredit=true and creditPaymentDay set.
+///   Each account must have properties: isCredit (bool) and creditPaymentDay (int?).
+/// - [referenceDate]: The date to use as reference for calculating cycles.
+///   Defaults to today if not provided.
+///
+/// **Returns:**
+/// A [BillingCyclePeriod] representing the unified billing period, or `null` if
+/// there are no valid credit accounts with payment days.
+///
+/// **Examples:**
+/// ```dart
+/// // Card A: payment day 15 → cycle Oct 9 - Nov 8
+/// // Card B: payment day 25 → cycle Oct 19 - Nov 18
+/// // Unified period: Oct 9 - Nov 18 (earliest start, latest end)
+///
+/// final accounts = [
+///   AccountModel(isCredit: true, creditPaymentDay: 15),
+///   AccountModel(isCredit: true, creditPaymentDay: 25),
+/// ];
+/// final unified = calculateUnifiedInvoicePeriod(accounts, DateTime(2024, 11, 10));
+/// // Returns: BillingCyclePeriod(start: Oct 9, 2024, end: Nov 18, 2024)
+/// ```
+BillingCyclePeriod? calculateUnifiedInvoicePeriod(
+  List<dynamic> creditAccounts, [
+  DateTime? referenceDate,
+]) {
+  final now = referenceDate ?? DateTime.now();
+
+  // Filter to only credit accounts with payment days
+  final validAccounts = creditAccounts.where((account) {
+    final isCredit = (account as dynamic).isCredit as bool?;
+    final creditPaymentDay = (account as dynamic).creditPaymentDay as int?;
+    return isCredit == true && creditPaymentDay != null;
+  }).toList();
+
+  if (validAccounts.isEmpty) {
+    return null;
+  }
+
+  // Calculate billing cycle for each account
+  final cycles = <BillingCyclePeriod>[];
+  for (final account in validAccounts) {
+    final paymentDay = (account as dynamic).creditPaymentDay as int;
+    final cycle = calculateCurrentBillingCycleFromPaymentDay(paymentDay, now);
+    cycles.add(cycle);
+  }
+
+  // Find earliest start and latest end
+  DateTime? earliestStart;
+  DateTime? latestEnd;
+
+  for (final cycle in cycles) {
+    if (earliestStart == null || cycle.start.isBefore(earliestStart)) {
+      earliestStart = cycle.start;
+    }
+    if (latestEnd == null || cycle.end.isAfter(latestEnd)) {
+      latestEnd = cycle.end;
+    }
+  }
+
+  if (earliestStart == null || latestEnd == null) {
+    return null;
+  }
+
+  return BillingCyclePeriod(start: earliestStart, end: latestEnd);
+}

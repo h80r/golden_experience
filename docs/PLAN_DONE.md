@@ -3469,3 +3469,316 @@ Criar ferramenta de debug experimental que exibe uma notificação do app conten
 - [ ] Merge realizado para `develop`
 
 ---
+
+## 🔍 Fase 16: Melhorias no Histórico de Transações
+
+**Objetivo:** Aprimorar a tela de histórico de transações com filtragem por ciclo de faturamento (alinhado ao dashboard), filtros débito/crédito, card de soma total flutuante e tags visuais.
+
+**Status:** 7 / 7 tarefas concluídas ✅ FASE COMPLETA
+
+---
+
+### [x] F16-T1: Filtrar Transações por Ciclo de Faturamento
+
+**Branch:** `feature/transaction-history-billing-cycle-filter`
+
+**Descrição:**
+Alterar a lógica de exibição do histórico de transações para mostrar, por padrão, as transações do ciclo de faturamento atual (como calculado na página principal), em vez de simplesmente filtrar por mês.
+
+**Implementação Esperada:**
+
+1. **Lógica de Filtro:**
+   - Para contas de **crédito**: usar o período entre closing date e payment day do ciclo atual
+   - Para contas de **débito**: usar mês atual (comportamento existente)
+   - O filtro deve respeitar a mesma lógica usada no dashboard para calcular "quanto ainda posso gastar"
+
+2. **UI Updates:**
+   - Adicionar chip/badge mostrando o período atual: "Ciclo: 15/out - 14/nov"
+   - Botão para alternar entre: "Ciclo Atual" / "Mês Atual" / "Todos"
+   - Manter funcionalidade de navegação entre períodos (setas < >)
+
+3. **Repository/Use Case:**
+   - Criar método `getTransactionsByBillingCycle(accountId, startDate, endDate)`
+   - Reutilizar lógica de cálculo de ciclo do dashboard
+
+**Definition of Done:**
+- [x] Histórico exibe transações do ciclo de faturamento por padrão
+- [x] Filtro de período (Ciclo/Mês/Todos) implementado
+- [x] UI mostra claramente qual período está sendo exibido
+- [x] Lógica alinhada com cálculos do dashboard
+- [x] Testes de integração para diferentes tipos de conta
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F16-T2: Adicionar Filtro Débito/Crédito no Histórico
+
+**Branch:** `feature/transaction-history-account-type-filter`
+
+**Descrição:**
+Implementar filtro para mostrar apenas transações de contas de débito ou crédito no histórico.
+
+**Implementação Esperada:**
+
+1. **Filter UI:**
+   - Adicionar SegmentedButton ou FilterChips abaixo do período:
+     - "Todas" (padrão)
+     - "Débito"
+     - "Crédito"
+   - Manter estado do filtro durante a sessão
+
+2. **Repository Method:**
+   ```dart
+   Future<List<TransactionModel>> getTransactionsByAccountType({
+     required DateTime startDate,
+     required DateTime endDate,
+     String? accountType, // 'debit', 'credit', null for all
+   });
+   ```
+
+3. **Query Logic:**
+   - Join com tabela Accounts
+   - Filtrar por `account.isDebit` ou `account.isCredit` conforme seleção
+   - Considerar contas dual-type (tanto débito quanto crédito)
+
+4. **UX Details:**
+   - Mostrar contagem: "12 transações (Débito)"
+   - Animação suave ao trocar filtros
+
+**Definition of Done:**
+- [x] Filtro débito/crédito implementado na UI
+- [x] Repository method criado
+- [x] Query filtra corretamente por tipo de conta
+- [x] Contagem de transações atualiza dinamicamente
+- [x] Testes unitários para query
+- [x] Testes de widget para filtro
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F16-T3: Card de Soma Total Flutuante com Transição para FAB
+
+**Branch:** `feature/transaction-history-floating-sum-card`
+
+**Descrição:**
+Criar um card pequeno flutuante no rodapé do histórico mostrando a soma total das transações filtradas. Ao tocar, o card se transforma no FAB para adicionar nova transação.
+
+**Implementação Esperada:**
+
+1. **Floating Sum Card:**
+   ```dart
+   // Posição: bottom-center, acima do FAB
+   Container(
+     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+     decoration: BoxDecoration(
+       color: AppColors.surface,
+       borderRadius: BorderRadius.circular(24),
+       boxShadow: [AppShadows.medium],
+     ),
+     child: Row(
+       mainAxisSize: MainAxisSize.min,
+       children: [
+         Text('Total: ', style: AppTypography.bodySmall),
+         Text('R$ 1.234,56', style: AppTypography.titleMedium.copyWith(
+           color: isNegative ? Colors.red : Colors.green,
+         )),
+         SizedBox(width: 8),
+         Icon(Icons.expand_less, size: 16),
+       ],
+     ),
+   )
+   ```
+
+2. **Animation Logic:**
+   - Estado inicial: SumCard visível, FAB oculto
+   - Ao tocar no SumCard:
+     - SumCard escala e move para posição do FAB
+     - Transforma em FAB circular com ícone "+"
+     - AnimatedContainer com duration: 300ms
+   - Ao fechar bottom sheet: animação reversa
+
+3. **Cálculo da Soma:**
+   - Somar valores de todas as transações visíveis (após filtros)
+   - Para receitas: valor positivo
+   - Para despesas: valor negativo
+   - Cor verde se líquido positivo, vermelho se negativo
+
+4. **Stack Layout:**
+   ```dart
+   Stack(
+     children: [
+       TransactionList(),
+       Positioned(
+         bottom: 16,
+         left: 0,
+         right: 0,
+         child: AnimatedSwitcher(
+           duration: Duration(milliseconds: 300),
+           child: _showingSumCard ? SumCard() : AddTransactionFAB(),
+         ),
+       ),
+     ],
+   )
+   ```
+
+**Definition of Done:**
+- [x] Sum card flutuante implementado
+- [x] Cálculo de soma total funcional
+- [x] Animação de transição para FAB suave
+- [x] Cores dinâmicas (verde/vermelho) conforme saldo
+- [x] Funcionalidade de adicionar transação mantida
+- [ ] Testes de widget
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F16-T4: Adicionar Tags Visuais de Débito/Crédito nas Transações
+
+**Branch:** `feature/transaction-debit-credit-tags`
+
+**Descrição:**
+Adicionar tags visuais (badges) em cada transação do histórico indicando se é débito ou crédito.
+
+**Implementação Esperada:**
+
+1. **Tag Design:**
+   ```dart
+   // Débito
+   Container(
+     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+     decoration: BoxDecoration(
+       color: AppColors.debitTag.withOpacity(0.1),
+       borderRadius: BorderRadius.circular(8),
+     ),
+     child: Text(
+       'Débito',
+       style: AppTypography.labelSmall.copyWith(
+         color: AppColors.debitTag,
+         fontWeight: FontWeight.w600,
+       ),
+     ),
+   )
+
+   // Crédito
+   Container(
+     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+     decoration: BoxDecoration(
+       color: AppColors.creditTag.withOpacity(0.1),
+       borderRadius: BorderRadius.circular(8),
+     ),
+     child: Text(
+       'Crédito',
+       style: AppTypography.labelSmall.copyWith(
+         color: AppColors.creditTag,
+         fontWeight: FontWeight.w600,
+       ),
+     ),
+   )
+   ```
+
+2. **Transaction List Item Layout:**
+   ```dart
+   // Estrutura do item:
+   ListTile(
+     leading: CategoryIcon(),
+     title: Row(
+       children: [
+         Text(description),
+         SizedBox(width: 8),
+         DebitCreditTag(account: transaction.account),
+       ],
+     ),
+     subtitle: Text(date),
+     trailing: Text(value),
+   )
+   ```
+
+3. **Color Palette Update:**
+   - Adicionar cores ao `app_colors.dart`:
+   ```dart
+   static const debitTag = Color(0xFF2196F3); // Blue
+   static const creditTag = Color(0xFFFF9800); // Orange
+   ```
+
+4. **Positioning:**
+   - Tag ao lado da descrição da transação
+   - Tamanho pequeno e discreto
+   - Não interferir na leitura do valor principal
+
+**Definition of Done:**
+- [x] Tags visuais implementadas
+- [x] Cores adicionadas ao design system
+- [x] Layout do item de transação atualizado
+- [x] Tags aparecem em todas as transações
+- [x] Estilo consistente com design do app
+- [ ] Testes de widget
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F16-T5: Corrigir Tipo de Transação ao Editar
+
+**Branch:** `fix/transaction-edit-type-mismatch`
+
+**Descrição:**
+Corrigir bug onde o modal de edição de transação não respeita o tipo de conta da transação, sempre defaultando para crédito mesmo quando a transação é de débito.
+
+**Definition of Done:**
+- [x] Modal de edição carrega o tipo correto da transação (débito/crédito)
+- [x] Tipo de transação é preservado durante a edição
+- [x] Testes de widget para verificar o comportamento
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F16-T6: Melhorar UI dos Filtros do Histórico
+
+**Branch:** `feature/transaction-filters-ui-improvements`
+
+**Descrição:**
+Melhorar a interface do filtro de transações: converter o período em dropdown e usar um seletor visual similar ao seletor débito/crédito do expense sheet para o tipo de transação.
+
+**Definition of Done:**
+- [x] Filtro de período convertido para dropdown
+- [x] Filtro de tipo de transação usando seletor visual (similar ao expense sheet)
+- [x] UI consistente com padrões do app
+- [ ] Testes de widget atualizados
+- [x] Merge realizado para `develop`
+
+---
+
+### [x] F16-T7: Corrigir Persistência de Configuração de Dia de Pagamento
+
+**Branch:** `fix/salary-payday-workday-persistence`
+
+**Descrição:**
+Corrigir bug onde configurar o dia de pagamento do salário como o último dia útil do mês não persiste corretamente. Ao recarregar a página de configurações, o valor exibido volta para o 1º dia útil.
+
+**Implementação Esperada:**
+
+1. **Investigar Causa Raiz:**
+   - Verificar lógica de salvamento em `app_settings_repository.dart`
+   - Verificar se o valor correto está sendo persistido no banco de dados
+   - Verificar lógica de carregamento no widget de configurações
+   - Identificar se o problema está no save, load, ou UI state
+
+2. **Correção:**
+   - Se o problema for no save: corrigir método de update do repository
+   - Se o problema for no load: corrigir método de fetch/watch do repository
+   - Se o problema for no UI: corrigir estado inicial do dropdown/selector
+
+3. **Validação:**
+   - Testar cenários:
+     - Salvar 1º dia útil e recarregar
+     - Salvar último dia útil e recarregar
+     - Salvar 5º dia útil e recarregar
+   - Verificar persistência após fechar e reabrir o app
+
+**Definition of Done:**
+- [x] Causa raiz identificada
+- [x] Bug corrigido na camada apropriada
+- [x] Todos os valores de dia útil persistem corretamente
+- [x] Testes de integração adicionados para prevenir regressão
+- [x] Merge realizado para `develop`
+
+---
