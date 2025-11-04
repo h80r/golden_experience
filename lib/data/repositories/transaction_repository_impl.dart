@@ -200,14 +200,23 @@ class TransactionRepositoryImpl implements ITransactionRepository {
           ),
         );
 
+    // Get the current billing cycle to ensure future installments
+    // are placed in subsequent cycles, not the current one
+    final currentCycle = calculateCurrentBillingCycleFromPaymentDay(
+      paymentDay,
+      baseDate,
+    );
+
     // Create future installments
     for (int i = 1; i <= remainingInstallments; i++) {
       final installmentNumber = currentInstallment + i;
 
       // Calculate the date for this future installment
       // Place it on the first day of the next billing cycle
+      // Start from the END of current cycle to ensure we never place
+      // a future installment in the same cycle as the current one
       final futureDate = _calculateNextCycleStartDate(
-        baseDate,
+        currentCycle.end,
         paymentDay,
         cyclesAhead: i,
       );

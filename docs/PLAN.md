@@ -60,8 +60,8 @@ main (develop)
 
 ## 📊 Progresso Geral
 
-**Total de Tarefas:** 79
-**Concluídas:** 53 / 79 (67%)
+**Total de Tarefas:** 88
+**Concluídas:** 53 / 88 (60%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -80,8 +80,9 @@ main (develop)
 - **Fase 14 - Refatoração do Sistema de Reserva:** 3 / 3 (100%)
 - **Fase 15 - Melhorias em Ciclo de Faturamento e UX:** 4 / 4 (100%)
 - **Fase 16 - Melhorias no Histórico de Transações:** 7 / 7 (100%)
-- **Fase 17 - Gerenciador de Faturas e Transações Parceladas:** 0 / 3 (0%)
-- **Fase 18 - Transações de Receita e Depósito Automático:** 0 / 7 (0%)
+- **Fase 17 - Gerenciador de Faturas e Transações Parceladas:** 3 / 3 (100%)
+- **Fase 18 - Correções Críticas de UX/UI:** 0 / 5 (0%)
+- **Fase 19 - Correções no Sistema de Backup/Restore:** 0 / 4 (0%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -892,9 +893,221 @@ Implementar sistema de transações parceladas que cria automaticamente as parce
 
 ---
 
+## 🔧 Fase 18: Correções Críticas de UX/UI
+
+**Objetivo:** Corrigir problemas críticos de experiência do usuário identificados durante uso real da aplicação.
+
+**Status:** 0 / 5 tarefas concluídas
+
+---
+
+### [ ] F18-T1: Correção - Descrição de Transação Retorna à Tela Anterior
+
+**Branch:** `fix/transaction-description-save`
+
+**Descrição:**
+Na criação de transações, ao salvar no campo de descrição (pressionar "salvar" no teclado), a aplicação volta para a primeira tela sem salvar a transação. Corrigir o comportamento para que salvar na descrição não cause navegação automática.
+
+**Definition of Done:**
+- [ ] Identificar o listener/callback que está causando a navegação prematura
+- [ ] Remover ou ajustar o comportamento de navegação no TextField de descrição
+- [ ] Garantir que apenas o botão "Salvar" da transação cause a navegação
+- [ ] Testar fluxo completo de criação de transação com descrição
+- [ ] Verificar comportamento em modo edição também
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F18-T2: Correção - Botão Salvar na Primeira Tela de Edição de Contas
+
+**Branch:** `fix/account-edit-save-button`
+
+**Descrição:**
+Na edição de contas, quando há crédito habilitado, a primeira tela deve ter um botão "Salvar" em vez de "Avançar". O fluxo atual força o usuário a passar para a segunda tela mesmo quando só quer editar informações da primeira tela.
+
+**Definition of Done:**
+- [ ] Detectar se conta tem crédito habilitado (`isCredit == true`)
+- [ ] Se apenas débito: manter botão "Salvar" (comportamento atual)
+- [ ] Se crédito habilitado: trocar "Avançar" por "Salvar" na primeira tela
+- [ ] Botão "Salvar" deve persistir mudanças e fechar o bottom sheet
+- [ ] Manter opção de ir para segunda tela (adicionar botão secundário "Configurar Crédito" ou similar)
+- [ ] Testar fluxo de edição com conta débito-only
+- [ ] Testar fluxo de edição com conta crédito
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F18-T3: Correção - Auto-refresh do Dashboard em Mudanças de Configurações
+
+**Branch:** `fix/dashboard-auto-refresh`
+
+**Descrição:**
+O dashboard não atualiza automaticamente quando há mudanças nas configurações ou nos saldos das contas. Usuário precisa navegar para a lista de transações e voltar para ver os valores atualizados. Implementar invalidação automática dos providers do dashboard.
+
+**Definition of Done:**
+- [ ] Identificar todos os providers que afetam o dashboard (accounts, settings, transactions)
+- [ ] Implementar `ref.invalidate()` ou `ref.refresh()` nos providers dependentes
+- [ ] Garantir que mudanças em `AppSettings` invalidam dashboard
+- [ ] Garantir que mudanças em `Accounts` (saldo, limite) invalidam dashboard
+- [ ] Garantir que mudanças em `Transactions` invalidam dashboard automaticamente (já deve funcionar via streams)
+- [ ] Testar cenário: mudar `paymentDay` → dashboard atualiza
+- [ ] Testar cenário: editar saldo de conta → dashboard atualiza
+- [ ] Testar cenário: criar/editar transação → dashboard atualiza
+- [ ] Verificar performance (evitar rebuilds desnecessários)
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F18-T4: Correção - Error Toasts Aparecendo Atrás do Bottom Sheet
+
+**Branch:** `fix/toast-z-index`
+
+**Descrição:**
+Error toasts aparecem atrás dos bottom sheets, impossibilitando identificar o problema. Implementar solução para garantir que toasts sempre apareçam acima de todos os outros widgets, incluindo bottom sheets.
+
+**Definition of Done:**
+- [ ] Investigar implementação atual do sistema de toasts (fluttertoast, custom overlay, etc.)
+- [ ] Implementar solução com maior z-index/elevation
+- [ ] Opções possíveis:
+  - Usar `Overlay` com prioridade alta
+  - Usar `OverlayEntry` para toasts
+  - Ajustar `showDialog` ou `showModalBottomSheet` com WillPopScope
+- [ ] Garantir que toasts aparecem acima de bottom sheets
+- [ ] Garantir que toasts aparecem acima de dialogs
+- [ ] Testar com expense bottom sheet aberto
+- [ ] Testar com account bottom sheet aberto
+- [ ] Testar com todos os tipos de toast (error, success, info)
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F18-T5: Correção - Habilitar/Desabilitar Débito/Crédito Baseado no Tipo de Conta
+
+**Branch:** `fix/expense-payment-type-toggle`
+
+**Descrição:**
+No bottom sheet de criação de despesas, os campos de débito/crédito devem ser habilitados/desabilitados automaticamente de acordo com o tipo da conta selecionada. Se a conta for apenas débito, desabilitar opção de crédito. Se for apenas crédito, desabilitar opção de débito.
+
+**Definition of Done:**
+- [ ] Monitorar mudanças no campo de seleção de conta
+- [ ] Ao selecionar conta, verificar `account.isDebit` e `account.isCredit`
+- [ ] Se `isDebit == true && isCredit == false`: desabilitar toggle de crédito, forçar débito
+- [ ] Se `isCredit == true && isDebit == false`: desabilitar toggle de débito, forçar crédito
+- [ ] Se `isDebit == true && isCredit == true`: habilitar ambos os toggles
+- [ ] Atualizar UI para mostrar estado desabilitado visualmente (cinza, opacity reduzida)
+- [ ] Garantir que valor default é correto ao trocar de conta
+- [ ] Testar com conta débito-only
+- [ ] Testar com conta crédito-only
+- [ ] Testar com conta dual-type
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
+
+---
+
+## 📦 Fase 19: Correções no Sistema de Backup/Restore
+
+**Objetivo:** Corrigir problemas críticos no sistema de backup e restore de dados, garantindo persistência completa de todas as informações.
+
+**Status:** 0 / 4 tarefas concluídas
+
+---
+
+### [ ] F19-T1: Adicionar Botão "Importar Backup" no Tour Inicial
+
+**Branch:** `feature/import-backup-onboarding`
+
+**Descrição:**
+Adicionar botão de "Importar Backup" no tour de início do aplicativo, permitindo que usuários restaurem seus dados antes de completar o onboarding.
+
+**Definition of Done:**
+- [ ] Adicionar botão "Importar Backup" na tela inicial do tour
+- [ ] Posicionar adequadamente (acima ou abaixo do botão "Começar")
+- [ ] Implementar fluxo de importação:
+  - Abrir file picker
+  - Validar arquivo JSON
+  - Restaurar dados
+  - Navegar para tela apropriada (dashboard ou completar tour)
+- [ ] Adicionar loading state durante importação
+- [ ] Adicionar tratamento de erros (arquivo inválido, formato incorreto)
+- [ ] Testar cenário: importar backup válido antes do tour
+- [ ] Testar cenário: importar backup inválido (mostrar erro)
+- [ ] Testar cenário: cancelar file picker
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F19-T2: Correção - Persistir Data de Pagamento no Backup
+
+**Branch:** `fix/backup-payment-day`
+
+**Descrição:**
+O sistema de backup não está salvando a data de pagamento dos cartões de crédito (`creditPaymentDay`). Adicionar este campo ao JSON de backup e restore.
+
+**Definition of Done:**
+- [ ] Identificar estrutura atual do JSON de backup para `Accounts`
+- [ ] Adicionar campo `creditPaymentDay` ao JSON de export
+- [ ] Adicionar leitura do campo `creditPaymentDay` no JSON de import
+- [ ] Garantir compatibilidade com backups antigos (campo nullable)
+- [ ] Testar export: verificar que `creditPaymentDay` está no JSON
+- [ ] Testar import: verificar que valor é restaurado corretamente
+- [ ] Testar import de backup antigo sem o campo (deve funcionar)
+- [ ] Adicionar migration/validação se necessário
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F19-T3: Correção - Persistir Data de Fechamento no Backup
+
+**Branch:** `fix/backup-closing-day`
+
+**Descrição:**
+O sistema de backup não está salvando a data de fechamento dos cartões de crédito (campo calculado baseado em `creditPaymentDay`). Garantir que o ciclo de faturamento completo é restaurado corretamente.
+
+**Observação:** Este problema pode estar relacionado ao F19-T2, já que a data de fechamento é calculada como `creditPaymentDay - 7`. Se `creditPaymentDay` for restaurado corretamente, o fechamento será calculado automaticamente.
+
+**Definition of Done:**
+- [ ] Verificar se correção do F19-T2 resolve o problema
+- [ ] Se necessário, adicionar campo explícito de `creditClosingDay` ao backup
+- [ ] Testar export: verificar que ciclo de faturamento está completo
+- [ ] Testar import: verificar que `creditPaymentDay` e fechamento são restaurados
+- [ ] Testar cálculo automático de fechamento após restore
+- [ ] Validar que faturas são geradas com períodos corretos após restore
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F19-T4: Correção - Persistir Tipo de Pagamento (Débito/Crédito) no Backup
+
+**Branch:** `fix/backup-payment-type`
+
+**Descrição:**
+O sistema de backup não está salvando o tipo de pagamento das transações (se foi débito ou crédito, campo `isCredit`). Adicionar este campo ao JSON de backup e restore.
+
+**Definition of Done:**
+- [ ] Identificar estrutura atual do JSON de backup para `Transactions`
+- [ ] Adicionar campo `isCredit` ao JSON de export
+- [ ] Adicionar leitura do campo `isCredit` no JSON de import
+- [ ] Garantir compatibilidade com backups antigos (campo nullable, default baseado em tipo de conta)
+- [ ] Testar export: verificar que `isCredit` está no JSON
+- [ ] Testar import: verificar que valor é restaurado corretamente
+- [ ] Testar import de backup antigo sem o campo (inferir baseado em tipo de conta)
+- [ ] Validar que dashboard calcula valores corretamente após restore
+- [ ] Validar que faturas agrupam transações corretamente após restore
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
+
+---
+
 ## 🎊 Conclusão
 
-Este plano mapeia todas as **79 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
+Este plano mapeia todas as **88 tarefas** (79 originais + 9 novas) necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
 
 A **Fase 5** representa a primeira iteração de melhorias baseada em uso real, demonstrando a importância de testar o aplicativo e iterar sobre o design inicial.
 
@@ -907,5 +1120,9 @@ A **Fase 8** foca em correções críticas e refinamentos de UX: sistema de inpu
 A **Fase 9** traz correções de UX e padronização visual: correção do bug de exibição de valores nas configurações e padronização do app bar em todas as telas principais para garantir consistência visual e facilitar o acesso às configurações.
 
 A **Fase 10** garante a estabilidade e saúde do código: atualização de dependências, migração de APIs deprecated, implementação de logging adequado, e remoção de código morto.
+
+A **Fase 18** aborda correções críticas de UX/UI identificadas durante uso real: comportamento de salvamento de descrição, botões de navegação em edição de contas, auto-refresh do dashboard, z-index de toasts, e controle de tipo de pagamento baseado em tipo de conta.
+
+A **Fase 19** corrige problemas no sistema de backup/restore: adicionar opção de importação no onboarding, e garantir persistência completa de dados críticos (data de pagamento, data de fechamento, e tipo de pagamento).
 
 **Bom desenvolvimento! 🚀**

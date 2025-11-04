@@ -11,18 +11,21 @@ import '../../theme/app_colors.dart';
 /// - Automatic back button on pushed screens (when canPop is true)
 /// - Simple, clean design matching the original visual style
 class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
+  final Widget? titleWidget;
+  final String? title;
   final List<Widget>? additionalActions;
   final Widget? leading;
   final bool showSettings;
 
   const StandardAppBar({
     super.key,
-    required this.title,
+    this.title,
+    this.titleWidget,
     this.additionalActions,
     this.leading,
     this.showSettings = true,
-  });
+  }) : assert(title != null || titleWidget != null,
+            'Either title or titleWidget must be provided');
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -30,7 +33,7 @@ class StandardAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(title),
+      title: title != null ? Text(title!) : titleWidget,
       backgroundColor: AppColors.background,
       leading: leading,
       actions: [

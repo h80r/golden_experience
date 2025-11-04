@@ -1,22 +1,23 @@
+import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:drift/drift.dart' hide Column;
-import '../widgets/expense/expense_details_bottom_sheet.dart';
-import '../widgets/dashboard/main_card.dart';
-import '../widgets/dashboard/secondary_card.dart';
-import '../widgets/common/standard_app_bar.dart';
-import '../widgets/dashboard/invoice_payment_button.dart';
-import 'invoice_history_screen.dart';
-import '../state/expense_form_notifier.dart';
-import '../../domain/usecases/providers/usecase_providers.dart';
-import '../../domain/usecases/providers/invoice_providers.dart';
-import '../../data/providers/repository_providers.dart';
+import 'package:intl/intl.dart';
+
+import '../../core/utils/billing_cycle_utils.dart';
 import '../../data/datasources/local_database.dart';
+import '../../data/providers/repository_providers.dart';
+import '../../domain/usecases/providers/invoice_providers.dart';
+import '../../domain/usecases/providers/usecase_providers.dart';
 import '../../presentation/theme/app_colors.dart';
 import '../../presentation/theme/app_spacing.dart';
 import '../../presentation/theme/app_typography.dart';
-import '../../core/utils/billing_cycle_utils.dart';
-import 'package:intl/intl.dart';
+import '../state/expense_form_notifier.dart';
+import '../widgets/common/standard_app_bar.dart';
+import '../widgets/dashboard/invoice_payment_button.dart';
+import '../widgets/dashboard/main_card.dart';
+import '../widgets/dashboard/secondary_card.dart';
+import '../widgets/expense/expense_details_bottom_sheet.dart';
+import 'invoice_history_screen.dart';
 
 /// DashboardScreen - The main dashboard showing financial overview
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -33,305 +34,14 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
-  void initState() {
-    super.initState();
-    // Initialize the current invoice period on first load
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final periodNotifier = ref.read(currentInvoicePeriodProvider.notifier);
-      final currentPeriod = ref.read(currentInvoicePeriodProvider);
-      if (currentPeriod == null) {
-        periodNotifier.resetToDefault();
-      }
-    });
-  }
-
-  void _handleOpenExpenseSheet(BuildContext context, WidgetRef ref) {
-    // Fetch accounts and categories repositories
-    final accountRepository = ref.read(accountRepositoryProvider);
-    final categoryRepository = ref.read(categoryRepositoryProvider);
-
-    // Load data before showing bottom sheet to prevent rebuilds
-    Future.wait([
-      accountRepository.getAll(),
-      categoryRepository.getAll(),
-      accountRepository.getDefaultAccount(),
-      categoryRepository.getDefaultCategory(),
-    ]).then((results) {
-      if (!context.mounted) return;
-
-      final accounts = results[0] as List;
-      final categories = results[1] as List;
-      final defaultAccount = results[2] as dynamic;
-      final defaultCategory = results[3] as dynamic;
-
-      // Convert lists to maps for the bottom sheet
-      final accountsMap = {
-        for (var account in accounts) account.id as int: account.name as String
-      };
-      final categoriesMap = {
-        for (var category in categories)
-          category.id as int: category.name as String
-      };
-
-      // Get default account ID if available
-      int? initialAccountId;
-      if (defaultAccount != null) {
-        initialAccountId = defaultAccount.id as int;
-      }
-
-      // Get default category ID if available
-      int? initialCategoryId;
-      if (defaultCategory != null) {
-        initialCategoryId = defaultCategory.id as int;
-      }
-
-      // Show expense details bottom sheet with pre-selected defaults
-      if (!context.mounted) return;
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (context) => ExpenseDetailsBottomSheet(
-          accounts: accountsMap,
-          categories: categoriesMap,
-          initialAccountId: initialAccountId,
-          initialCategoryId: initialCategoryId,
-          onSave: ({
-            required value,
-            required description,
-            required notes,
-            required accountId,
-            required transactionType,
-            required categoryId,
-            required date,
-            installmentNumber,
-            totalInstallments,
-          }) async {
-            try {
-              // Check if this is an installment transaction
-              final bool isInstallment = installmentNumber != null && totalInstallments != null;
-
-              if (isInstallment) {
-                // Handle installment transaction
-                final transactionRepository = ref.read(transactionRepositoryProvider);
-
-                // Create installment transactions using repository method
-                await transactionRepository.createInstallmentTransactions(
-                  transaction: TransactionModelCompanion.insert(
-                    value: value,
-                    description: description,
-                    date: date,
-                    accountId: accountId,
-                    categoryId: categoryId,
-                    notes: Value(notes),
-                    transactionType: Value(transactionType),
-                  ),
-                  currentInstallment: installmentNumber,
-                  totalInstallments: totalInstallments,
-                  accountId: accountId,
-                );
-
-                // Update account balance for current installment only
-                final accountRepository = ref.read(accountRepositoryProvider);
-                final account = await accountRepository.getById(accountId);
-                if (account != null && transactionType == 'credit') {
-                  final newCreditUsed = account.creditUsed + value;
-                  await accountRepository.updateCreditUsed(account.id, newCreditUsed);
-                }
-
-                if (!context.mounted) return;
-                ref.read(expenseFormProvider.notifier).reset();
-                Navigator.of(context).pop();
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Parcelamento criado: $installmentNumber/$totalInstallments parcelas'),
-                    backgroundColor: Colors.green,
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              } else {
-                // Handle regular transaction
-                final addTransactionUseCase = ref.read(addTransactionUseCaseProvider);
-
-                final result = await addTransactionUseCase.execute(
-                  value: value,
-                  description: description,
-                  notes: notes,
-                  accountId: accountId,
-                  categoryId: categoryId,
-                  transactionType: transactionType,
-                  date: date,
-                );
-
-                if (!context.mounted) return;
-                ref.read(expenseFormProvider.notifier).reset();
-                Navigator.of(context).pop();
-
-                if (result.success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Transação salva com sucesso!'),
-                      backgroundColor: Colors.green,
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(result.errorMessage ?? 'Erro ao salvar transação'),
-                      backgroundColor: Colors.red,
-                      duration: const Duration(seconds: 3),
-                    ),
-                  );
-                }
-              }
-            } catch (e) {
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Erro ao salvar transação: $e'),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 3),
-                ),
-              );
-            }
-          },
-          onCancel: () {
-            Navigator.of(context).pop();
-            // Reset form state
-            ref.read(expenseFormProvider.notifier).reset();
-          },
-        ),
-      );
-    }).catchError((error) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao carregar dados: $error'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    });
-  }
-
-  Future<dynamic> _getOrCreateInvoice(
-      BillingCyclePeriod? period, WidgetRef ref) async {
-    debugPrint('[DASHBOARD_INVOICE] ========== Get or Create Invoice ==========');
-    debugPrint('[DASHBOARD_INVOICE] Period: ${period?.start} to ${period?.end}');
-
-    if (period == null) {
-      debugPrint('[DASHBOARD_INVOICE] ❌ Period is null');
-      return null;
-    }
-
-    final invoiceRepo = ref.read(invoiceRepositoryProvider);
-
-    // Try to get existing invoice
-    var invoice = await invoiceRepo.getByPeriod(
-      startDate: period.start,
-      endDate: period.end,
-    );
-
-    debugPrint('[DASHBOARD_INVOICE] Existing invoice: ${invoice != null ? "ID ${invoice.id}, isPaid=${invoice.isPaid}" : "not found"}');
-
-    // If invoice doesn't exist, check if there are transactions in this period
-    if (invoice == null) {
-      debugPrint('[DASHBOARD_INVOICE] Invoice doesn\'t exist, checking for transactions...');
-
-      final calculatedData = await ref.read(
-        invoiceCalculatedDataProvider(
-          startDate: period.start,
-          endDate: period.end,
-        ).future,
-      );
-
-      debugPrint('[DASHBOARD_INVOICE] Found ${calculatedData.transactionCount} transactions');
-
-      // If there are transactions, create the invoice automatically
-      if (calculatedData.transactionCount > 0) {
-        debugPrint('[DASHBOARD_INVOICE] ✅ Creating new invoice');
-        await invoiceRepo.create(
-          startDate: period.start,
-          endDate: period.end,
-        );
-        // Fetch the newly created invoice
-        invoice = await invoiceRepo.getByPeriod(
-          startDate: period.start,
-          endDate: period.end,
-        );
-        debugPrint('[DASHBOARD_INVOICE] New invoice created: ID ${invoice?.id}');
-      } else {
-        debugPrint('[DASHBOARD_INVOICE] ℹ️ No transactions, not creating invoice');
-      }
-    }
-
-    return invoice;
-  }
-
-  Widget _buildPeriodHeader(BillingCyclePeriod? period) {
-    if (period == null) return const SizedBox.shrink();
-
-    final dateFormat = DateFormat('MMM yyyy', 'pt_BR');
-    final monthYear = dateFormat.format(period.start).toUpperCase();
-
-    final detailFormat = DateFormat('dd/MM');
-    final dateRange =
-        '${detailFormat.format(period.start)} - ${detailFormat.format(period.end)}';
-
-    final periodNotifier = ref.read(currentInvoicePeriodProvider.notifier);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left, size: 28),
-            onPressed: () async {
-              await periodNotifier.goToPreviousPeriod();
-            },
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Column(
-            children: [
-              Text(
-                monthYear,
-                style: AppTypography.headlineMedium.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                'Período: $dateRange',
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          IconButton(
-            icon: const Icon(Icons.chevron_right, size: 28),
-            onPressed: () async {
-              await periodNotifier.goToNextPeriod();
-            },
-            color: AppColors.textSecondary,
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
     // Watch the reactive dashboard data stream
     final dashboardDataAsync = ref.watch(dashboardDataStreamProvider);
     final currentPeriod = ref.watch(currentInvoicePeriodProvider);
 
     return Scaffold(
-      appBar: const StandardAppBar(title: 'Início'),
+      // Period navigation header (minimal/discrete)
+      appBar: StandardAppBar(titleWidget: _buildPeriodHeader(currentPeriod)),
       backgroundColor: AppColors.background,
       body: dashboardDataAsync.when(
         data: (dashboardData) => SingleChildScrollView(
@@ -339,9 +49,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Period navigation header (minimal/discrete)
-              _buildPeriodHeader(currentPeriod),
-
               // Main card - Remaining budget
               MainCard(
                 remainingBudget: dashboardData.remainingBudget,
@@ -546,5 +253,312 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the current invoice period on first load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final periodNotifier = ref.read(currentInvoicePeriodProvider.notifier);
+      final currentPeriod = ref.read(currentInvoicePeriodProvider);
+      if (currentPeriod == null) {
+        periodNotifier.resetToDefault();
+      }
+    });
+  }
+
+  Widget _buildPeriodHeader(BillingCyclePeriod? period) {
+    if (period == null) return const SizedBox.shrink();
+
+    final paymentDay = period.end.add(const Duration(days: 7));
+
+    final dateFormat = DateFormat('MMM yyyy', 'pt_BR');
+    final monthYear = dateFormat.format(paymentDay).toUpperCase();
+
+    final detailFormat = DateFormat('dd/MM');
+    final dateRange =
+        '${detailFormat.format(period.start)} - ${detailFormat.format(period.end)}';
+
+    final periodNotifier = ref.read(currentInvoicePeriodProvider.notifier);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left, size: 28),
+            onPressed: () async {
+              await periodNotifier.goToPreviousPeriod();
+            },
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Column(
+            children: [
+              Text(
+                monthYear,
+                style: AppTypography.headlineMedium.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                'Período: $dateRange',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          IconButton(
+            icon: const Icon(Icons.chevron_right, size: 28),
+            onPressed: () async {
+              await periodNotifier.goToNextPeriod();
+            },
+            color: AppColors.textSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<dynamic> _getOrCreateInvoice(
+      BillingCyclePeriod? period, WidgetRef ref) async {
+    debugPrint(
+        '[DASHBOARD_INVOICE] ========== Get or Create Invoice ==========');
+    debugPrint(
+        '[DASHBOARD_INVOICE] Period: ${period?.start} to ${period?.end}');
+
+    if (period == null) {
+      debugPrint('[DASHBOARD_INVOICE] ❌ Period is null');
+      return null;
+    }
+
+    final invoiceRepo = ref.read(invoiceRepositoryProvider);
+
+    // Try to get existing invoice
+    var invoice = await invoiceRepo.getByPeriod(
+      startDate: period.start,
+      endDate: period.end,
+    );
+
+    debugPrint(
+        '[DASHBOARD_INVOICE] Existing invoice: ${invoice != null ? "ID ${invoice.id}, isPaid=${invoice.isPaid}" : "not found"}');
+
+    // If invoice doesn't exist, check if there are transactions in this period
+    if (invoice == null) {
+      debugPrint(
+          '[DASHBOARD_INVOICE] Invoice doesn\'t exist, checking for transactions...');
+
+      final calculatedData = await ref.read(
+        invoiceCalculatedDataProvider(
+          startDate: period.start,
+          endDate: period.end,
+        ).future,
+      );
+
+      debugPrint(
+          '[DASHBOARD_INVOICE] Found ${calculatedData.transactionCount} transactions');
+
+      // If there are transactions, create the invoice automatically
+      if (calculatedData.transactionCount > 0) {
+        debugPrint('[DASHBOARD_INVOICE] ✅ Creating new invoice');
+        await invoiceRepo.create(
+          startDate: period.start,
+          endDate: period.end,
+        );
+        // Fetch the newly created invoice
+        invoice = await invoiceRepo.getByPeriod(
+          startDate: period.start,
+          endDate: period.end,
+        );
+        debugPrint(
+            '[DASHBOARD_INVOICE] New invoice created: ID ${invoice?.id}');
+      } else {
+        debugPrint(
+            '[DASHBOARD_INVOICE] ℹ️ No transactions, not creating invoice');
+      }
+    }
+
+    return invoice;
+  }
+
+  void _handleOpenExpenseSheet(BuildContext context, WidgetRef ref) {
+    // Fetch accounts and categories repositories
+    final accountRepository = ref.read(accountRepositoryProvider);
+    final categoryRepository = ref.read(categoryRepositoryProvider);
+
+    // Load data before showing bottom sheet to prevent rebuilds
+    Future.wait([
+      accountRepository.getAll(),
+      categoryRepository.getAll(),
+      accountRepository.getDefaultAccount(),
+      categoryRepository.getDefaultCategory(),
+    ]).then((results) {
+      if (!context.mounted) return;
+
+      final accounts = results[0] as List;
+      final categories = results[1] as List;
+      final defaultAccount = results[2] as dynamic;
+      final defaultCategory = results[3] as dynamic;
+
+      // Convert lists to maps for the bottom sheet
+      final accountsMap = {
+        for (var account in accounts) account.id as int: account.name as String
+      };
+      final categoriesMap = {
+        for (var category in categories)
+          category.id as int: category.name as String
+      };
+
+      // Get default account ID if available
+      int? initialAccountId;
+      if (defaultAccount != null) {
+        initialAccountId = defaultAccount.id as int;
+      }
+
+      // Get default category ID if available
+      int? initialCategoryId;
+      if (defaultCategory != null) {
+        initialCategoryId = defaultCategory.id as int;
+      }
+
+      // Show expense details bottom sheet with pre-selected defaults
+      if (!context.mounted) return;
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => ExpenseDetailsBottomSheet(
+          accounts: accountsMap,
+          categories: categoriesMap,
+          initialAccountId: initialAccountId,
+          initialCategoryId: initialCategoryId,
+          onSave: ({
+            required value,
+            required description,
+            required notes,
+            required accountId,
+            required transactionType,
+            required categoryId,
+            required date,
+            installmentNumber,
+            totalInstallments,
+          }) async {
+            try {
+              // Check if this is an installment transaction
+              final bool isInstallment =
+                  installmentNumber != null && totalInstallments != null;
+
+              if (isInstallment) {
+                // Handle installment transaction
+                final transactionRepository =
+                    ref.read(transactionRepositoryProvider);
+
+                // Create installment transactions using repository method
+                await transactionRepository.createInstallmentTransactions(
+                  transaction: TransactionModelCompanion.insert(
+                    value: value,
+                    description: description,
+                    date: date,
+                    accountId: accountId,
+                    categoryId: categoryId,
+                    notes: Value(notes),
+                    transactionType: Value(transactionType),
+                  ),
+                  currentInstallment: installmentNumber,
+                  totalInstallments: totalInstallments,
+                  accountId: accountId,
+                );
+
+                // Update account balance for current installment only
+                final accountRepository = ref.read(accountRepositoryProvider);
+                final account = await accountRepository.getById(accountId);
+                if (account != null && transactionType == 'credit') {
+                  final newCreditUsed = account.creditUsed + value;
+                  await accountRepository.updateCreditUsed(
+                      account.id, newCreditUsed);
+                }
+
+                if (!context.mounted) return;
+                ref.read(expenseFormProvider.notifier).reset();
+                Navigator.of(context).pop();
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        'Parcelamento criado: $installmentNumber/$totalInstallments parcelas'),
+                    backgroundColor: Colors.green,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              } else {
+                // Handle regular transaction
+                final addTransactionUseCase =
+                    ref.read(addTransactionUseCaseProvider);
+
+                final result = await addTransactionUseCase.execute(
+                  value: value,
+                  description: description,
+                  notes: notes,
+                  accountId: accountId,
+                  categoryId: categoryId,
+                  transactionType: transactionType,
+                  date: date,
+                );
+
+                if (!context.mounted) return;
+                ref.read(expenseFormProvider.notifier).reset();
+                Navigator.of(context).pop();
+
+                if (result.success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Transação salva com sucesso!'),
+                      backgroundColor: Colors.green,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          result.errorMessage ?? 'Erro ao salvar transação'),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              }
+            } catch (e) {
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Erro ao salvar transação: $e'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            }
+          },
+          onCancel: () {
+            Navigator.of(context).pop();
+            // Reset form state
+            ref.read(expenseFormProvider.notifier).reset();
+          },
+        ),
+      );
+    }).catchError((error) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao carregar dados: $error'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    });
   }
 }
