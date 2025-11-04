@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/utils/billing_cycle_utils.dart';
 import '../../data/providers/repository_providers.dart';
+import '../../domain/usecases/providers/invoice_providers.dart';
 import '../../domain/usecases/providers/usecase_providers.dart';
 import '../state/dashboard_view_notifier.dart';
 import '../state/expense_form_notifier.dart';
@@ -73,6 +74,7 @@ class _TransactionsListScreenState
     final transactionsAsync = ref.watch(transactionsStreamProvider);
     final accountsAsync = ref.watch(accountsStreamProvider);
     final categoriesAsync = ref.watch(categoriesStreamProvider);
+    final currentInvoicePeriod = ref.watch(currentInvoicePeriodProvider);
 
     return Scaffold(
       appBar: StandardAppBar(
@@ -109,7 +111,7 @@ class _TransactionsListScreenState
             data: (accounts) {
               // Filter transactions by period (billing cycle or calendar date)
               final filteredByDate = _filterPeriod == FilterPeriod.billingCycle
-                  ? _filterByBillingCycle(transactions, accounts)
+                  ? _filterByBillingCycle(transactions, accounts, currentInvoicePeriod)
                   : _filterPeriod == FilterPeriod.all
                       ? transactions
                       : _filterByDateRange(transactions);
@@ -372,8 +374,12 @@ class _TransactionsListScreenState
   }
 
   /// Filter transactions by billing cycle for credit accounts and calendar month for debit accounts
+  /// If [selectedPeriod] is provided, it will be used instead of calculating the current period
   List<dynamic> _filterByBillingCycle(
-      List<dynamic> transactions, List<dynamic> accounts) {
+    List<dynamic> transactions,
+    List<dynamic> accounts, [
+    BillingCyclePeriod? selectedPeriod,
+  ]) {
     final now = DateTime.now();
     final accountsMap = {
       for (var account in accounts) (account as dynamic).id as int: account
@@ -389,19 +395,40 @@ class _TransactionsListScreenState
       final creditPaymentDay = (account).creditPaymentDay as int?;
 
       if (isCredit && creditPaymentDay != null) {
-        // Credit account with billing cycle - filter by current billing cycle
-        final cycle =
-            calculateCurrentBillingCycleFromPaymentDay(creditPaymentDay, now);
+        // Credit account with billing cycle
+        final BillingCyclePeriod cycle;
+
+        if (selectedPeriod != null) {
+          // Use the selected period from dashboard navigation
+          cycle = selectedPeriod;
+        } else {
+          // Calculate current billing cycle
+          cycle =
+              calculateCurrentBillingCycleFromPaymentDay(creditPaymentDay, now);
+        }
+
         return cycle.contains((transaction).date as DateTime);
       } else {
         // Debit account or credit without payment day - filter by calendar month
         final transactionDate = (transaction).date as DateTime;
-        final monthStart = DateTime(now.year, now.month, 1);
-        final monthEnd = DateTime(now.year, now.month + 1, 1)
-            .subtract(const Duration(seconds: 1));
-        return transactionDate
-                .isAfter(monthStart.subtract(const Duration(seconds: 1))) &&
-            transactionDate.isBefore(monthEnd.add(const Duration(seconds: 1)));
+
+        if (selectedPeriod != null) {
+          // Use the selected period's month
+          final monthStart = DateTime(selectedPeriod.start.year, selectedPeriod.start.month, 1);
+          final monthEnd = DateTime(selectedPeriod.start.year, selectedPeriod.start.month + 1, 1)
+              .subtract(const Duration(seconds: 1));
+          return transactionDate
+                  .isAfter(monthStart.subtract(const Duration(seconds: 1))) &&
+              transactionDate.isBefore(monthEnd.add(const Duration(seconds: 1)));
+        } else {
+          // Use current calendar month
+          final monthStart = DateTime(now.year, now.month, 1);
+          final monthEnd = DateTime(now.year, now.month + 1, 1)
+              .subtract(const Duration(seconds: 1));
+          return transactionDate
+                  .isAfter(monthStart.subtract(const Duration(seconds: 1))) &&
+              transactionDate.isBefore(monthEnd.add(const Duration(seconds: 1)));
+        }
       }
     }).toList();
   }
@@ -505,7 +532,11 @@ class _TransactionsListScreenState
           required transactionType,
           required categoryId,
           required date,
+          installmentNumber,
+          totalInstallments,
         }) async {
+          // Note: Editing installment transactions is not fully implemented yet
+          // Ignoring installment parameters for now
           final updateTransactionUseCase =
               ref.read(updateTransactionUseCaseProvider);
 

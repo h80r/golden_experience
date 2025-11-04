@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:drift/drift.dart' hide Column;
 import '../widgets/expense/expense_details_bottom_sheet.dart';
 import '../widgets/dashboard/main_card.dart';
 import '../widgets/dashboard/secondary_card.dart';
@@ -10,6 +11,7 @@ import '../state/expense_form_notifier.dart';
 import '../../domain/usecases/providers/usecase_providers.dart';
 import '../../domain/usecases/providers/invoice_providers.dart';
 import '../../data/providers/repository_providers.dart';
+import '../../data/datasources/local_database.dart';
 import '../../presentation/theme/app_colors.dart';
 import '../../presentation/theme/app_spacing.dart';
 import '../../presentation/theme/app_typography.dart';
@@ -101,45 +103,93 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             required transactionType,
             required categoryId,
             required date,
+            installmentNumber,
+            totalInstallments,
           }) async {
-            // Get the add transaction use case
-            final addTransactionUseCase =
-                ref.read(addTransactionUseCaseProvider);
+            try {
+              // Check if this is an installment transaction
+              final bool isInstallment = installmentNumber != null && totalInstallments != null;
 
-            // Create and save the transaction
-            final result = await addTransactionUseCase.execute(
-              value: value,
-              description: description,
-              notes: notes,
-              accountId: accountId,
-              categoryId: categoryId,
-              transactionType: transactionType,
-              date: date,
-            );
+              if (isInstallment) {
+                // Handle installment transaction
+                final transactionRepository = ref.read(transactionRepositoryProvider);
 
-            // Handle result
-            if (!context.mounted) return;
+                // Create installment transactions using repository method
+                await transactionRepository.createInstallmentTransactions(
+                  transaction: TransactionModelCompanion.insert(
+                    value: value,
+                    description: description,
+                    date: date,
+                    accountId: accountId,
+                    categoryId: categoryId,
+                    notes: Value(notes),
+                    transactionType: Value(transactionType),
+                  ),
+                  currentInstallment: installmentNumber,
+                  totalInstallments: totalInstallments,
+                  accountId: accountId,
+                );
 
-            // Reset form state for next transaction
-            ref.read(expenseFormProvider.notifier).reset();
+                // Update account balance for current installment only
+                final accountRepository = ref.read(accountRepositoryProvider);
+                final account = await accountRepository.getById(accountId);
+                if (account != null && transactionType == 'credit') {
+                  final newCreditUsed = account.creditUsed + value;
+                  await accountRepository.updateCreditUsed(account.id, newCreditUsed);
+                }
 
-            // Close the modal first
-            Navigator.of(context).pop();
+                if (!context.mounted) return;
+                ref.read(expenseFormProvider.notifier).reset();
+                Navigator.of(context).pop();
 
-            // Show feedback after modal is closed
-            if (result.success) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Transação salva com sucesso!'),
-                  backgroundColor: Colors.green,
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Parcelamento criado: $installmentNumber/$totalInstallments parcelas'),
+                    backgroundColor: Colors.green,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              } else {
+                // Handle regular transaction
+                final addTransactionUseCase = ref.read(addTransactionUseCaseProvider);
+
+                final result = await addTransactionUseCase.execute(
+                  value: value,
+                  description: description,
+                  notes: notes,
+                  accountId: accountId,
+                  categoryId: categoryId,
+                  transactionType: transactionType,
+                  date: date,
+                );
+
+                if (!context.mounted) return;
+                ref.read(expenseFormProvider.notifier).reset();
+                Navigator.of(context).pop();
+
+                if (result.success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Transação salva com sucesso!'),
+                      backgroundColor: Colors.green,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(result.errorMessage ?? 'Erro ao salvar transação'),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              }
+            } catch (e) {
+              if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content:
-                      Text(result.errorMessage ?? 'Erro ao salvar transação'),
+                  content: Text('Erro ao salvar transação: $e'),
                   backgroundColor: Colors.red,
                   duration: const Duration(seconds: 3),
                 ),

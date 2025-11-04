@@ -751,32 +751,32 @@ Transformar o dashboard principal em uma visualização baseada em faturas com n
    - Skeleton loading: Mostrar placeholders enquanto carrega dados
 
 **Definition of Done:**
-- [ ] Seção `InvoiceManagerCard` removida do dashboard
-- [ ] Dashboard recalculado baseado em valores de fatura (apenas crédito)
-- [ ] Transações de débito completamente excluídas do cálculo de orçamento
-- [ ] Header do dashboard mostra "MÊS ANO" em vez de "Início"
-- [ ] PageView implementado com swipe horizontal funcionando
-- [ ] Navegação entre períodos (anterior/futuro) funciona corretamente
-- [ ] Dashboard abre na primeira fatura não paga por padrão
-- [ ] Botão de pagamento funciona como toggle (Pagar ↔ Desmarcar Pagamento)
-- [ ] Label do botão muda dinamicamente baseado no status da fatura
-- [ ] Dialog de confirmação adapta mensagem ao status atual
-- [ ] Botão "Ver Detalhes" implementado e navegação funciona
-- [ ] `InvoiceDetailsScreen` criada com todo conteúdo da antiga seção de faturas
-- [ ] Histórico de faturas integrado na página de detalhes
-- [ ] Navegação de detalhes → dashboard funciona corretamente
-- [ ] Breakdown por conta calculado dinamicamente e exibido
-- [ ] Período sem transações tratado adequadamente
-- [ ] Performance otimizada com AutoDispose
-- [ ] Testes unitários dos providers de dados
-- [ ] Testes de widget do PageView e navegação
-- [ ] Testes de integração do fluxo completo
-- [ ] Code generation executado
-- [ ] Merge realizado para `develop`
+- [x] Seção `InvoiceManagerCard` removida do dashboard
+- [x] Dashboard recalculado baseado em valores de fatura (apenas crédito)
+- [x] Transações de débito completamente excluídas do cálculo de orçamento
+- [x] Header do dashboard mostra "MÊS ANO" em vez de "Início"
+- [x] PageView implementado com swipe horizontal funcionando
+- [x] Navegação entre períodos (anterior/futuro) funciona corretamente
+- [x] Dashboard abre na primeira fatura não paga por padrão
+- [x] Botão de pagamento funciona como toggle (Pagar ↔ Desmarcar Pagamento)
+- [x] Label do botão muda dinamicamente baseado no status da fatura
+- [x] Dialog de confirmação adapta mensagem ao status atual
+- [x] Botão "Ver Detalhes" implementado e navegação funciona
+- [x] `InvoiceDetailsScreen` criada com todo conteúdo da antiga seção de faturas
+- [x] Histórico de faturas integrado na página de detalhes
+- [x] Navegação de detalhes → dashboard funciona corretamente
+- [x] Breakdown por conta calculado dinamicamente e exibido
+- [x] Período sem transações tratado adequadamente
+- [x] Performance otimizada com AutoDispose
+- [x] Testes unitários dos providers de dados
+- [x] Testes de widget do PageView e navegação
+- [x] Testes de integração do fluxo completo
+- [x] Code generation executado
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F17-T3: Transações Parceladas com Criação Automática
+### [x] F17-T3: Transações Parceladas com Criação Automática
 
 **Branch:** `feature/installment-transactions`
 
@@ -875,20 +875,20 @@ Implementar sistema de transações parceladas que cria automaticamente as parce
    - Se usuário editar parcela, não afetar as outras (por padrão)
 
 **Definition of Done:**
-- [ ] Campos de parcelamento adicionados à tabela `Transactions`
-- [ ] UI do formulário atualizada com campos de parcela
-- [ ] Validação de conta de crédito funcionando
-- [ ] Lógica de criação automática implementada
-- [ ] Cálculo correto do primeiro dia do próximo ciclo
-- [ ] Formato do título com parcela funcionando (X/Y)
-- [ ] Exemplo do Wine-Clube funciona corretamente
-- [ ] Ícone/indicador visual de parcelas na lista
-- [ ] Opções de edição/exclusão tratadas
-- [ ] Testes unitários da lógica de criação
-- [ ] Testes de integração do fluxo completo
-- [ ] Testes de edge cases (débito, validações)
-- [ ] Code generation executado
-- [ ] Merge realizado para `develop`
+- [x] Campos de parcelamento adicionados à tabela `Transactions`
+- [x] UI do formulário atualizada com campos de parcela
+- [x] Validação de conta de crédito funcionando
+- [x] Lógica de criação automática implementada
+- [x] Cálculo correto do primeiro dia do próximo ciclo
+- [x] Formato do título com parcela funcionando (X/Y)
+- [x] Exemplo do Wine-Clube funciona corretamente
+- [x] Ícone/indicador visual de parcelas na lista
+- [x] Opções de edição/exclusão tratadas
+- [x] Testes unitários da lógica de criação
+- [x] Testes de integração do fluxo completo
+- [x] Testes de edge cases (débito, validações)
+- [x] Code generation executado
+- [x] Merge realizado para `develop`
 
 ---
 

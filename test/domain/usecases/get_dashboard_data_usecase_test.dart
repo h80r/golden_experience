@@ -140,6 +140,29 @@ class MockTransactionRepository implements ITransactionRepository {
           .toList(),
     );
   }
+
+  @override
+  Future<String> createInstallmentTransactions({
+    required Insertable<TransactionModel> transaction,
+    required int currentInstallment,
+    required int totalInstallments,
+    required int accountId,
+  }) async {
+    // Mock implementation - just return a fake UUID
+    return 'mock-uuid-123';
+  }
+
+  @override
+  Future<int> deleteInstallmentGroup(String installmentGroupId) async {
+    // Mock implementation - return 0 (no deletions)
+    return 0;
+  }
+
+  @override
+  Future<List<TransactionModel>> getByInstallmentGroup(String installmentGroupId) async {
+    // Mock implementation - return empty list
+    return [];
+  }
 }
 
 /// Mock implementation of IAccountRepository for testing

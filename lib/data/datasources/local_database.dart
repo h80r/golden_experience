@@ -57,7 +57,7 @@ class LocalDatabase extends _$LocalDatabase {
   static bool get isInitialized => _instance != null;
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -277,6 +277,23 @@ class LocalDatabase extends _$LocalDatabase {
                 is_paid INTEGER NOT NULL DEFAULT 0 CHECK ("is_paid" IN (0, 1)),
                 UNIQUE(start_date, end_date)
               )
+            ''');
+          }
+
+          // Migration from v13 to v14: Add installment fields to transactions
+          // Add support for installment transactions with automatic creation
+          if (from <= 13) {
+            await customStatement('''
+              ALTER TABLE transactions
+              ADD COLUMN installment_number INTEGER
+            ''');
+            await customStatement('''
+              ALTER TABLE transactions
+              ADD COLUMN installment_total INTEGER
+            ''');
+            await customStatement('''
+              ALTER TABLE transactions
+              ADD COLUMN installment_group_id TEXT
             ''');
           }
         },

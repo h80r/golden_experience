@@ -64,4 +64,30 @@ abstract class ITransactionRepository {
     DateTime startDate,
     DateTime endDate,
   );
+
+  /// Creates an installment transaction with automatic generation of future installments
+  ///
+  /// Creates the current installment and automatically generates future installments
+  /// across billing cycles. All installments share the same [installmentGroupId].
+  ///
+  /// Parameters:
+  /// - [transaction]: The base transaction data (value, description, accountId, etc.)
+  /// - [currentInstallment]: The current installment number (e.g., 8 for "8/12")
+  /// - [totalInstallments]: Total number of installments (e.g., 12 for "8/12")
+  /// - [accountId]: The credit account ID for billing cycle calculation
+  ///
+  /// Returns the generated installmentGroupId (UUID) for tracking all related installments
+  Future<String> createInstallmentTransactions({
+    required Insertable<TransactionModel> transaction,
+    required int currentInstallment,
+    required int totalInstallments,
+    required int accountId,
+  });
+
+  /// Deletes all transactions in an installment group
+  /// Returns the number of transactions deleted
+  Future<int> deleteInstallmentGroup(String installmentGroupId);
+
+  /// Retrieves all transactions in an installment group
+  Future<List<TransactionModel>> getByInstallmentGroup(String installmentGroupId);
 }

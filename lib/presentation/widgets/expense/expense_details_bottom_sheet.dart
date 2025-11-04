@@ -34,6 +34,8 @@ class ExpenseDetailsBottomSheet extends StatefulWidget {
     required String transactionType,
     required int categoryId,
     required DateTime date,
+    int? installmentNumber,
+    int? totalInstallments,
   })? onSave;
   final VoidCallback onCancel;
 
@@ -74,6 +76,13 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
   double _currentValue = 0.0;
   int _currentPage = 0;
   double _lastKeyboardHeight = 0.0;
+
+  // Installment fields
+  bool _isInstallmentEnabled = false;
+  late TextEditingController _currentInstallmentController;
+  late TextEditingController _totalInstallmentsController;
+  int? _currentInstallment;
+  int? _totalInstallments;
 
   @override
   Widget build(BuildContext context) {
@@ -223,6 +232,8 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
     _descriptionController.dispose();
     _notesController.dispose();
     _valueFocusNode.dispose();
+    _currentInstallmentController.dispose();
+    _totalInstallmentsController.dispose();
     super.dispose();
   }
 
@@ -235,6 +246,8 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
     _descriptionController = TextEditingController();
     _notesController = TextEditingController();
     _valueFocusNode = FocusNode();
+    _currentInstallmentController = TextEditingController();
+    _totalInstallmentsController = TextEditingController();
 
     // Initialize with pre-filled value if provided
     // NubankStyleCurrencyField expects cents as string internally
@@ -433,6 +446,10 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
               onLeftTap: () {
                 setState(() {
                   _transactionType = 'debit';
+                  // Disable installments when switching to debit
+                  if (_isInstallmentEnabled) {
+                    _isInstallmentEnabled = false;
+                  }
                 });
               },
               onRightTap: () {
@@ -441,7 +458,106 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
                 });
               },
             ),
-            const SizedBox(height: AppSpacing.xl),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Row 5: Installment Section (only for credit)
+            if (_transactionType == 'credit') ...[
+              // Installment checkbox
+              Row(
+                children: [
+                  Checkbox(
+                    value: _isInstallmentEnabled,
+                    onChanged: (value) {
+                      setState(() {
+                        _isInstallmentEnabled = value ?? false;
+                        if (!_isInstallmentEnabled) {
+                          // Clear installment fields when disabled
+                          _currentInstallmentController.clear();
+                          _totalInstallmentsController.clear();
+                          _currentInstallment = null;
+                          _totalInstallments = null;
+                        }
+                      });
+                    },
+                    activeColor: AppColors.primary,
+                  ),
+                  Text(
+                    'Parcelar transação',
+                    style: AppTypography.bodyLarge,
+                  ),
+                ],
+              ),
+
+              // Installment input fields (only when enabled)
+              if (_isInstallmentEnabled) ...[
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  children: [
+                    // Current installment number
+                    Expanded(
+                      child: CustomTextField(
+                        controller: _currentInstallmentController,
+                        label: 'Parcela atual',
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          setState(() {
+                            _currentInstallment = int.tryParse(value);
+                          });
+                        },
+                        validator: (value) {
+                          if (_isInstallmentEnabled) {
+                            if (value == null || value.isEmpty) {
+                              return 'Obrigatório';
+                            }
+                            final num = int.tryParse(value);
+                            if (num == null || num < 1) {
+                              return 'Mín: 1';
+                            }
+                            if (_totalInstallments != null && num > _totalInstallments!) {
+                              return 'Maior que total';
+                            }
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    // Total installments
+                    Expanded(
+                      child: CustomTextField(
+                        controller: _totalInstallmentsController,
+                        label: 'Total de parcelas',
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          setState(() {
+                            _totalInstallments = int.tryParse(value);
+                          });
+                        },
+                        validator: (value) {
+                          if (_isInstallmentEnabled) {
+                            if (value == null || value.isEmpty) {
+                              return 'Obrigatório';
+                            }
+                            final num = int.tryParse(value);
+                            if (num == null || num < 2) {
+                              return 'Mín: 2';
+                            }
+                            if (num > 99) {
+                              return 'Máx: 99';
+                            }
+                            if (_currentInstallment != null && _currentInstallment! > num) {
+                              return 'Menor que atual';
+                            }
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: AppSpacing.md),
+            ],
 
             // Bottom row: Cancel (25%) | Details (25%) | Save (50%)
             Row(
@@ -632,6 +748,37 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
       return;
     }
 
+    // Validate installment fields if enabled
+    if (_isInstallmentEnabled) {
+      if (_currentInstallment == null || _totalInstallments == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Preencha os campos de parcelamento'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        if (_currentPage == 1) {
+          _goToPreviousPage();
+        }
+        return;
+      }
+
+      if (_currentInstallment! > _totalInstallments!) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Parcela atual não pode ser maior que o total'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        if (_currentPage == 1) {
+          _goToPreviousPage();
+        }
+        return;
+      }
+    }
+
     widget.onSave?.call(
       value: _currentValue,
       description: _descriptionController.text,
@@ -640,6 +787,8 @@ class _ExpenseDetailsBottomSheetState extends State<ExpenseDetailsBottomSheet> {
       transactionType: _transactionType,
       categoryId: _selectedCategoryId!,
       date: _selectedDate,
+      installmentNumber: _isInstallmentEnabled ? _currentInstallment : null,
+      totalInstallments: _isInstallmentEnabled ? _totalInstallments : null,
     );
   }
 }
