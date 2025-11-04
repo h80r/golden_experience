@@ -262,41 +262,39 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   /// based on the payment day and number of cycles ahead.
   ///
   /// Parameters:
-  /// - [currentDate]: The reference date (usually the current transaction date)
+  /// - [currentDate]: The END date of the current billing cycle (closing day)
   /// - [paymentDay]: The payment day of the credit card (1-31)
   /// - [cyclesAhead]: How many billing cycles ahead (1 for next cycle, 2 for cycle after, etc.)
   ///
-  /// Returns the first day of the target billing cycle
+  /// Returns the first day of the target billing cycle at midnight (00:00:00)
   DateTime _calculateNextCycleStartDate(
     DateTime currentDate,
     int paymentDay, {
     required int cyclesAhead,
   }) {
-    // Get the current billing cycle
-    final currentCycle =
-        calculateCurrentBillingCycleFromPaymentDay(paymentDay, currentDate);
+    // currentDate is the closing day of the current billing cycle
+    // We need to calculate the closing day for cyclesAhead months in the future
 
-    // Calculate the target cycle by adding months
-    // Start from the end of the current cycle and move forward
-    DateTime targetDate = currentCycle.end;
+    // Start with the month after the current closing date
+    int targetMonth = currentDate.month;
+    int targetYear = currentDate.year;
 
+    // Advance cyclesAhead months forward
     for (int i = 0; i < cyclesAhead; i++) {
-      // Move to next month's cycle
-      final nextMonth = targetDate.month == 12 ? 1 : targetDate.month + 1;
-      final nextYear = targetDate.month == 12 ? targetDate.year + 1 : targetDate.year;
-      final nextCycle = calculateCurrentBillingCycleFromPaymentDay(
-        paymentDay,
-        DateTime(nextYear, nextMonth, 1),
-      );
-      targetDate = nextCycle.end;
+      targetMonth++;
+      if (targetMonth > 12) {
+        targetMonth = 1;
+        targetYear++;
+      }
     }
 
-    // Return the start of the final target cycle
-    final finalCycle = calculateCurrentBillingCycleFromPaymentDay(
+    // Calculate the closing date for the target month
+    final targetClosingDate = calculateClosingDate(
       paymentDay,
-      targetDate,
+      DateTime(targetYear, targetMonth, 1),
     );
 
-    return finalCycle.start;
+    // The cycle starts the day after the closing date
+    return targetClosingDate.add(const Duration(days: 1));
   }
 }
