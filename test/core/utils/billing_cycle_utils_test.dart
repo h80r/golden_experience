@@ -314,6 +314,135 @@ void main() {
     });
   });
 
+  group('calculateCurrentBillingCycleFromPaymentDay', () {
+    test('returns correct cycle when transaction is on first day after closing',
+        () {
+      // Payment day 1 (closing ~Oct 25), transaction on Oct 26
+      // This is the EXACT bug scenario reported by the user
+      final cycle = calculateCurrentBillingCycleFromPaymentDay(
+        1,
+        DateTime(2024, 10, 26),
+      );
+
+      // Expected: Oct 26 - Nov 24 (cycle ends Nov 24, payment due Dec 1)
+      expect(cycle.start, DateTime(2024, 10, 26));
+      expect(cycle.end, DateTime(2024, 11, 24));
+    });
+
+    test('returns correct cycle when before closing day', () {
+      // Payment day 15 (closing ~8th), transaction on Nov 6
+      final cycle = calculateCurrentBillingCycleFromPaymentDay(
+        15,
+        DateTime(2024, 11, 6),
+      );
+
+      // Expected: Oct 9 - Nov 8 (still in current cycle before closing)
+      expect(cycle.start, DateTime(2024, 10, 9));
+      expect(cycle.end, DateTime(2024, 11, 8));
+    });
+
+    test('returns correct cycle when after closing day', () {
+      // Payment day 15 (closing ~8th), transaction on Nov 10
+      final cycle = calculateCurrentBillingCycleFromPaymentDay(
+        15,
+        DateTime(2024, 11, 10),
+      );
+
+      // Expected: Nov 9 - Dec 8 (in next cycle after closing)
+      expect(cycle.start, DateTime(2024, 11, 9));
+      expect(cycle.end, DateTime(2024, 12, 8));
+    });
+
+    test('returns correct cycle when on closing day', () {
+      // Payment day 15 (closing ~8th), transaction on Nov 8
+      final cycle = calculateCurrentBillingCycleFromPaymentDay(
+        15,
+        DateTime(2024, 11, 8),
+      );
+
+      // Expected: Oct 9 - Nov 8 (on closing day, still in current cycle)
+      expect(cycle.start, DateTime(2024, 10, 9));
+      expect(cycle.end, DateTime(2024, 11, 8));
+    });
+
+    test('handles payment day 1 with transaction in middle of month', () {
+      // Payment day 1 (closing varies), transaction on Nov 15
+      final cycle = calculateCurrentBillingCycleFromPaymentDay(
+        1,
+        DateTime(2024, 11, 15),
+      );
+
+      // Expected: Oct 26 - Nov 24 (cycle for Nov 15)
+      expect(cycle.start, DateTime(2024, 10, 26));
+      expect(cycle.end, DateTime(2024, 11, 24));
+    });
+
+    test('handles payment day 5 (early month) correctly', () {
+      // Payment day 5 (closing ~Oct 29), transaction on Oct 30
+      final cycle = calculateCurrentBillingCycleFromPaymentDay(
+        5,
+        DateTime(2024, 10, 30),
+      );
+
+      // Oct 30 is AFTER Oct 29 closing (Nov 5 - 7 days)
+      // So it's in the cycle that ends Nov 28 (Dec 5 - 7 days)
+      // Expected: Oct 30 - Nov 28
+      expect(cycle.start, DateTime(2024, 10, 30));
+      expect(cycle.end, DateTime(2024, 11, 28));
+    });
+
+    test('handles year transition correctly with payment day 1', () {
+      // Payment day 1, transaction on Dec 26, 2024
+      final cycle = calculateCurrentBillingCycleFromPaymentDay(
+        1,
+        DateTime(2024, 12, 26),
+      );
+
+      // Expected: Dec 26, 2024 - Dec 25, 2025
+      expect(cycle.start, DateTime(2024, 12, 26));
+      expect(cycle.end, DateTime(2025, 1, 25));
+    });
+
+    test('handles February with payment day 1 in leap year', () {
+      // Payment day 1, transaction on Feb 26, 2024 (leap year)
+      final cycle = calculateCurrentBillingCycleFromPaymentDay(
+        1,
+        DateTime(2024, 2, 26),
+      );
+
+      // Feb 26 is AFTER Feb 23 closing (Mar 1 - 7 days)
+      // So it's in the cycle that ends Mar 25 (Apr 1 - 7 days)
+      // Expected: Feb 24 - Mar 25
+      expect(cycle.start, DateTime(2024, 2, 24));
+      expect(cycle.end, DateTime(2024, 3, 25));
+    });
+
+    test('ensures installments distribute correctly across cycles', () {
+      // This test simulates the installment scenario:
+      // Transaction on Oct 26 with payment day 1
+      // Installment 6 should be in Oct 26-Nov 24
+      // Installment 7 should be in Nov 25-Dec 25 (approx)
+
+      final cycle1 = calculateCurrentBillingCycleFromPaymentDay(
+        1,
+        DateTime(2024, 10, 26),
+      );
+      expect(cycle1.start, DateTime(2024, 10, 26));
+      expect(cycle1.end, DateTime(2024, 11, 24));
+
+      // Next cycle starts the day after cycle1 ends
+      final cycle2 = calculateCurrentBillingCycleFromPaymentDay(
+        1,
+        DateTime(2024, 11, 25), // Day after previous cycle ends
+      );
+      expect(cycle2.start, DateTime(2024, 11, 25));
+      expect(cycle2.end, DateTime(2024, 12, 25));
+
+      // Verify cycles don't overlap
+      expect(cycle1.end.add(const Duration(days: 1)), equals(cycle2.start));
+    });
+  });
+
   group('Edge Cases', () {
     test('handles closing day 29 in February non-leap year', () {
       final cycle = calculateCurrentBillingCycle(
