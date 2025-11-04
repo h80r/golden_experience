@@ -4,22 +4,44 @@ import '../widgets/expense/expense_details_bottom_sheet.dart';
 import '../widgets/dashboard/main_card.dart';
 import '../widgets/dashboard/secondary_card.dart';
 import '../widgets/common/standard_app_bar.dart';
-import '../widgets/dashboard/invoice_manager_card.dart';
+import '../widgets/dashboard/invoice_payment_button.dart';
 import 'invoice_history_screen.dart';
 import '../state/expense_form_notifier.dart';
 import '../../domain/usecases/providers/usecase_providers.dart';
+import '../../domain/usecases/providers/invoice_providers.dart';
 import '../../data/providers/repository_providers.dart';
 import '../../presentation/theme/app_colors.dart';
 import '../../presentation/theme/app_spacing.dart';
+import '../../presentation/theme/app_typography.dart';
+import '../../core/utils/billing_cycle_utils.dart';
+import 'package:intl/intl.dart';
 
 /// DashboardScreen - The main dashboard showing financial overview
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   final VoidCallback? onViewTransactionsPressed;
 
   const DashboardScreen({
     super.key,
     this.onViewTransactionsPressed,
   });
+
+  @override
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the current invoice period on first load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final periodNotifier = ref.read(currentInvoicePeriodProvider.notifier);
+      final currentPeriod = ref.read(currentInvoicePeriodProvider);
+      if (currentPeriod == null) {
+        periodNotifier.resetToDefault();
+      }
+    });
+  }
 
   void _handleOpenExpenseSheet(BuildContext context, WidgetRef ref) {
     // Fetch accounts and categories repositories
@@ -143,10 +165,120 @@ class DashboardScreen extends ConsumerWidget {
     });
   }
 
+  Future<dynamic> _getOrCreateInvoice(
+      BillingCyclePeriod? period, WidgetRef ref) async {
+    debugPrint('[DASHBOARD_INVOICE] ========== Get or Create Invoice ==========');
+    debugPrint('[DASHBOARD_INVOICE] Period: ${period?.start} to ${period?.end}');
+
+    if (period == null) {
+      debugPrint('[DASHBOARD_INVOICE] ❌ Period is null');
+      return null;
+    }
+
+    final invoiceRepo = ref.read(invoiceRepositoryProvider);
+
+    // Try to get existing invoice
+    var invoice = await invoiceRepo.getByPeriod(
+      startDate: period.start,
+      endDate: period.end,
+    );
+
+    debugPrint('[DASHBOARD_INVOICE] Existing invoice: ${invoice != null ? "ID ${invoice.id}, isPaid=${invoice.isPaid}" : "not found"}');
+
+    // If invoice doesn't exist, check if there are transactions in this period
+    if (invoice == null) {
+      debugPrint('[DASHBOARD_INVOICE] Invoice doesn\'t exist, checking for transactions...');
+
+      final calculatedData = await ref.read(
+        invoiceCalculatedDataProvider(
+          startDate: period.start,
+          endDate: period.end,
+        ).future,
+      );
+
+      debugPrint('[DASHBOARD_INVOICE] Found ${calculatedData.transactionCount} transactions');
+
+      // If there are transactions, create the invoice automatically
+      if (calculatedData.transactionCount > 0) {
+        debugPrint('[DASHBOARD_INVOICE] ✅ Creating new invoice');
+        await invoiceRepo.create(
+          startDate: period.start,
+          endDate: period.end,
+        );
+        // Fetch the newly created invoice
+        invoice = await invoiceRepo.getByPeriod(
+          startDate: period.start,
+          endDate: period.end,
+        );
+        debugPrint('[DASHBOARD_INVOICE] New invoice created: ID ${invoice?.id}');
+      } else {
+        debugPrint('[DASHBOARD_INVOICE] ℹ️ No transactions, not creating invoice');
+      }
+    }
+
+    return invoice;
+  }
+
+  Widget _buildPeriodHeader(BillingCyclePeriod? period) {
+    if (period == null) return const SizedBox.shrink();
+
+    final dateFormat = DateFormat('MMM yyyy', 'pt_BR');
+    final monthYear = dateFormat.format(period.start).toUpperCase();
+
+    final detailFormat = DateFormat('dd/MM');
+    final dateRange =
+        '${detailFormat.format(period.start)} - ${detailFormat.format(period.end)}';
+
+    final periodNotifier = ref.read(currentInvoicePeriodProvider.notifier);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left, size: 28),
+            onPressed: () async {
+              await periodNotifier.goToPreviousPeriod();
+            },
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Column(
+            children: [
+              Text(
+                monthYear,
+                style: AppTypography.headlineMedium.copyWith(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                'Período: $dateRange',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          IconButton(
+            icon: const Icon(Icons.chevron_right, size: 28),
+            onPressed: () async {
+              await periodNotifier.goToNextPeriod();
+            },
+            color: AppColors.textSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     // Watch the reactive dashboard data stream
     final dashboardDataAsync = ref.watch(dashboardDataStreamProvider);
+    final currentPeriod = ref.watch(currentInvoicePeriodProvider);
 
     return Scaffold(
       appBar: const StandardAppBar(title: 'Início'),
@@ -157,6 +289,9 @@ class DashboardScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Period navigation header (minimal/discrete)
+              _buildPeriodHeader(currentPeriod),
+
               // Main card - Remaining budget
               MainCard(
                 remainingBudget: dashboardData.remainingBudget,
@@ -175,25 +310,13 @@ class DashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.xl),
 
-              // Invoice Manager Card - Credit card billing cycle management
-              InvoiceManagerCard(
-                onViewHistory: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const InvoiceHistoryScreen(),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: AppSpacing.xl),
-
               // Transactions button
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.receipt_long),
                   label: const Text('Ver todas as transações'),
-                  onPressed: onViewTransactionsPressed,
+                  onPressed: widget.onViewTransactionsPressed,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.lg,
@@ -205,6 +328,84 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              // Invoice management buttons row
+              FutureBuilder(
+                future: _getOrCreateInvoice(currentPeriod, ref),
+                builder: (context, snapshot) {
+                  // Show loading indicator while fetching/creating invoice
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.receipt),
+                            label: const Text('Ver todas as faturas'),
+                            onPressed: null,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        const Expanded(
+                          child: Center(
+                            child: SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  final invoice = snapshot.data;
+
+                  return Row(
+                    children: [
+                      // "Ver todas as faturas" button
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.receipt),
+                          label: const Text('Ver todas as faturas'),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const InvoiceHistoryScreen(),
+                              ),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.md,
+                            ),
+                            side: const BorderSide(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+
+                      // "Pagar Fatura" button
+                      Expanded(
+                        child: InvoicePaymentButton(
+                          invoiceId: invoice?.id,
+                          isPaid: invoice?.isPaid ?? false,
+                          onPaymentStatusChanged: () {
+                            setState(() {
+                              // Trigger rebuild to refresh invoice status
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: AppSpacing.xl),
             ],
@@ -239,7 +440,7 @@ class DashboardScreen extends ConsumerWidget {
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.receipt_long),
                   label: const Text('Ver todas as transações'),
-                  onPressed: onViewTransactionsPressed,
+                  onPressed: widget.onViewTransactionsPressed,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.lg,

@@ -7,6 +7,7 @@ import '../update_transaction_usecase.dart';
 import '../delete_transaction_usecase.dart';
 import '../get_dashboard_data_usecase.dart';
 import '../process_recurring_expenses_usecase.dart';
+import 'invoice_providers.dart';
 
 /// Provider for AddTransactionUseCase
 ///
@@ -100,9 +101,12 @@ final appSettingsStreamProvider = StreamProvider<AppSettingsModel?>((ref) {
 
 /// Provider for reactive dashboard data
 ///
-/// This StreamProvider watches for changes in transactions and app settings,
-/// automatically recalculating and emitting new DashboardData whenever
-/// the underlying data changes.
+/// This StreamProvider watches for changes in transactions, app settings,
+/// AND the selected invoice period, automatically recalculating and emitting
+/// new DashboardData whenever any of these change.
+///
+/// When a billing period is selected via `currentInvoicePeriodProvider`,
+/// the dashboard will show data for that period instead of the current month.
 ///
 /// Usage:
 /// ```dart
@@ -116,7 +120,10 @@ final appSettingsStreamProvider = StreamProvider<AppSettingsModel?>((ref) {
 final dashboardDataStreamProvider =
     StreamProvider.autoDispose<DashboardData>((ref) {
   final useCase = ref.watch(getDashboardDataUseCaseProvider);
-  return useCase.executeReactive();
+  // Watch the selected invoice period
+  final selectedPeriod = ref.watch(currentInvoicePeriodProvider);
+  // Pass the period to executeReactive
+  return useCase.executeReactive(period: selectedPeriod);
 });
 
 /// Provider for UpdateTransactionUseCase

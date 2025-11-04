@@ -26,6 +26,6 @@ class Invoices extends Table {
 
   @override
   List<String> get customConstraints => [
-    'UNIQUE(startDate, endDate)',
+    'UNIQUE(start_date, end_date)',
   ];
 }

@@ -428,58 +428,350 @@ Implementar sistema simplificado de gerenciamento de faturas com navegação tem
 
 ---
 
-### [ ] F17-T2: Correção do Cálculo do Dashboard (Excluir Débito)
+### [x] F17-T2: Dashboard Baseado em Faturas com Navegação Temporal
 
-**Branch:** `fix/dashboard-credit-only-calculation`
+**Branch:** `feature/dashboard-invoice-integration`
 
 **Descrição:**
-Ajustar o cálculo de "Gasto Total" no dashboard para considerar apenas transações de crédito, excluindo completamente as transações de débito.
+Transformar o dashboard principal em uma visualização baseada em faturas com navegação temporal. O dashboard deve exibir valores calculados a partir da fatura atual (apenas transações de crédito), permitir navegação entre períodos através de swipe, remover a seção de fatura como card separado, e integrar a seção de faturas em uma página de detalhes dedicada.
 
 **Implementação Esperada:**
 
-1. **Dashboard Logic Updates:**
-   - Atualizar `GetDashboardDataUseCase` ou lógica de cálculo
-   - Filtrar transações: considerar apenas `account.isCredit == true`
-   - Gasto Total = soma das transações de contas de crédito no ciclo atual
-   - Ignorar completamente transações de contas de débito
+1. **Remover Seção de Fatura do Dashboard**
+   - Remover o widget `InvoiceManagerCard` da tela do dashboard
+   - A seção de fatura não será mais um card separado - os valores da fatura serão a base do dashboard inteiro
+   - Todos os cálculos e exibições agora baseados na fatura atual
 
-2. **Cálculo de Orçamento:**
+2. **Dashboard Baseado em Valores de Fatura (Apenas Crédito)**
+
+   Provider de Dados do Dashboard:
    ```dart
-   // Filtrar apenas transações de crédito
-   final creditTransactions = allTransactions.where((t) {
-     final account = accounts.firstWhere((a) => a.id == t.accountId);
-     return account.isCredit;
-   }).toList();
+   @riverpod
+   Future<DashboardData> dashboardData(
+     DashboardDataRef ref,
+     InvoicePeriod currentPeriod,
+   ) async {
+     final transactionRepo = ref.watch(transactionRepositoryProvider);
+     final accountRepo = ref.watch(accountRepositoryProvider);
 
-   // Calcular gasto total (apenas crédito)
-   final totalSpent = creditTransactions.fold(0.0, (sum, t) => sum + t.value);
+     // 1. Buscar todas as contas de crédito
+     final accounts = await accountRepo.getAll();
+     final creditAccounts = accounts.where((a) => a.isCredit).toList();
 
-   // Calcular orçamento disponível
-   final totalCreditLimit = accounts
-       .where((a) => a.isCredit)
-       .fold(0.0, (sum, a) => sum + (a.creditLimit ?? 0));
+     // 2. Buscar transações do período da fatura (APENAS CRÉDITO)
+     final allTransactions = await transactionRepo.getAll();
+     final invoiceTransactions = allTransactions.where((t) {
+       final account = accounts.firstWhere((a) => a.id == t.accountId);
+       return account.isCredit &&
+              t.date.isAfter(currentPeriod.startDate.subtract(Duration(days: 1))) &&
+              t.date.isBefore(currentPeriod.endDate.add(Duration(days: 1)));
+     }).toList();
 
-   final availableBudget = totalCreditLimit - totalSpent;
+     // 3. Calcular valores
+     final totalSpent = invoiceTransactions.fold(0.0, (sum, t) => sum + t.value);
+     final totalCreditLimit = creditAccounts.fold(0.0, (sum, a) => sum + (a.creditLimit ?? 0));
+     final availableBudget = totalCreditLimit - totalSpent;
+
+     // 4. Breakdown por conta
+     final breakdown = <int, double>{};
+     for (final transaction in invoiceTransactions) {
+       breakdown[transaction.accountId] =
+         (breakdown[transaction.accountId] ?? 0.0) + transaction.value;
+     }
+
+     return DashboardData(
+       totalSpent: totalSpent,
+       availableBudget: availableBudget,
+       totalLimit: totalCreditLimit,
+       breakdown: breakdown,
+       transactions: invoiceTransactions,
+     );
+   }
    ```
 
-3. **UI Updates:**
-   - Garantir que dashboard mostra claramente que está calculando **apenas crédito**
-   - Adicionar texto explicativo: "Orçamento de Crédito Disponível"
-   - Manter exibição de reserva separada (contas de débito)
+3. **Header do Dashboard com Navegação Temporal**
 
-4. **Validação:**
-   - Criar cenários de teste com mix de débito/crédito
-   - Verificar que apenas crédito é considerado no orçamento
-   - Verificar que reserva (débito) permanece separada
+   Substituir "Início" por Formato MÊS ANO (ex: "NOV 2025"):
+   ```dart
+   AppBar(
+     title: Text(
+       _formatPeriodTitle(currentPeriod), // "NOV 2025"
+       style: AppTypography.titleLarge,
+     ),
+     centerTitle: true,
+   )
+
+   String _formatPeriodTitle(InvoicePeriod period) {
+     final monthNames = [
+       'JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN',
+       'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'
+     ];
+
+     final month = monthNames[period.startDate.month - 1];
+     final year = period.startDate.year;
+
+     return '$month $year';
+   }
+   ```
+
+4. **PageView para Navegação por Swipe**
+
+   Implementação do PageView:
+   ```dart
+   class DashboardScreen extends ConsumerStatefulWidget {
+     @override
+     ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+   }
+
+   class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+     late PageController _pageController;
+
+     @override
+     void initState() {
+       super.initState();
+
+       // Inicializar no índice da fatura atual (primeira não paga)
+       final initialIndex = _getInitialPageIndex();
+       _pageController = PageController(initialPage: initialIndex);
+     }
+
+     @override
+     Widget build(BuildContext context) {
+       final periodsAsync = ref.watch(allAvailablePeriodsProvider);
+
+       return periodsAsync.when(
+         data: (periods) => PageView.builder(
+           controller: _pageController,
+           itemCount: periods.length,
+           onPageChanged: (index) {
+             // Atualizar período atual no provider
+             ref.read(currentInvoicePeriodProvider.notifier).state =
+               periods[index];
+           },
+           itemBuilder: (context, index) {
+             final period = periods[index];
+             return _buildDashboardContent(period);
+           },
+         ),
+         loading: () => LoadingIndicator(),
+         error: (err, stack) => ErrorWidget(err),
+       );
+     }
+
+     Widget _buildDashboardContent(InvoicePeriod period) {
+       return SingleChildScrollView(
+         child: Column(
+           children: [
+             // Card de orçamento disponível
+             _buildBudgetCard(period),
+
+             // Breakdown por conta
+             _buildAccountBreakdown(period),
+
+             // Histórico de transações do período
+             _buildTransactionHistory(period),
+
+             // Botões de ação (abaixo do histórico)
+             _buildActionButtons(period),
+           ],
+         ),
+       );
+     }
+   }
+   ```
+
+   Comportamento de Navegação:
+   - Swipe para a direita → período ANTERIOR (mês passado)
+   - Swipe para a esquerda → período FUTURO (próximo mês)
+   - PageView carrega períodos conforme disponíveis
+
+5. **Botões de Ação Abaixo do Histórico**
+
+   ```dart
+   Widget _buildActionButtons(InvoicePeriod period) {
+     final invoice = ref.watch(invoiceByPeriodProvider(period));
+
+     return Padding(
+       padding: AppSpacing.paddingMd,
+       child: Row(
+         children: [
+           // Botão de pagamento (funciona como toggle)
+           if (invoice != null)
+             Expanded(
+               child: PrimaryButton(
+                 label: invoice.isPaid ? 'Desmarcar Pagamento' : 'Pagar Fatura',
+                 onPressed: () => _toggleInvoicePayment(invoice),
+               ),
+             ),
+
+           if (invoice != null)
+             SizedBox(width: AppSpacing.md),
+
+           // Botão "Ver Detalhes"
+           Expanded(
+             child: SecondaryButton(
+               label: 'Ver Detalhes',
+               onPressed: () => Navigator.push(
+                 context,
+                 MaterialPageRoute(
+                   builder: (_) => InvoiceDetailsScreen(period: period),
+                 ),
+               ),
+             ),
+           ),
+         ],
+       ),
+     );
+   }
+
+   Future<void> _toggleInvoicePayment(InvoiceModel invoice) async {
+     final confirmed = await showDialog<bool>(
+       context: context,
+       builder: (context) => AlertDialog(
+         title: Text(invoice.isPaid ? 'Desmarcar Pagamento' : 'Confirmar Pagamento'),
+         content: Text(
+           invoice.isPaid
+             ? 'Desmarcar esta fatura como paga?'
+             : 'Marcar esta fatura como paga?'
+         ),
+         actions: [
+           TextButton(
+             onPressed: () => Navigator.pop(context, false),
+             child: Text('Cancelar'),
+           ),
+           TextButton(
+             onPressed: () => Navigator.pop(context, true),
+             child: Text('Confirmar'),
+           ),
+         ],
+       ),
+     );
+
+     if (confirmed == true) {
+       if (invoice.isPaid) {
+         await ref.read(invoiceRepositoryProvider).unmarkPaid(invoice.id);
+       } else {
+         await ref.read(invoiceRepositoryProvider).markAsPaid(invoice.id);
+       }
+     }
+   }
+   ```
+
+6. **Página de Detalhes da Fatura**
+
+   Criar `InvoiceDetailsScreen`:
+   ```dart
+   class InvoiceDetailsScreen extends ConsumerWidget {
+     final InvoicePeriod period;
+
+     const InvoiceDetailsScreen({required this.period});
+
+     @override
+     Widget build(BuildContext context, WidgetRef ref) {
+       final invoiceAsync = ref.watch(invoiceByPeriodProvider(period));
+       final dataAsync = ref.watch(dashboardDataProvider(period));
+
+       return Scaffold(
+         appBar: AppBar(
+           title: Text('Detalhes da Fatura'),
+         ),
+         body: SingleChildScrollView(
+           child: Column(
+             children: [
+               // 1. Resumo da fatura
+               _buildInvoiceSummary(dataAsync),
+
+               // 2. Breakdown por conta
+               _buildAccountBreakdown(dataAsync),
+
+               // 3. Lista de transações do período
+               _buildTransactionList(dataAsync),
+
+               // 4. Histórico de faturas
+               _buildInvoiceHistory(),
+             ],
+           ),
+         ),
+       );
+     }
+
+     Widget _buildInvoiceHistory() {
+       final invoicesAsync = ref.watch(allInvoicesWithTransactionsProvider);
+
+       return invoicesAsync.when(
+         data: (invoices) => Column(
+           crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+             Padding(
+               padding: AppSpacing.paddingMd,
+               child: Text(
+                 'Histórico de Faturas',
+                 style: AppTypography.titleMedium,
+               ),
+             ),
+             ListView.builder(
+               shrinkWrap: true,
+               physics: NeverScrollableScrollPhysics(),
+               itemCount: invoices.length,
+               itemBuilder: (context, index) {
+                 final invoice = invoices[index];
+                 return InvoiceHistoryTile(
+                   invoice: invoice,
+                   onTap: () {
+                     // Navegar para dashboard com este período
+                     ref.read(currentInvoicePeriodProvider.notifier).state =
+                       InvoicePeriod(invoice.startDate, invoice.endDate);
+                     Navigator.popUntil(context, (route) => route.isFirst);
+                   },
+                 );
+               },
+             ),
+           ],
+         ),
+         loading: () => LoadingIndicator(),
+         error: (err, stack) => ErrorWidget(err),
+       );
+     }
+   }
+   ```
+
+7. **Validações e Edge Cases**
+
+   - Período sem transações: Mostrar mensagem "Nenhuma transação neste período"
+   - Primeira fatura não paga: Dashboard abre automaticamente nesta fatura
+   - Todas faturas pagas: Dashboard abre na fatura mais recente
+   - Navegação infinita: Carregar períodos dinamicamente conforme necessário
+   - Performance: Usar `AutoDisposeProvider` para liberar memória
+
+8. **UI/UX Improvements**
+
+   - Indicador de posição: Mostrar dots ou texto de posição abaixo do título
+   - Animação de transição: Smooth scroll entre páginas
+   - Pull-to-refresh: Atualizar dados da fatura atual
+   - Skeleton loading: Mostrar placeholders enquanto carrega dados
 
 **Definition of Done:**
-- [ ] Lógica de cálculo atualizada para filtrar apenas crédito
-- [ ] Dashboard exibe gasto total considerando apenas crédito
+- [ ] Seção `InvoiceManagerCard` removida do dashboard
+- [ ] Dashboard recalculado baseado em valores de fatura (apenas crédito)
 - [ ] Transações de débito completamente excluídas do cálculo de orçamento
-- [ ] UI com texto explicativo claro
-- [ ] Reserva (débito) permanece separada e visível
-- [ ] Testes unitários do cálculo
-- [ ] Testes de integração com dados mistos (débito + crédito)
+- [ ] Header do dashboard mostra "MÊS ANO" em vez de "Início"
+- [ ] PageView implementado com swipe horizontal funcionando
+- [ ] Navegação entre períodos (anterior/futuro) funciona corretamente
+- [ ] Dashboard abre na primeira fatura não paga por padrão
+- [ ] Botão de pagamento funciona como toggle (Pagar ↔ Desmarcar Pagamento)
+- [ ] Label do botão muda dinamicamente baseado no status da fatura
+- [ ] Dialog de confirmação adapta mensagem ao status atual
+- [ ] Botão "Ver Detalhes" implementado e navegação funciona
+- [ ] `InvoiceDetailsScreen` criada com todo conteúdo da antiga seção de faturas
+- [ ] Histórico de faturas integrado na página de detalhes
+- [ ] Navegação de detalhes → dashboard funciona corretamente
+- [ ] Breakdown por conta calculado dinamicamente e exibido
+- [ ] Período sem transações tratado adequadamente
+- [ ] Performance otimizada com AutoDispose
+- [ ] Testes unitários dos providers de dados
+- [ ] Testes de widget do PageView e navegação
+- [ ] Testes de integração do fluxo completo
+- [ ] Code generation executado
 - [ ] Merge realizado para `develop`
 
 ---

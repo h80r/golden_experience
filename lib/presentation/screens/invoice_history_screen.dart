@@ -77,11 +77,17 @@ class InvoiceHistoryScreen extends ConsumerWidget {
           }
 
           final allInvoices = invoicesSnapshot.data ?? [];
-          // Filter to only paid invoices
+
+          // Separate unpaid (current) and paid invoices
+          final unpaidInvoices =
+              allInvoices.where((invoice) => !invoice.isPaid).toList();
           final paidInvoices =
               allInvoices.where((invoice) => invoice.isPaid).toList();
 
-          if (paidInvoices.isEmpty) {
+          // Sort paid invoices by date (most recent first)
+          paidInvoices.sort((a, b) => b.startDate.compareTo(a.startDate));
+
+          if (allInvoices.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -93,14 +99,14 @@ class InvoiceHistoryScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   Text(
-                    'Nenhuma fatura paga',
+                    'Nenhuma fatura encontrada',
                     style: AppTypography.titleMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    'As faturas marcadas como pagas aparecerão aqui',
+                    'Faturas com transações aparecerão aqui',
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -131,16 +137,31 @@ class InvoiceHistoryScreen extends ConsumerWidget {
 
               final accounts = accountsSnapshot.data!;
 
+              // Combine lists: unpaid invoices first, then paid
+              final combinedInvoices = [...unpaidInvoices, ...paidInvoices];
+
               return ListView.separated(
                 padding: const EdgeInsets.all(AppSpacing.lg),
-                itemCount: paidInvoices.length,
+                itemCount: combinedInvoices.length,
                 separatorBuilder: (context, index) =>
                     const SizedBox(height: AppSpacing.md),
                 itemBuilder: (context, index) {
-                  final invoice = paidInvoices[index];
+                  final invoice = combinedInvoices[index];
+                  final now = DateTime.now();
+                  // Current invoice is determined by date range, not payment status
+                  final isCurrentPeriod = !now.isBefore(invoice.startDate) &&
+                                          !now.isAfter(invoice.endDate);
+
+                  debugPrint('[INVOICE_HISTORY] Invoice ${invoice.id}:');
+                  debugPrint('[INVOICE_HISTORY]   Period: ${invoice.startDate} to ${invoice.endDate}');
+                  debugPrint('[INVOICE_HISTORY]   isPaid: ${invoice.isPaid}');
+                  debugPrint('[INVOICE_HISTORY]   isCurrentPeriod: $isCurrentPeriod');
+                  debugPrint('[INVOICE_HISTORY]   Today: $now');
+
                   return _InvoiceCard(
                     invoice: invoice,
                     accounts: accounts,
+                    isCurrentInvoice: isCurrentPeriod,
                   );
                 },
               );
@@ -154,18 +175,20 @@ class InvoiceHistoryScreen extends ConsumerWidget {
 
 /// Individual invoice card with expandable breakdown
 ///
-/// Displays a paid invoice with:
+/// Displays an invoice with:
 /// - Period header (e.g., "Fatura de 11/2024")
-/// - Payment status indicator
+/// - Payment status indicator (or "ATUAL" badge for unpaid)
 /// - Total amount (calculated dynamically)
 /// - Expandable account breakdown
 class _InvoiceCard extends ConsumerStatefulWidget {
   final dynamic invoice; // InvoiceModel
   final List<dynamic> accounts;
+  final bool isCurrentInvoice;
 
   const _InvoiceCard({
     required this.invoice,
     required this.accounts,
+    this.isCurrentInvoice = false,
   });
 
   @override
@@ -200,12 +223,12 @@ class _InvoiceCardState extends ConsumerState<_InvoiceCard> {
     );
 
     return Card(
-      elevation: 2,
+      elevation: widget.isCurrentInvoice ? 4 : 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
         side: BorderSide(
-          color: AppColors.border,
-          width: 1,
+          color: widget.isCurrentInvoice ? AppColors.primary : AppColors.border,
+          width: widget.isCurrentInvoice ? 2 : 1,
         ),
       ),
       child: calculatedDataAsync.when(
@@ -236,22 +259,50 @@ class _InvoiceCardState extends ConsumerState<_InvoiceCard> {
                                 style: AppTypography.titleMedium,
                               ),
                               const SizedBox(height: AppSpacing.xs),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.check_circle,
-                                    size: 14,
-                                    color: AppColors.success,
+                              if (widget.isCurrentInvoice)
+                                // Current invoice badge
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.sm,
+                                    vertical: AppSpacing.xs,
                                   ),
-                                  const SizedBox(width: AppSpacing.xs),
-                                  Text(
-                                    'Pago',
-                                    style: AppTypography.bodySmall.copyWith(
-                                      color: AppColors.textSecondary,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        AppColors.primary.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(
+                                        AppSpacing.radiusSmall),
+                                    border: Border.all(
+                                      color: AppColors.primary,
+                                      width: 1,
                                     ),
                                   ),
-                                ],
-                              ),
+                                  child: Text(
+                                    'ATUAL',
+                                    style: AppTypography.bodySmall.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                )
+                              else if ((invoice as dynamic).isPaid)
+                                // Paid status indicator (only if actually paid)
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle,
+                                      size: 14,
+                                      color: AppColors.success,
+                                    ),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    Text(
+                                      'Pago',
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                           Icon(
@@ -410,22 +461,49 @@ class _InvoiceCardState extends ConsumerState<_InvoiceCard> {
                         style: AppTypography.titleMedium,
                       ),
                       const SizedBox(height: AppSpacing.xs),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle,
-                            size: 14,
-                            color: AppColors.success,
+                      if (widget.isCurrentInvoice)
+                        // Current invoice badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
                           ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            'Pago',
-                            style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusSmall),
+                            border: Border.all(
+                              color: AppColors.primary,
+                              width: 1,
                             ),
                           ),
-                        ],
-                      ),
+                          child: Text(
+                            'ATUAL',
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                        )
+                      else if ((invoice as dynamic).isPaid)
+                        // Paid status indicator (only if actually paid)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              size: 14,
+                              color: AppColors.success,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Text(
+                              'Pago',
+                              style: AppTypography.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ],

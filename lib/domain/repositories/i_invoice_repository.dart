@@ -126,4 +126,24 @@ abstract class IInvoiceRepository {
   /// **Returns:**
   /// true if successful, false otherwise
   Future<bool> delete(int id);
+
+  /// Recalculates start/end dates for unpaid empty invoices based on current credit card configurations
+  ///
+  /// This should be called whenever a credit account's creditPaymentDay is updated to ensure
+  /// invoice periods reflect the new billing cycles.
+  ///
+  /// **Important:** Only unpaid invoices WITHOUT transactions are updated. Invoices with transactions
+  /// are considered "locked" because they represent actual spending history. Paid invoices are also
+  /// never updated as they are historical records.
+  ///
+  /// **How it works:**
+  /// 1. Fetches all unpaid invoices
+  /// 2. Skips invoices that have transactions (locked periods)
+  /// 3. For remaining empty invoices, uses midpoint date as a reference
+  /// 4. Recalculates the period using current credit card payment days
+  /// 5. Updates the invoice dates if they changed
+  ///
+  /// **Returns:**
+  /// Number of invoices updated
+  Future<int> recalculateUnpaidInvoiceDates();
 }

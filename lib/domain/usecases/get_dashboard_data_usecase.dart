@@ -47,17 +47,22 @@ class GetDashboardDataUseCase {
   /// by their billing cycle (calculated from payment day - 7).
   /// For debit accounts, calendar month filtering applies.
   ///
+  /// [period] Optional billing cycle period. If provided, calculations are based
+  /// on this period instead of the current month. If null, uses current month.
+  ///
   /// Returns [DashboardData] with all calculated values
   /// Throws an exception if settings are not initialized
-  Future<DashboardData> execute() async {
+  Future<DashboardData> execute({BillingCyclePeriod? period}) async {
     try {
-      final now = DateTime.now();
+      // Use provided period or default to current date
+      final referenceDate = period?.start ?? DateTime.now();
 
       // Fetch all accounts to determine billing cycle filtering
       final allAccounts = await _accountRepository.getAll();
 
       // Fetch transactions with billing cycle filtering applied
-      final transactions = await _getFilteredTransactions(now, allAccounts);
+      final transactions =
+          await _getFilteredTransactions(referenceDate, allAccounts, period);
 
       // Fetch app settings
       final settings = await _appSettingsRepository.get();
@@ -73,8 +78,8 @@ class GetDashboardDataUseCase {
           .where((account) => account.isDebit && !account.excludeFromReserve)
           .fold<double>(0.0, (sum, account) => sum + account.balance);
 
-      // Calculate total spent this month/cycle
-      final totalSpent = _calculateTotalSpent(transactions);
+      // Calculate total spent this month/cycle (credit accounts only)
+      final totalSpent = _calculateTotalSpent(transactions, allAccounts);
 
       // Calculate partial result (Salary - Spending)
       final partialResult = settings.monthlySalary - totalSpent;
@@ -122,16 +127,19 @@ class GetDashboardDataUseCase {
   /// the dashboard data whenever any of the underlying data changes.
   /// This enables real-time UI updates without manual refresh.
   ///
+  /// [period] Optional billing cycle period. If provided, calculations are based
+  /// on this period instead of the current month. If null, uses current month.
+  ///
   /// Returns a Stream of DashboardData that emits new values whenever
   /// transactions or app settings change
-  Stream<DashboardData> executeReactive() async* {
+  Stream<DashboardData> executeReactive({BillingCyclePeriod? period}) async* {
     try {
       final transactionStream = _transactionRepository.watchCurrentMonth();
 
       // Emit new DashboardData whenever transaction stream changes
       await for (final _ in transactionStream) {
         try {
-          final data = await execute();
+          final data = await execute(period: period);
           yield data;
         } catch (e) {
           yield* Stream.error(e);
@@ -144,12 +152,20 @@ class GetDashboardDataUseCase {
 
   /// Calculates the total amount spent based on transaction list
   ///
-  /// Sums up the value field of all transactions
-  double _calculateTotalSpent(List<dynamic> transactions) {
+  /// Sums up the value field of transactions from credit accounts only.
+  /// Debit transactions are excluded because they immediately impact
+  /// account balances, which are already counted in the reserve calculation.
+  double _calculateTotalSpent(
+      List<dynamic> transactions, List<dynamic> allAccounts) {
     double total = 0.0;
     for (final transaction in transactions) {
-      // Assumes transaction has a 'value' property
-      total += (transaction as dynamic).value as double;
+      // Only count transactions from credit accounts
+      final account = allAccounts
+          .where((a) => (a as dynamic).id == (transaction as dynamic).accountId)
+          .firstOrNull;
+      if (account != null && (account as dynamic).isCredit == true) {
+        total += (transaction as dynamic).value as double;
+      }
     }
     return total;
   }
@@ -162,6 +178,9 @@ class GetDashboardDataUseCase {
   ///   - Fetch transactions for the current billing cycle
   /// - Otherwise, fetch transactions for the calendar month
   ///
+  /// [period] If provided, uses the exact period dates for all accounts.
+  /// If null, calculates billing cycles dynamically based on referenceDate.
+  ///
   /// Note: Transactions are always included based on their date period,
   /// regardless of whether the invoice has been marked as paid or not.
   ///
@@ -169,9 +188,26 @@ class GetDashboardDataUseCase {
   Future<List<dynamic>> _getFilteredTransactions(
     DateTime referenceDate,
     List<dynamic> accounts,
+    BillingCyclePeriod? period,
   ) async {
     final allTransactions = <dynamic>[];
 
+    // If period is provided, use it for all accounts (invoice-based filtering)
+    if (period != null) {
+      for (final account in accounts) {
+        final accountId = (account as dynamic).id as int;
+        final transactions =
+            await _transactionRepository.getByAccountAndDateRange(
+          accountId,
+          period.start,
+          period.end,
+        );
+        allTransactions.addAll(transactions);
+      }
+      return allTransactions;
+    }
+
+    // Otherwise, use dynamic billing cycle calculation (original behavior)
     for (final account in accounts) {
       final accountId = (account as dynamic).id as int;
       final isCredit = (account).isCredit as bool;

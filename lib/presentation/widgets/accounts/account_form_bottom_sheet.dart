@@ -754,6 +754,19 @@ class _AccountFormBottomSheetState
 
         final success = await accountRepository.update(updated);
 
+        // If creditPaymentDay changed and account is credit, recalculate invoice dates
+        if (success &&
+            _isCredit &&
+            widget.account!.creditPaymentDay != _creditPaymentDay) {
+          final invoiceRepo = ref.read(invoiceRepositoryProvider);
+          try {
+            await invoiceRepo.recalculateUnpaidInvoiceDates();
+          } catch (e) {
+            // Log error but don't block the update success flow
+            debugPrint('Error recalculating invoice dates: $e');
+          }
+        }
+
         if (mounted) {
           if (success) {
             ScaffoldMessenger.of(context).showSnackBar(
