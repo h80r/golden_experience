@@ -8,9 +8,9 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
-import '../buttons/secondary_button.dart';
 import '../inputs/custom_dropdown.dart';
 import '../inputs/custom_text_field.dart';
+import '../inputs/inline_calendar.dart';
 import '../inputs/nubank_style_currency_field.dart';
 
 /// RecurringExpenseFormBottomSheet - Form for creating/editing recurring expenses
@@ -31,20 +31,20 @@ class _RecurringExpenseFormBottomSheetState
     extends ConsumerState<RecurringExpenseFormBottomSheet> {
   late TextEditingController _descriptionController;
   late TextEditingController _valueController;
-  late TextEditingController _chargeDayController;
+  late PageController _pageController;
   late DraggableScrollableController _sheetController;
   late GlobalKey<FormState> _formKey;
   late int? _selectedAccountId;
   late int? _selectedCategoryId;
   late FocusNode _descriptionFocusNode;
+  late int _chargeDay;
+  int _currentPage = 0;
   bool _isLoading = false;
   double _lastKeyboardHeight = 0.0;
 
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.expense != null;
-    final accountRepository = ref.watch(accountRepositoryProvider);
-    final categoryRepository = ref.watch(categoryRepositoryProvider);
 
     // Detect keyboard height to auto-expand sheet
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
@@ -55,7 +55,7 @@ class _RecurringExpenseFormBottomSheetState
         // Keyboard just opened - expand to 85%
         if (_sheetController.isAttached && mounted) {
           _sheetController.animateTo(
-            0.93,
+            0.87,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -64,7 +64,7 @@ class _RecurringExpenseFormBottomSheetState
         // Keyboard just closed - return to 55%
         if (_sheetController.isAttached && mounted) {
           _sheetController.animateTo(
-            0.58,
+            _currentPage == 1 ? 0.72 : 0.55,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -138,182 +138,22 @@ class _RecurringExpenseFormBottomSheetState
                   ],
                 ),
               ),
-              // Form Content
+              // Form Content with PageView
               Expanded(
-                child: Form(
-                  key: _formKey,
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Description Field
-                        CustomTextField(
-                          label: 'Descrição',
-                          hint: 'Ex: Aluguel, Seguro, Assinatura',
-                          focusNode: _descriptionFocusNode,
-                          controller: _descriptionController,
-                          prefixIcon: Icons.description,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor, insira a descrição';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-
-                        // Value Field
-                        NubankStyleCurrencyField(
-                          label: 'Valor',
-                          hint: '0,00',
-                          controller: _valueController,
-                          initialValue: widget.expense?.value ?? 0.0,
-                          onChanged: (value) {
-                            // Update state with parsed value
-                          },
-                          required: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor, insira um valor';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-
-                        // Charge Day Field
-                        CustomTextField(
-                          label: 'Dia de Cobrança',
-                          hint: '1-31',
-                          controller: _chargeDayController,
-                          keyboardType: TextInputType.number,
-                          prefixIcon: Icons.calendar_today,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Por favor, insira o dia de cobrança';
-                            }
-                            final day = int.tryParse(value);
-                            if (day == null) {
-                              return 'Por favor, insira um número válido';
-                            }
-                            if (day < 1 || day > 31) {
-                              return 'O dia deve estar entre 1 e 31';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-
-                        // Account Dropdown
-                        StreamBuilder<List<AccountModel>>(
-                          stream: accountRepository.watchAll(),
-                          builder: (context, snapshot) {
-                            final accounts = snapshot.data ?? [];
-                            if (accounts.isEmpty) {
-                              return Text(
-                                'Nenhuma conta disponível',
-                                style: AppTypography.bodyMedium.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              );
-                            }
-
-                            return CustomDropdown<int>(
-                              label: 'Conta',
-                              value: _selectedAccountId,
-                              items: accounts
-                                  .map((account) => DropdownMenuItem(
-                                        value: account.id,
-                                        child: Text(
-                                          account.name,
-                                          style: AppTypography.bodyMedium,
-                                        ),
-                                      ))
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedAccountId = value;
-                                });
-                              },
-                              prefixIcon: Icons.account_balance,
-                              validator: (value) {
-                                if (value == null) {
-                                  return 'Por favor, selecione uma conta';
-                                }
-                                return null;
-                              },
-                            );
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
-
-                        // Category Dropdown
-                        StreamBuilder<List<CategoryModel>>(
-                          stream: categoryRepository.watchAll(),
-                          builder: (context, snapshot) {
-                            final categories = snapshot.data ?? [];
-                            if (categories.isEmpty) {
-                              return Text(
-                                'Nenhuma categoria disponível',
-                                style: AppTypography.bodyMedium.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              );
-                            }
-
-                            return CustomDropdown<int>(
-                              label: 'Categoria',
-                              value: _selectedCategoryId,
-                              items: categories
-                                  .map((category) => DropdownMenuItem(
-                                        value: category.id,
-                                        child: Text(
-                                          category.name,
-                                          style: AppTypography.bodyMedium,
-                                        ),
-                                      ))
-                                  .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedCategoryId = value;
-                                });
-                              },
-                              prefixIcon: Icons.category,
-                              validator: (value) {
-                                if (value == null) {
-                                  return 'Por favor, selecione uma categoria';
-                                }
-                                return null;
-                              },
-                            );
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.xl),
-
-                        // Action Buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: SecondaryButton(
-                                label: 'Cancelar',
-                                onPressed: () => Navigator.pop(context),
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.lg),
-                            Expanded(
-                              child: PrimaryButton(
-                                label: isEditing ? 'Atualizar' : 'Criar',
-                                isLoading: _isLoading,
-                                onPressed: _handleSubmit,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (value) {
+                    setState(() => _currentPage = value);
+                    _sheetController.animateTo(
+                      value == 0 ? 0.55 : 0.72,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  },
+                  children: [
+                    _buildPage1(scrollController, isEditing),
+                    _buildPage2(),
+                  ],
                 ),
               ),
             ],
@@ -327,7 +167,7 @@ class _RecurringExpenseFormBottomSheetState
   void dispose() {
     _descriptionController.dispose();
     _valueController.dispose();
-    _chargeDayController.dispose();
+    _pageController.dispose();
     _sheetController.dispose();
     _descriptionFocusNode.dispose();
     super.dispose();
@@ -337,14 +177,13 @@ class _RecurringExpenseFormBottomSheetState
   void initState() {
     super.initState();
     _formKey = GlobalKey<FormState>();
+    _pageController = PageController();
     _sheetController = DraggableScrollableController();
     _descriptionController =
         TextEditingController(text: widget.expense?.description ?? '');
     // Initialize empty controller - NubankStyleCurrencyField handles initialValue internally
     _valueController = TextEditingController();
-    _chargeDayController = TextEditingController(
-      text: widget.expense?.chargeDay.toString() ?? '',
-    );
+    _chargeDay = widget.expense?.chargeDay ?? 1;
     _selectedAccountId = widget.expense?.accountId;
     _selectedCategoryId = widget.expense?.categoryId;
     _descriptionFocusNode = FocusNode();
@@ -361,47 +200,292 @@ class _RecurringExpenseFormBottomSheetState
     });
   }
 
-  /// Load the default account and category for new expenses
-  Future<void> _loadDefaults() async {
-    final accountRepository = ref.read(accountRepositoryProvider);
-    final categoryRepository = ref.read(categoryRepositoryProvider);
+  /// Build page 1 with main recurring expense fields
+  Widget _buildPage1(ScrollController scrollController, bool isEditing) {
+    final accountRepository = ref.watch(accountRepositoryProvider);
+    final categoryRepository = ref.watch(categoryRepositoryProvider);
 
-    final results = await Future.wait([
-      accountRepository.getDefaultAccount(),
-      categoryRepository.getDefaultCategory(),
-    ]);
+    return Form(
+      key: _formKey,
+      child: SingleChildScrollView(
+        controller: scrollController,
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Description Field
+            CustomTextField(
+              label: 'Descrição',
+              hint: 'Ex: Aluguel, Seguro, Assinatura',
+              focusNode: _descriptionFocusNode,
+              controller: _descriptionController,
+              prefixIcon: Icons.description,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira a descrição';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: AppSpacing.lg),
 
-    if (mounted) {
-      setState(() {
-        final defaultAccount = results[0] as AccountModel?;
-        final defaultCategory = results[1] as CategoryModel?;
+            // Value Field
+            NubankStyleCurrencyField(
+              label: 'Valor',
+              hint: '0,00',
+              controller: _valueController,
+              initialValue: widget.expense?.value ?? 0.0,
+              onChanged: (value) {
+                // Update state with parsed value
+              },
+              required: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira um valor';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: AppSpacing.lg),
 
-        if (defaultAccount != null) {
-          _selectedAccountId = defaultAccount.id;
-        }
+            // Account Dropdown
+            StreamBuilder<List<AccountModel>>(
+              stream: accountRepository.watchAll(),
+              builder: (context, snapshot) {
+                final accounts = snapshot.data ?? [];
+                if (accounts.isEmpty) {
+                  return Text(
+                    'Nenhuma conta disponível',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  );
+                }
 
-        if (defaultCategory != null) {
-          _selectedCategoryId = defaultCategory.id;
-        }
-      });
-    }
+                return CustomDropdown<int>(
+                  label: 'Conta',
+                  value: _selectedAccountId,
+                  items: accounts
+                      .map((account) => DropdownMenuItem(
+                            value: account.id,
+                            child: Text(
+                              account.name,
+                              style: AppTypography.bodyMedium,
+                            ),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedAccountId = value;
+                    });
+                  },
+                  prefixIcon: Icons.account_balance,
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Por favor, selecione uma conta';
+                    }
+                    return null;
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Category Dropdown
+            StreamBuilder<List<CategoryModel>>(
+              stream: categoryRepository.watchAll(),
+              builder: (context, snapshot) {
+                final categories = snapshot.data ?? [];
+                if (categories.isEmpty) {
+                  return Text(
+                    'Nenhuma categoria disponível',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  );
+                }
+
+                return CustomDropdown<int>(
+                  label: 'Categoria',
+                  value: _selectedCategoryId,
+                  items: categories
+                      .map((category) => DropdownMenuItem(
+                            value: category.id,
+                            child: Text(
+                              category.name,
+                              style: AppTypography.bodyMedium,
+                            ),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategoryId = value;
+                    });
+                  },
+                  prefixIcon: Icons.category,
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Por favor, selecione uma categoria';
+                    }
+                    return null;
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Action Buttons
+            Row(
+              children: [
+                // Cancel button (25%)
+                Expanded(
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                    iconSize: 28,
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.surfaceVariant,
+                      foregroundColor: AppColors.error,
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMedium),
+                      ),
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                // Next button (50%)
+                Expanded(
+                  child: PrimaryButton(
+                    label: 'Próximo',
+                    onPressed: _goToNextPage,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+        ),
+      ),
+    );
   }
 
-  /// Parse cents value (stored as digits in controller) to double
-  double _parseCentsToDouble(String centsText) {
-    if (centsText.isEmpty) return 0.0;
-    try {
-      final cents = int.parse(centsText);
-      return cents / 100.0;
-    } catch (e) {
-      return 0.0;
-    }
+  /// Build page 2 with InlineCalendar for charge day selection
+  Widget _buildPage2() {
+    final isEditing = widget.expense != null;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Dia de Cobrança',
+            style: AppTypography.headlineMedium.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Selecione o dia do mês em que a despesa é cobrada',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          InlineCalendar(
+            selectedDay: _chargeDay,
+            onDaySelected: (day) {
+              setState(() {
+                _chargeDay = day;
+              });
+            },
+            compactMode: true,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Row(
+            children: [
+              // Cancel icon button (25%)
+              Expanded(
+                flex: 1,
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                  iconSize: 28,
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.surfaceVariant,
+                    foregroundColor: AppColors.error,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusMedium),
+                    ),
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              // Back icon button (25%)
+              Expanded(
+                flex: 1,
+                child: IconButton(
+                  onPressed: _goToPreviousPage,
+                  icon: const Icon(Icons.arrow_back),
+                  iconSize: 28,
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.surfaceVariant,
+                    foregroundColor: AppColors.textSecondary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusMedium),
+                    ),
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              // Save button (50%)
+              Expanded(
+                flex: 2,
+                child: PrimaryButton(
+                  label: isEditing ? 'Atualizar' : 'Salvar',
+                  isLoading: _isLoading,
+                  onPressed: _handleSubmit,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ],
+      ),
+    );
+  }
+
+  void _goToNextPage() {
+    // Dismiss keyboard before navigating
+    FocusScope.of(context).unfocus();
+
+    // Validate before continuing
+    if (!_formKey.currentState!.validate()) return;
+
+    _pageController.animateToPage(
+      1,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _goToPreviousPage() {
+    _pageController.animateToPage(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (_chargeDay == 0) return;
 
     setState(() => _isLoading = true);
 
@@ -410,7 +494,7 @@ class _RecurringExpenseFormBottomSheetState
           ref.read(recurringExpenseRepositoryProvider);
       final description = _descriptionController.text;
       final value = _parseCentsToDouble(_valueController.text);
-      final chargeDay = int.parse(_chargeDayController.text);
+      final chargeDay = _chargeDay;
       final accountId = _selectedAccountId;
       final categoryId = _selectedCategoryId;
 
@@ -530,6 +614,43 @@ class _RecurringExpenseFormBottomSheetState
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  /// Load the default account and category for new expenses
+  Future<void> _loadDefaults() async {
+    final accountRepository = ref.read(accountRepositoryProvider);
+    final categoryRepository = ref.read(categoryRepositoryProvider);
+
+    final results = await Future.wait([
+      accountRepository.getDefaultAccount(),
+      categoryRepository.getDefaultCategory(),
+    ]);
+
+    if (mounted) {
+      setState(() {
+        final defaultAccount = results[0] as AccountModel?;
+        final defaultCategory = results[1] as CategoryModel?;
+
+        if (defaultAccount != null) {
+          _selectedAccountId = defaultAccount.id;
+        }
+
+        if (defaultCategory != null) {
+          _selectedCategoryId = defaultCategory.id;
+        }
+      });
+    }
+  }
+
+  /// Parse cents value (stored as digits in controller) to double
+  double _parseCentsToDouble(String centsText) {
+    if (centsText.isEmpty) return 0.0;
+    try {
+      final cents = int.parse(centsText);
+      return cents / 100.0;
+    } catch (e) {
+      return 0.0;
     }
   }
 }

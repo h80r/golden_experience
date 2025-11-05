@@ -100,7 +100,7 @@ main (develop)
 
 ---
 
-### [ ] F18-T1: Correção - Exibição e Edição de Valores em Despesas Recorrentes
+### [x] F18-T1: Correção - Exibição e Edição de Valores em Despesas Recorrentes
 
 **Branch:** `fix/recurring-value-display`
 
@@ -149,19 +149,19 @@ O `_valueController` está sendo inicializado com o valor bruto (double) em vez 
    ```
 
 **Definition of Done:**
-- [ ] `_valueController` inicializado como vazio (sem texto pré-preenchido)
-- [ ] Helper method `_parseCentsToDouble()` implementado
-- [ ] `_handleSubmit` atualizado para usar o parser
-- [ ] Testar criação: valor salvo corretamente e exibido sem multiplicação
-- [ ] Testar edição: valor carregado corretamente no campo (não mostra 0)
-- [ ] Testar edição: valor atualizado salvo corretamente
-- [ ] Pattern de `account_form_bottom_sheet.dart` seguido (linhas 192-194, 862-870)
-- [ ] Code generation executado (se necessário)
-- [ ] Merge realizado para `develop`
+- [x] `_valueController` inicializado como vazio (sem texto pré-preenchido)
+- [x] Helper method `_parseCentsToDouble()` implementado
+- [x] `_handleSubmit` atualizado para usar o parser
+- [x] Testar criação: valor salvo corretamente e exibido sem multiplicação
+- [x] Testar edição: valor carregado corretamente no campo (não mostra 0)
+- [x] Testar edição: valor atualizado salvo corretamente
+- [x] Pattern de `account_form_bottom_sheet.dart` seguido (linhas 192-194, 862-870)
+- [x] Code generation executado (se necessário)
+- [x] Merge realizado para `develop`
 
 ---
 
-### [ ] F18-T2: Refatorar para Multi-Page Bottom Sheet com InlineCalendar
+### [x] F18-T2: Refatorar para Multi-Page Bottom Sheet com InlineCalendar
 
 **Branch:** `feature/recurring-inline-calendar`
 
@@ -306,21 +306,21 @@ Substituir o campo de texto para "Dia de Cobrança" por um `InlineCalendar` em u
    ```
 
 **Definition of Done:**
-- [ ] `PageController` e `_currentPageIndex` adicionados
-- [ ] `_chargeDayController` removido, `_chargeDay` int adicionado
-- [ ] Form substituído por PageView com 2 páginas
-- [ ] Page 1 construída com campos básicos + navegação
-- [ ] Page 2 construída com InlineCalendar
-- [ ] Navigation methods implementados
-- [ ] Import de `InlineCalendar` adicionado
-- [ ] Validação funciona corretamente entre páginas
-- [ ] PageController disposed adequadamente
-- [ ] Testar criação: navegação entre páginas funciona
-- [ ] Testar edição: dia carregado corretamente no calendar
-- [ ] Testar validação: erros na página 1 navegam corretamente
-- [ ] Pattern de `account_form_bottom_sheet.dart` seguido (linhas 35-44, 177, 528-650)
-- [ ] Code generation executado (se necessário)
-- [ ] Merge realizado para `develop`
+- [x] `PageController` e `_currentPageIndex` adicionados
+- [x] `_chargeDayController` removido, `_chargeDay` int adicionado
+- [x] Form substituído por PageView com 2 páginas
+- [x] Page 1 construída com campos básicos + navegação
+- [x] Page 2 construída com InlineCalendar
+- [x] Navigation methods implementados
+- [x] Import de `InlineCalendar` adicionado
+- [x] Validação funciona corretamente entre páginas
+- [x] PageController disposed adequadamente
+- [x] Testar criação: navegação entre páginas funciona
+- [x] Testar edição: dia carregado corretamente no calendar
+- [x] Testar validação: erros na página 1 navegam corretamente
+- [x] Pattern de `account_form_bottom_sheet.dart` seguido (linhas 35-44, 177, 528-650)
+- [x] Code generation executado (se necessário)
+- [x] Merge realizado para `develop`
 
 ---
 
