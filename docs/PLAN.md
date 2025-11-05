@@ -60,8 +60,8 @@ main (develop)
 
 ## 📊 Progresso Geral
 
-**Total de Tarefas:** 88
-**Concluídas:** 53 / 88 (60%)
+**Total de Tarefas:** 91
+**Concluídas:** 53 / 91 (58%)
 
 ### Por Fase
 - **Fase 1 - Fundação:** 4 / 4 (100%)
@@ -81,8 +81,9 @@ main (develop)
 - **Fase 15 - Melhorias em Ciclo de Faturamento e UX:** 4 / 4 (100%)
 - **Fase 16 - Melhorias no Histórico de Transações:** 7 / 7 (100%)
 - **Fase 17 - Gerenciador de Faturas e Transações Parceladas:** 3 / 3 (100%)
-- **Fase 18 - Correções Críticas de UX/UI:** 0 / 5 (0%)
-- **Fase 19 - Correções no Sistema de Backup/Restore:** 0 / 4 (0%)
+- **Fase 18 - Correções Críticas de Despesas Recorrentes:** 0 / 3 (0%)
+- **Fase 19 - Correções Críticas de UX/UI:** 0 / 5 (0%)
+- **Fase 20 - Correções no Sistema de Backup/Restore:** 0 / 4 (0%)
 
 ### Legenda de Status
 - `[ ]` Not Started (Não iniciada)
@@ -91,809 +92,381 @@ main (develop)
 
 ---
 
-## 💳 Fase 17: Gerenciador de Faturas e Transações Parceladas
+## 🔧 Fase 18: Correções Críticas de Despesas Recorrentes
 
-**Objetivo:** Implementar gerenciador de faturas de cartão de crédito com histórico de pagamentos e suporte a transações parceladas automáticas.
+**Objetivo:** Corrigir problemas críticos no formulário de despesas recorrentes relacionados a exibição de valores, seleção de data, e criação automática de transações.
 
 **Status:** 0 / 3 tarefas concluídas
 
 ---
 
-### [x] F17-T1: Gerenciador de Faturas com Navegação Temporal
+### [ ] F18-T1: Correção - Exibição e Edição de Valores em Despesas Recorrentes
 
-**Branch:** `feature/invoice-manager`
+**Branch:** `fix/recurring-value-display`
 
 **Descrição:**
-Implementar sistema simplificado de gerenciamento de faturas com navegação temporal no dashboard. O sistema permite navegar entre períodos de fatura (passado/futuro) através de swipe, marca ciclos como pagos, e calcula valores dinamicamente através de queries. Períodos de fatura são unificados entre todos os cartões de crédito, usando a data de início mais antiga e data de fim mais recente.
+Corrigir dois problemas relacionados à exibição de valores no formulário de despesas recorrentes:
+1. Valores salvos são exibidos multiplicados por 100 na lista
+2. Ao editar uma despesa, o valor aparece como 0 no bottom sheet
+
+**Root Cause:**
+O `_valueController` está sendo inicializado com o valor bruto (double) em vez de um controller vazio, conflitando com a lógica interna do `NubankStyleCurrencyField` que espera armazenar valores em centavos.
 
 **Implementação Esperada:**
 
-1. **Database - Tabela Simplificada de Invoices:**
+1. **Remover inicialização do `_valueController` (linha 344):**
    ```dart
-   @DataClassName('InvoiceModel')
-   class Invoices extends Table {
-     IntColumn get id => integer().autoIncrement()();
+   // ANTES (INCORRETO):
+   _valueController = TextEditingController(
+     text: widget.expense?.value.toString() ?? '',
+   );
 
-     // Período da fatura (calculado baseado em TODOS os cartões)
-     // startDate = EARLIEST start entre todos os cartões
-     // endDate = LATEST end entre todos os cartões
-     DateTimeColumn get startDate => dateTime()();
-     DateTimeColumn get endDate => dateTime()();
-
-     // Status de pagamento
-     BoolColumn get isPaid => boolean().withDefault(const Constant(false))();
-
-     @override
-     List<String> get customConstraints => [
-       'UNIQUE(startDate, endDate)',
-     ];
-   }
-   ```
-   - **Remover completamente** a tabela `InvoiceItems` (não é mais necessária)
-   - Todos os valores (total, breakdown por conta) serão calculados dinamicamente via queries
-   - Migration para remover `InvoiceItems` e atualizar `Invoices`
-
-2. **Repository (Interface + Implementation):**
-
-   **Interface** (`lib/domain/repositories/i_invoice_repository.dart`):
-   ```dart
-   abstract class IInvoiceRepository {
-     // Cria um novo registro de fatura apenas com período e flag isPaid
-     Future<int> create({
-       required DateTime startDate,
-       required DateTime endDate,
-       bool isPaid = false,
-     });
-
-     // Retorna a fatura para um período específico
-     Future<InvoiceModel?> getByPeriod({
-       required DateTime startDate,
-       required DateTime endDate,
-     });
-
-     // Retorna TODAS as faturas que têm transações (ordenadas por data)
-     Future<List<InvoiceModel>> getAllWithTransactions();
-
-     // Retorna a primeira fatura não paga (ou a primeira fatura se todas pagas)
-     Future<InvoiceModel?> getFirstUnpaidOrFirst();
-
-     // Marca/desmarca como paga
-     Future<bool> markAsPaid(int invoiceId);
-     Future<bool> unmarkPaid(int invoiceId);
-
-     // Streams reativos
-     Stream<InvoiceModel?> watchByPeriod({
-       required DateTime startDate,
-       required DateTime endDate,
-     });
-     Stream<List<InvoiceModel>> watchAllWithTransactions();
-
-     // Deleta uma fatura
-     Future<bool> delete(int id);
-   }
+   // DEPOIS (CORRETO):
+   _valueController = TextEditingController(); // Empty controller
    ```
 
-   **Implementation** (`lib/data/repositories/invoice_repository_impl.dart`):
-   - Implementar todos os métodos da interface
-   - `getAllWithTransactions()` deve:
-     1. Buscar todas as faturas
-     2. Para cada fatura, verificar se existem transações de crédito no período
-     3. Retornar apenas faturas com transações
-   - `getFirstUnpaidOrFirst()` deve retornar a primeira fatura com `isPaid = false`, ou a primeira fatura se todas pagas
-
-   **Provider** em `repository_providers.dart`:
+2. **Adicionar helper method para parsing de centavos:**
    ```dart
-   @riverpod
-   IInvoiceRepository invoiceRepository(InvoiceRepositoryRef ref) {
-     return InvoiceRepositoryImpl(LocalDatabase.instance);
-   }
-   ```
-
-3. **Lógica de Cálculo de Períodos Unificados:**
-
-   Criar utility em `lib/core/utils/invoice_period_utils.dart`:
-   ```dart
-   /// Calcula o período de fatura unificado para uma data de referência
-   /// Considera TODOS os cartões de crédito e usa:
-   /// - startDate = EARLIEST billing cycle start entre todos os cartões
-   /// - endDate = LATEST billing cycle end entre todos os cartões
-   InvoicePeriod calculateUnifiedInvoicePeriod(
-     DateTime referenceDate,
-     List<AccountModel> creditAccounts,
-   ) {
-     // Para cada cartão:
-     // 1. Calcular o billing cycle start/end baseado em creditPaymentDay
-     // 2. Encontrar o EARLIEST start
-     // 3. Encontrar o LATEST end
-     // 4. Retornar InvoicePeriod(start, end)
-   }
-
-   /// Retorna todos os períodos de fatura disponíveis (que têm transações)
-   Future<List<InvoicePeriod>> getAllAvailableInvoicePeriods(
-     List<AccountModel> creditAccounts,
-     List<TransactionModel> creditTransactions,
-   ) {
-     // 1. Agrupar transações por mês
-     // 2. Para cada mês com transações, calcular o período unificado
-     // 3. Retornar lista ordenada de períodos
-   }
-   ```
-
-4. **Queries Dinâmicas para Valores:**
-
-   Criar provider para calcular valores dinamicamente:
-   ```dart
-   @riverpod
-   Future<InvoiceCalculatedData> invoiceCalculatedData(
-     InvoiceCalculatedDataRef ref,
-     InvoiceModel invoice,
-   ) async {
-     final transactionRepo = ref.watch(transactionRepositoryProvider);
-     final accountRepo = ref.watch(accountRepositoryProvider);
-
-     // 1. Buscar todas as contas de crédito
-     final accounts = await accountRepo.getAll();
-     final creditAccounts = accounts.where((a) => a.isCredit).toList();
-
-     // 2. Buscar todas as transações no período da fatura
-     final allTransactions = await transactionRepo.getAll();
-     final periodTransactions = allTransactions.where((t) {
-       final account = accounts.firstWhere((a) => a.id == t.accountId);
-       return account.isCredit &&
-              t.date.isAfter(invoice.startDate.subtract(Duration(days: 1))) &&
-              t.date.isBefore(invoice.endDate.add(Duration(days: 1)));
-     }).toList();
-
-     // 3. Calcular total e breakdown por conta
-     final breakdown = <int, double>{}; // accountId -> amount
-     for (final transaction in periodTransactions) {
-       breakdown[transaction.accountId] =
-         (breakdown[transaction.accountId] ?? 0.0) + transaction.value;
-     }
-
-     final total = breakdown.values.fold<double>(0.0, (sum, v) => sum + v);
-
-     return InvoiceCalculatedData(
-       total: total,
-       breakdown: breakdown,
-       transactionCount: periodTransactions.length,
-     );
-   }
-   ```
-
-5. **UI - Dashboard com Navegação Temporal:**
-
-   Atualizar `InvoiceManagerCard` em `lib/presentation/widgets/dashboard/invoice_manager_card.dart`:
-
-   **Header com Navegação:**
-   ```dart
-   // Substituir "Fatura do Ciclo" por:
-   Row(
-     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-     children: [
-       IconButton(
-         icon: Icon(Icons.chevron_left),
-         onPressed: () => _navigateToPreviousPeriod(ref),
-       ),
-       Column(
-         children: [
-           Text(
-             'Fatura',
-             style: AppTypography.bodySmall,
-           ),
-           Text(
-             'Mês/Ano', // ex: "Jan/2024"
-             style: AppTypography.titleLarge,
-           ),
-         ],
-       ),
-       IconButton(
-         icon: Icon(Icons.chevron_right),
-         onPressed: () => _navigateToNextPeriod(ref),
-       ),
-     ],
-   )
-   ```
-
-   **Swipe Gesture:**
-   ```dart
-   GestureDetector(
-     onHorizontalDragEnd: (details) {
-       if (details.primaryVelocity! > 0) {
-         // Swipe right - período anterior
-         _navigateToPreviousPeriod(ref);
-       } else if (details.primaryVelocity! < 0) {
-         // Swipe left - próximo período
-         _navigateToNextPeriod(ref);
-       }
-     },
-     child: // ... conteúdo da fatura
-   )
-   ```
-
-   **Provider de Período Atual:**
-   ```dart
-   // StateProvider para controlar qual período está sendo visualizado
-   final currentInvoicePeriodProvider = StateProvider<InvoicePeriod?>((ref) {
-     // Default: primeiro período não pago (ou primeiro se todos pagos)
-     return null; // Será inicializado no build
-   });
-   ```
-
-   **Lógica de Navegação:**
-   ```dart
-   void _navigateToPreviousPeriod(WidgetRef ref) {
-     final allPeriods = ref.read(allAvailablePeriodsProvider);
-     final currentPeriod = ref.read(currentInvoicePeriodProvider);
-
-     // Encontrar período anterior na lista
-     final currentIndex = allPeriods.indexOf(currentPeriod);
-     if (currentIndex > 0) {
-       ref.read(currentInvoicePeriodProvider.notifier).state =
-         allPeriods[currentIndex - 1];
+   /// Parse cents value (stored as digits in controller) to double
+   double _parseCentsToDouble(String centsText) {
+     if (centsText.isEmpty) return 0.0;
+     try {
+       final cents = int.parse(centsText);
+       return cents / 100.0;
+     } catch (e) {
+       return 0.0;
      }
    }
-
-   void _navigateToNextPeriod(WidgetRef ref) {
-     // Similar, mas incrementa índice
-   }
    ```
 
-   **Auto-criação de Faturas:**
-   - Ao navegar para um período que NÃO tem fatura no database:
-     1. Verificar se o período tem transações de crédito
-     2. Se sim, criar automaticamente `InvoiceModel` com `isPaid = false`
-     3. Se não, não mostrar nada (ou mensagem "Sem transações neste período")
-
-6. **UI - Histórico de Faturas:**
-
-   Atualizar `InvoiceHistoryScreen` em `lib/presentation/screens/invoice_history_screen.dart`:
+3. **Atualizar `_handleSubmit` para usar o parser (linha 401):**
    ```dart
-   // Lista de faturas (apenas períodos com transações)
-   final invoicesAsync = ref.watch(invoiceRepositoryProvider).watchAllWithTransactions();
+   // ANTES:
+   final value = double.parse(_valueController.text);
 
-   ListView.builder(
-     itemCount: invoices.length,
-     itemBuilder: (context, index) {
-       final invoice = invoices[index];
-       final calculatedData = ref.watch(invoiceCalculatedDataProvider(invoice));
-
-       return InvoiceHistoryCard(
-         invoice: invoice,
-         total: calculatedData.total,
-         breakdown: calculatedData.breakdown,
-         onTap: () {
-           // Navegar para dashboard com este período selecionado
-           ref.read(currentInvoicePeriodProvider.notifier).state =
-             InvoicePeriod(invoice.startDate, invoice.endDate);
-           Navigator.pop(context);
-         },
-       );
-     },
-   )
-   ```
-
-7. **Comportamento Padrão ao Abrir Dashboard:**
-   ```dart
-   // Ao inicializar o dashboard:
-   // 1. Buscar todas as faturas disponíveis (com transações)
-   // 2. Filtrar faturas não pagas
-   // 3. Se existir fatura não paga, selecionar a PRIMEIRA
-   // 4. Se todas pagas, selecionar a PRIMEIRA da lista
-   // 5. Se nenhuma fatura existe, usar período atual calculado
-
-   @riverpod
-   Future<InvoicePeriod> defaultInvoicePeriod(DefaultInvoicePeriodRef ref) async {
-     final invoiceRepo = ref.watch(invoiceRepositoryProvider);
-     final firstUnpaid = await invoiceRepo.getFirstUnpaidOrFirst();
-
-     if (firstUnpaid != null) {
-       return InvoicePeriod(firstUnpaid.startDate, firstUnpaid.endDate);
-     }
-
-     // Fallback: calcular período atual
-     final accountRepo = ref.watch(accountRepositoryProvider);
-     final accounts = await accountRepo.getAll();
-     final creditAccounts = accounts.where((a) => a.isCredit).toList();
-
-     return calculateUnifiedInvoicePeriod(DateTime.now(), creditAccounts);
-   }
+   // DEPOIS:
+   final value = _parseCentsToDouble(_valueController.text);
    ```
 
 **Definition of Done:**
-- [x] Tabela `InvoiceItems` removida do database (migration criada)
-- [x] Tabela `Invoices` atualizada com schema simplificado (startDate, endDate, isPaid)
-- [x] Migration executada com sucesso
-- [x] Repository interface e implementation completos com novos métodos
-- [x] Provider `invoiceRepository` registrado
-- [x] Utility `invoice_period_utils.dart` implementado
-- [x] Lógica de cálculo de período unificado entre cartões funcionando
-- [x] Provider `invoiceCalculatedData` implementado
-- [x] Queries dinâmicas calculam total e breakdown corretamente
-- [x] UI do dashboard atualizada com header de navegação (mês/ano)
-- [x] Navegação com setas (esquerda/direita) funcionando
-- [x] Swipe horizontal funcionando para navegar períodos
-- [x] Dashboard abre no primeiro período não pago por padrão
-- [x] Auto-criação de faturas ao navegar para períodos com transações
-- [x] Apenas períodos com transações são exibíveis
-- [x] Tela de histórico lista apenas faturas com transações
-- [x] Ao clicar em fatura no histórico, dashboard navega para aquele período
-- [x] Breakdown por conta calculado dinamicamente e exibido
-- [x] Funcionalidade de marcar/desmarcar "pago" funcionando
-- [x] Considera apenas transações de contas de crédito
-- [x] Testes unitários do repository
-- [x] Testes de integração da lógica de períodos unificados
-- [x] Testes de widget das UIs atualizadas
-- [x] Code generation executado
-- [x] Merge realizado para `develop`
+- [ ] `_valueController` inicializado como vazio (sem texto pré-preenchido)
+- [ ] Helper method `_parseCentsToDouble()` implementado
+- [ ] `_handleSubmit` atualizado para usar o parser
+- [ ] Testar criação: valor salvo corretamente e exibido sem multiplicação
+- [ ] Testar edição: valor carregado corretamente no campo (não mostra 0)
+- [ ] Testar edição: valor atualizado salvo corretamente
+- [ ] Pattern de `account_form_bottom_sheet.dart` seguido (linhas 192-194, 862-870)
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
 
 ---
 
-### [x] F17-T2: Dashboard Baseado em Faturas com Navegação Temporal
+### [ ] F18-T2: Refatorar para Multi-Page Bottom Sheet com InlineCalendar
 
-**Branch:** `feature/dashboard-invoice-integration`
+**Branch:** `feature/recurring-inline-calendar`
 
 **Descrição:**
-Transformar o dashboard principal em uma visualização baseada em faturas com navegação temporal. O dashboard deve exibir valores calculados a partir da fatura atual (apenas transações de crédito), permitir navegação entre períodos através de swipe, remover a seção de fatura como card separado, e integrar a seção de faturas em uma página de detalhes dedicada.
+Substituir o campo de texto para "Dia de Cobrança" por um `InlineCalendar` em uma segunda página do bottom sheet, seguindo o mesmo pattern usado no formulário de contas para seleção do dia de pagamento do cartão.
 
 **Implementação Esperada:**
 
-1. **Remover Seção de Fatura do Dashboard**
-   - Remover o widget `InvoiceManagerCard` da tela do dashboard
-   - A seção de fatura não será mais um card separado - os valores da fatura serão a base do dashboard inteiro
-   - Todos os cálculos e exibições agora baseados na fatura atual
-
-2. **Dashboard Baseado em Valores de Fatura (Apenas Crédito)**
-
-   Provider de Dados do Dashboard:
+1. **Adicionar state variables:**
    ```dart
-   @riverpod
-   Future<DashboardData> dashboardData(
-     DashboardDataRef ref,
-     InvoicePeriod currentPeriod,
-   ) async {
-     final transactionRepo = ref.watch(transactionRepositoryProvider);
-     final accountRepo = ref.watch(accountRepositoryProvider);
+   late PageController _pageController;
+   int _currentPageIndex = 0;
+   int _chargeDay; // Substituir _chargeDayController
+   ```
 
-     // 1. Buscar todas as contas de crédito
-     final accounts = await accountRepo.getAll();
-     final creditAccounts = accounts.where((a) => a.isCredit).toList();
-
-     // 2. Buscar transações do período da fatura (APENAS CRÉDITO)
-     final allTransactions = await transactionRepo.getAll();
-     final invoiceTransactions = allTransactions.where((t) {
-       final account = accounts.firstWhere((a) => a.id == t.accountId);
-       return account.isCredit &&
-              t.date.isAfter(currentPeriod.startDate.subtract(Duration(days: 1))) &&
-              t.date.isBefore(currentPeriod.endDate.add(Duration(days: 1)));
-     }).toList();
-
-     // 3. Calcular valores
-     final totalSpent = invoiceTransactions.fold(0.0, (sum, t) => sum + t.value);
-     final totalCreditLimit = creditAccounts.fold(0.0, (sum, a) => sum + (a.creditLimit ?? 0));
-     final availableBudget = totalCreditLimit - totalSpent;
-
-     // 4. Breakdown por conta
-     final breakdown = <int, double>{};
-     for (final transaction in invoiceTransactions) {
-       breakdown[transaction.accountId] =
-         (breakdown[transaction.accountId] ?? 0.0) + transaction.value;
-     }
-
-     return DashboardData(
-       totalSpent: totalSpent,
-       availableBudget: availableBudget,
-       totalLimit: totalCreditLimit,
-       breakdown: breakdown,
-       transactions: invoiceTransactions,
-     );
+2. **Inicializar PageController e chargeDay:**
+   ```dart
+   @override
+   void initState() {
+     super.initState();
+     _pageController = PageController();
+     _chargeDay = widget.expense?.chargeDay ?? 1;
+     // ... outros controllers
    }
    ```
 
-3. **Header do Dashboard com Navegação Temporal**
-
-   Substituir "Início" por Formato MÊS ANO (ex: "NOV 2025"):
+3. **Substituir Form por PageView:**
    ```dart
-   AppBar(
-     title: Text(
-       _formatPeriodTitle(currentPeriod), // "NOV 2025"
-       style: AppTypography.titleLarge,
+   Expanded(
+     child: PageView(
+       controller: _pageController,
+       onPageChanged: (index) {
+         setState(() {
+           _currentPageIndex = index;
+         });
+       },
+       children: [
+         _buildPage1(scrollController, isEditing),
+         _buildPage2(),
+       ],
      ),
-     centerTitle: true,
    )
-
-   String _formatPeriodTitle(InvoicePeriod period) {
-     final monthNames = [
-       'JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN',
-       'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'
-     ];
-
-     final month = monthNames[period.startDate.month - 1];
-     final year = period.startDate.year;
-
-     return '$month $year';
-   }
    ```
 
-4. **PageView para Navegação por Swipe**
+4. **Criar `_buildPage1()` com navegação:**
+   - Manter: Description, Value, Account, Category
+   - Remover: Charge Day field (mover para página 2)
+   - Botões: `[Cancel] [Calendar Icon] [Próximo →]`
 
-   Implementação do PageView:
+5. **Criar `_buildPage2()` com InlineCalendar:**
    ```dart
-   class DashboardScreen extends ConsumerStatefulWidget {
-     @override
-     ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
-   }
-
-   class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-     late PageController _pageController;
-
-     @override
-     void initState() {
-       super.initState();
-
-       // Inicializar no índice da fatura atual (primeira não paga)
-       final initialIndex = _getInitialPageIndex();
-       _pageController = PageController(initialPage: initialIndex);
-     }
-
-     @override
-     Widget build(BuildContext context) {
-       final periodsAsync = ref.watch(allAvailablePeriodsProvider);
-
-       return periodsAsync.when(
-         data: (periods) => PageView.builder(
-           controller: _pageController,
-           itemCount: periods.length,
-           onPageChanged: (index) {
-             // Atualizar período atual no provider
-             ref.read(currentInvoicePeriodProvider.notifier).state =
-               periods[index];
-           },
-           itemBuilder: (context, index) {
-             final period = periods[index];
-             return _buildDashboardContent(period);
-           },
-         ),
-         loading: () => LoadingIndicator(),
-         error: (err, stack) => ErrorWidget(err),
-       );
-     }
-
-     Widget _buildDashboardContent(InvoicePeriod period) {
-       return SingleChildScrollView(
-         child: Column(
-           children: [
-             // Card de orçamento disponível
-             _buildBudgetCard(period),
-
-             // Breakdown por conta
-             _buildAccountBreakdown(period),
-
-             // Histórico de transações do período
-             _buildTransactionHistory(period),
-
-             // Botões de ação (abaixo do histórico)
-             _buildActionButtons(period),
-           ],
-         ),
-       );
-     }
-   }
-   ```
-
-   Comportamento de Navegação:
-   - Swipe para a direita → período ANTERIOR (mês passado)
-   - Swipe para a esquerda → período FUTURO (próximo mês)
-   - PageView carrega períodos conforme disponíveis
-
-5. **Botões de Ação Abaixo do Histórico**
-
-   ```dart
-   Widget _buildActionButtons(InvoicePeriod period) {
-     final invoice = ref.watch(invoiceByPeriodProvider(period));
-
-     return Padding(
-       padding: AppSpacing.paddingMd,
-       child: Row(
+   Widget _buildPage2() {
+     return SingleChildScrollView(
+       padding: const EdgeInsets.all(AppSpacing.lg),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
          children: [
-           // Botão de pagamento (funciona como toggle)
-           if (invoice != null)
-             Expanded(
-               child: PrimaryButton(
-                 label: invoice.isPaid ? 'Desmarcar Pagamento' : 'Pagar Fatura',
-                 onPressed: () => _toggleInvoicePayment(invoice),
-               ),
+           Text('Dia de Cobrança', style: AppTypography.headlineMedium),
+           const SizedBox(height: AppSpacing.sm),
+           Text(
+             'Selecione o dia do mês em que a despesa é cobrada',
+             style: AppTypography.bodyMedium.copyWith(
+               color: AppColors.textSecondary,
              ),
-
-           if (invoice != null)
-             SizedBox(width: AppSpacing.md),
-
-           // Botão "Ver Detalhes"
-           Expanded(
-             child: SecondaryButton(
-               label: 'Ver Detalhes',
-               onPressed: () => Navigator.push(
-                 context,
-                 MaterialPageRoute(
-                   builder: (_) => InvoiceDetailsScreen(period: period),
+           ),
+           const SizedBox(height: AppSpacing.md),
+           InlineCalendar(
+             selectedDay: _chargeDay,
+             onDaySelected: (day) {
+               setState(() {
+                 _chargeDay = day;
+               });
+             },
+             compactMode: true,
+           ),
+           const SizedBox(height: AppSpacing.lg),
+           Row(
+             children: [
+               Expanded(
+                 flex: 1,
+                 child: IconButton(
+                   icon: Icon(Icons.close),
+                   onPressed: () => Navigator.pop(context),
                  ),
                ),
-             ),
+               SizedBox(width: AppSpacing.sm),
+               Expanded(
+                 flex: 1,
+                 child: IconButton(
+                   icon: Icon(Icons.arrow_back),
+                   onPressed: _goToPreviousPage,
+                 ),
+               ),
+               SizedBox(width: AppSpacing.sm),
+               Expanded(
+                 flex: 2,
+                 child: PrimaryButton(
+                   label: 'Salvar',
+                   onPressed: _handleSubmit,
+                 ),
+               ),
+             ],
            ),
          ],
        ),
      );
    }
+   ```
 
-   Future<void> _toggleInvoicePayment(InvoiceModel invoice) async {
-     final confirmed = await showDialog<bool>(
-       context: context,
-       builder: (context) => AlertDialog(
-         title: Text(invoice.isPaid ? 'Desmarcar Pagamento' : 'Confirmar Pagamento'),
-         content: Text(
-           invoice.isPaid
-             ? 'Desmarcar esta fatura como paga?'
-             : 'Marcar esta fatura como paga?'
-         ),
-         actions: [
-           TextButton(
-             onPressed: () => Navigator.pop(context, false),
-             child: Text('Cancelar'),
-           ),
-           TextButton(
-             onPressed: () => Navigator.pop(context, true),
-             child: Text('Confirmar'),
-           ),
-         ],
-       ),
+6. **Adicionar navigation methods:**
+   ```dart
+   void _goToNextPage() {
+     FocusScope.of(context).unfocus();
+     _pageController.animateToPage(
+       1,
+       duration: const Duration(milliseconds: 300),
+       curve: Curves.easeInOut,
      );
+   }
 
-     if (confirmed == true) {
-       if (invoice.isPaid) {
-         await ref.read(invoiceRepositoryProvider).unmarkPaid(invoice.id);
-       } else {
-         await ref.read(invoiceRepositoryProvider).markAsPaid(invoice.id);
+   void _goToPreviousPage() {
+     _pageController.animateToPage(
+       0,
+       duration: const Duration(milliseconds: 300),
+       curve: Curves.easeInOut,
+     );
+   }
+   ```
+
+7. **Atualizar validation em `_handleSubmit`:**
+   - Validar form na página 1
+   - Se falhar validação e estiver na página 2, navegar para página 1
+   - Substituir `int.parse(_chargeDayController.text)` por `_chargeDay`
+
+8. **Dispose PageController:**
+   ```dart
+   @override
+   void dispose() {
+     _pageController.dispose();
+     // ... outros disposes
+   }
+   ```
+
+**Definition of Done:**
+- [ ] `PageController` e `_currentPageIndex` adicionados
+- [ ] `_chargeDayController` removido, `_chargeDay` int adicionado
+- [ ] Form substituído por PageView com 2 páginas
+- [ ] Page 1 construída com campos básicos + navegação
+- [ ] Page 2 construída com InlineCalendar
+- [ ] Navigation methods implementados
+- [ ] Import de `InlineCalendar` adicionado
+- [ ] Validação funciona corretamente entre páginas
+- [ ] PageController disposed adequadamente
+- [ ] Testar criação: navegação entre páginas funciona
+- [ ] Testar edição: dia carregado corretamente no calendar
+- [ ] Testar validação: erros na página 1 navegam corretamente
+- [ ] Pattern de `account_form_bottom_sheet.dart` seguido (linhas 35-44, 177, 528-650)
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
+
+---
+
+### [ ] F18-T3: Auto-Criação de Transações Baseada em Billing Period
+
+**Branch:** `feature/recurring-auto-transaction`
+
+**Descrição:**
+Implementar lógica para criar automaticamente uma transação quando uma despesa recorrente é criada/editada e o dia de cobrança já passou no ciclo de faturamento atual. Para contas de crédito, usar lógica de billing cycle. Para contas de débito, usar lógica de dia do mês.
+
+**Implementação Esperada:**
+
+1. **Adicionar import:**
+   ```dart
+   import '../../../core/utils/billing_cycle_utils.dart';
+   ```
+
+2. **Criar método `_createImmediateTransactionIfNeeded()`:**
+   ```dart
+   /// Creates an immediate transaction if the charge day has passed in the current billing period
+   Future<void> _createImmediateTransactionIfNeeded(
+     int chargeDay,
+     String description,
+     double value,
+     int accountId,
+     int categoryId,
+   ) async {
+     final now = DateTime.now();
+     final accountRepository = ref.read(accountRepositoryProvider);
+     final transactionRepository = ref.read(transactionRepositoryProvider);
+
+     // Get account to determine billing logic
+     final account = await accountRepository.getById(accountId);
+     if (account == null) return;
+
+     DateTime? transactionDate;
+     String transactionType = 'credit';
+
+     if (account.isCredit && account.creditPaymentDay != null) {
+       // CREDIT ACCOUNT: Use billing cycle logic
+       final currentCycle = calculateCurrentBillingCycleFromPaymentDay(
+         account.creditPaymentDay!,
+         now,
+       );
+
+       // Calculate charge date for current month (handle months with different day counts)
+       final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+       final effectiveChargeDay = chargeDay > daysInMonth ? daysInMonth : chargeDay;
+
+       final chargeDate = DateTime(now.year, now.month, effectiveChargeDay);
+
+       // Check if charge date is in current cycle AND has already passed
+       if (currentCycle.contains(chargeDate) && chargeDate.isBefore(now)) {
+         transactionDate = chargeDate;
+       }
+
+       // Determine transaction type for credit
+       if (account.isDebit && !account.isCredit) {
+         transactionType = 'debit';
+       }
+     } else if (account.isDebit) {
+       // DEBIT ACCOUNT: Use simple calendar day logic
+       if (chargeDay <= now.day) {
+         final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+         final effectiveChargeDay = chargeDay > daysInMonth ? daysInMonth : chargeDay;
+         transactionDate = DateTime(now.year, now.month, effectiveChargeDay);
+         transactionType = 'debit';
+       }
+     }
+
+     // Create transaction if date was determined
+     if (transactionDate != null) {
+       try {
+         await transactionRepository.create(
+           TransactionModelCompanion.insert(
+             value: value,
+             description: '[Recorrente] $description',
+             date: transactionDate,
+             accountId: accountId,
+             categoryId: categoryId,
+             notes: const drift.Value('[Processada automaticamente]'),
+           ).copyWith(transactionType: drift.Value(transactionType)),
+         );
+       } catch (e) {
+         debugPrint('Error creating immediate transaction: $e');
+         // Don't block the flow - log error only
        }
      }
    }
    ```
 
-6. **Página de Detalhes da Fatura**
+3. **Chamar método em `_handleSubmit`:**
+   - Após criação bem-sucedida (depois da linha 474)
+   - Após edição bem-sucedida (depois da linha 434)
 
-   Criar `InvoiceDetailsScreen`:
    ```dart
-   class InvoiceDetailsScreen extends ConsumerWidget {
-     final InvoicePeriod period;
-
-     const InvoiceDetailsScreen({required this.period});
-
-     @override
-     Widget build(BuildContext context, WidgetRef ref) {
-       final invoiceAsync = ref.watch(invoiceByPeriodProvider(period));
-       final dataAsync = ref.watch(dashboardDataProvider(period));
-
-       return Scaffold(
-         appBar: AppBar(
-           title: Text('Detalhes da Fatura'),
-         ),
-         body: SingleChildScrollView(
-           child: Column(
-             children: [
-               // 1. Resumo da fatura
-               _buildInvoiceSummary(dataAsync),
-
-               // 2. Breakdown por conta
-               _buildAccountBreakdown(dataAsync),
-
-               // 3. Lista de transações do período
-               _buildTransactionList(dataAsync),
-
-               // 4. Histórico de faturas
-               _buildInvoiceHistory(),
-             ],
-           ),
-         ),
-       );
-     }
-
-     Widget _buildInvoiceHistory() {
-       final invoicesAsync = ref.watch(allInvoicesWithTransactionsProvider);
-
-       return invoicesAsync.when(
-         data: (invoices) => Column(
-           crossAxisAlignment: CrossAxisAlignment.start,
-           children: [
-             Padding(
-               padding: AppSpacing.paddingMd,
-               child: Text(
-                 'Histórico de Faturas',
-                 style: AppTypography.titleMedium,
-               ),
-             ),
-             ListView.builder(
-               shrinkWrap: true,
-               physics: NeverScrollableScrollPhysics(),
-               itemCount: invoices.length,
-               itemBuilder: (context, index) {
-                 final invoice = invoices[index];
-                 return InvoiceHistoryTile(
-                   invoice: invoice,
-                   onTap: () {
-                     // Navegar para dashboard com este período
-                     ref.read(currentInvoicePeriodProvider.notifier).state =
-                       InvoicePeriod(invoice.startDate, invoice.endDate);
-                     Navigator.popUntil(context, (route) => route.isFirst);
-                   },
-                 );
-               },
-             ),
-           ],
-         ),
-         loading: () => LoadingIndicator(),
-         error: (err, stack) => ErrorWidget(err),
-       );
-     }
-   }
+   // After successful create/update:
+   await _createImmediateTransactionIfNeeded(
+     chargeDay,
+     description,
+     value,
+     accountId,
+     categoryId,
+   );
    ```
 
-7. **Validações e Edge Cases**
+**Billing Cycle Logic (Credit Accounts):**
+- Uses `calculateCurrentBillingCycleFromPaymentDay()` from `billing_cycle_utils.dart`
+- Calculates billing cycle based on `creditPaymentDay` (closing = payment - 7 days)
+- Checks if charge day falls within current cycle using `currentCycle.contains(chargeDate)`
+- Only creates transaction if charge date is in cycle AND has passed
 
-   - Período sem transações: Mostrar mensagem "Nenhuma transação neste período"
-   - Primeira fatura não paga: Dashboard abre automaticamente nesta fatura
-   - Todas faturas pagas: Dashboard abre na fatura mais recente
-   - Navegação infinita: Carregar períodos dinamicamente conforme necessário
-   - Performance: Usar `AutoDisposeProvider` para liberar memória
+**Calendar Day Logic (Debit Accounts):**
+- Simple check: `chargeDay <= now.day`
+- Creates transaction for current month if day has passed
 
-8. **UI/UX Improvements**
-
-   - Indicador de posição: Mostrar dots ou texto de posição abaixo do título
-   - Animação de transição: Smooth scroll entre páginas
-   - Pull-to-refresh: Atualizar dados da fatura atual
-   - Skeleton loading: Mostrar placeholders enquanto carrega dados
+**Edge Cases Handled:**
+- Months with different day counts (28, 29, 30, 31)
+- Credit payment day between 1-7 (closing in previous month)
+- Year transitions
+- Dual-type accounts (checks both `isCredit` and `isDebit`)
+- Transaction type determined by account type
 
 **Definition of Done:**
-- [x] Seção `InvoiceManagerCard` removida do dashboard
-- [x] Dashboard recalculado baseado em valores de fatura (apenas crédito)
-- [x] Transações de débito completamente excluídas do cálculo de orçamento
-- [x] Header do dashboard mostra "MÊS ANO" em vez de "Início"
-- [x] PageView implementado com swipe horizontal funcionando
-- [x] Navegação entre períodos (anterior/futuro) funciona corretamente
-- [x] Dashboard abre na primeira fatura não paga por padrão
-- [x] Botão de pagamento funciona como toggle (Pagar ↔ Desmarcar Pagamento)
-- [x] Label do botão muda dinamicamente baseado no status da fatura
-- [x] Dialog de confirmação adapta mensagem ao status atual
-- [x] Botão "Ver Detalhes" implementado e navegação funciona
-- [x] `InvoiceDetailsScreen` criada com todo conteúdo da antiga seção de faturas
-- [x] Histórico de faturas integrado na página de detalhes
-- [x] Navegação de detalhes → dashboard funciona corretamente
-- [x] Breakdown por conta calculado dinamicamente e exibido
-- [x] Período sem transações tratado adequadamente
-- [x] Performance otimizada com AutoDispose
-- [x] Testes unitários dos providers de dados
-- [x] Testes de widget do PageView e navegação
-- [x] Testes de integração do fluxo completo
-- [x] Code generation executado
-- [x] Merge realizado para `develop`
+- [ ] Import de `billing_cycle_utils.dart` adicionado
+- [ ] Método `_createImmediateTransactionIfNeeded()` implementado
+- [ ] Lógica de billing cycle para contas de crédito implementada
+- [ ] Lógica de calendar day para contas de débito implementada
+- [ ] Método chamado após criar despesa recorrente
+- [ ] Método chamado após editar despesa recorrente
+- [ ] Edge cases de dias do mês tratados (28-31)
+- [ ] Transaction type determinado corretamente
+- [ ] Erro não bloqueia salvamento (apenas log)
+- [ ] Testar com conta crédito: charge day no ciclo atual e já passou → cria transação
+- [ ] Testar com conta crédito: charge day no ciclo atual mas não passou → não cria
+- [ ] Testar com conta crédito: charge day fora do ciclo atual → não cria
+- [ ] Testar com conta débito: charge day <= hoje → cria transação
+- [ ] Testar com conta débito: charge day > hoje → não cria
+- [ ] Testar transação criada com descrição "[Recorrente] X"
+- [ ] Testar transação criada com notes "[Processada automaticamente]"
+- [ ] Code generation executado (se necessário)
+- [ ] Merge realizado para `develop`
 
 ---
 
-### [x] F17-T3: Transações Parceladas com Criação Automática
-
-**Branch:** `feature/installment-transactions`
-
-**Descrição:**
-Implementar sistema de transações parceladas que cria automaticamente as parcelas futuras nos próximos ciclos de faturamento.
-
-**Implementação Esperada:**
-
-1. **Database Updates:**
-   - Adicionar campos na tabela `Transactions`:
-   ```dart
-   IntColumn get installmentNumber => integer().nullable()(); // Número da parcela atual
-   IntColumn get installmentTotal => integer().nullable()(); // Total de parcelas
-   TextColumn get installmentGroupId => text().nullable()(); // UUID para agrupar parcelas
-   ```
-
-2. **Transaction Form Updates:**
-   - Adicionar checkbox "Parcelar transação" (apenas para crédito)
-   - Quando habilitado, mostrar campos:
-     - "Parcela atual" (número de 1 a N)
-     - "Total de parcelas" (número de 2 a 99)
-   - Validações:
-     - Parcela atual <= Total de parcelas
-     - Disponível apenas para contas de crédito (`account.isCredit == true`)
-     - Se débito selecionado, desabilitar checkbox
-
-3. **Lógica de Criação Automática:**
-   ```dart
-   Future<void> createInstallmentTransactions({
-     required TransactionModel baseTransaction,
-     required int currentInstallment,
-     required int totalInstallments,
-   }) async {
-     final groupId = Uuid().v4();
-
-     // Criar transação atual com título atualizado
-     final currentTransaction = baseTransaction.copyWith(
-       description: '${baseTransaction.description} $currentInstallment/$totalInstallments',
-       installmentNumber: currentInstallment,
-       installmentTotal: totalInstallments,
-       installmentGroupId: groupId,
-     );
-     await create(currentTransaction);
-
-     // Criar parcelas futuras
-     for (int i = currentInstallment + 1; i <= totalInstallments; i++) {
-       final nextCycleDate = _calculateNextCycleFirstDay(
-         baseTransaction.date,
-         i - currentInstallment
-       );
-
-       final futureTransaction = baseTransaction.copyWith(
-         description: '${baseTransaction.description} $i/$totalInstallments',
-         date: nextCycleDate,
-         installmentNumber: i,
-         installmentTotal: totalInstallments,
-         installmentGroupId: groupId,
-       );
-
-       await create(futureTransaction);
-     }
-   }
-
-   DateTime _calculateNextCycleFirstDay(DateTime current, int cyclesAhead) {
-     // Obter creditPaymentDay da conta
-     // Calcular primeiro dia do próximo ciclo
-     // Ciclo = de (paymentDay + 1) até próximo paymentDay
-     return DateTime(
-       current.year,
-       current.month + cyclesAhead,
-       account.creditPaymentDay + 1,
-     );
-   }
-   ```
-
-4. **Exemplo de Uso:**
-   - Usuário cria "Wine-Clube" com valor R$ 75,75
-   - Parcela atual: 8
-   - Total de parcelas: 12
-   - Conta: Nubank (crédito)
-   - Resultado:
-     - **Ciclo atual:** Wine-Clube 8/12 - R$ 75,75
-     - **Próximo ciclo:** Wine-Clube 9/12 - R$ 75,75 (dia 1 do ciclo)
-     - **Ciclo +2:** Wine-Clube 10/12 - R$ 75,75
-     - **Ciclo +3:** Wine-Clube 11/12 - R$ 75,75
-     - **Ciclo +4:** Wine-Clube 12/12 - R$ 75,75
-
-5. **UI Updates:**
-   - Transaction list mostra parcelas com ícone especial
-   - Tooltip ao editar: "Esta transação faz parte de um parcelamento"
-   - Opção de editar/deletar: perguntar se quer afetar todas as parcelas ou apenas esta
-
-6. **Edge Cases:**
-   - Validar que conta é crédito antes de criar parcelas
-   - Se conta mudar para débito, não permitir parcelamento
-   - Se usuário editar parcela, não afetar as outras (por padrão)
-
-**Definition of Done:**
-- [x] Campos de parcelamento adicionados à tabela `Transactions`
-- [x] UI do formulário atualizada com campos de parcela
-- [x] Validação de conta de crédito funcionando
-- [x] Lógica de criação automática implementada
-- [x] Cálculo correto do primeiro dia do próximo ciclo
-- [x] Formato do título com parcela funcionando (X/Y)
-- [x] Exemplo do Wine-Clube funciona corretamente
-- [x] Ícone/indicador visual de parcelas na lista
-- [x] Opções de edição/exclusão tratadas
-- [x] Testes unitários da lógica de criação
-- [x] Testes de integração do fluxo completo
-- [x] Testes de edge cases (débito, validações)
-- [x] Code generation executado
-- [x] Merge realizado para `develop`
-
----
-
-## 🔧 Fase 18: Correções Críticas de UX/UI
+## 🔧 Fase 19: Correções Críticas de UX/UI (Anteriormente Fase 18)
 
 **Objetivo:** Corrigir problemas críticos de experiência do usuário identificados durante uso real da aplicação.
 
@@ -901,7 +474,7 @@ Implementar sistema de transações parceladas que cria automaticamente as parce
 
 ---
 
-### [ ] F18-T1: Correção - Descrição de Transação Retorna à Tela Anterior
+### [ ] F19-T1: Correção - Descrição de Transação Retorna à Tela Anterior
 
 **Branch:** `fix/transaction-description-save`
 
@@ -919,7 +492,7 @@ Na criação de transações, ao salvar no campo de descrição (pressionar "sal
 
 ---
 
-### [ ] F18-T2: Correção - Botão Salvar na Primeira Tela de Edição de Contas
+### [ ] F19-T2: Correção - Botão Salvar na Primeira Tela de Edição de Contas
 
 **Branch:** `fix/account-edit-save-button`
 
@@ -939,7 +512,7 @@ Na edição de contas, quando há crédito habilitado, a primeira tela deve ter 
 
 ---
 
-### [ ] F18-T3: Correção - Auto-refresh do Dashboard em Mudanças de Configurações
+### [ ] F19-T3: Correção - Auto-refresh do Dashboard em Mudanças de Configurações
 
 **Branch:** `fix/dashboard-auto-refresh`
 
@@ -961,7 +534,7 @@ O dashboard não atualiza automaticamente quando há mudanças nas configuraçõ
 
 ---
 
-### [ ] F18-T4: Correção - Error Toasts Aparecendo Atrás do Bottom Sheet
+### [ ] F19-T4: Correção - Error Toasts Aparecendo Atrás do Bottom Sheet
 
 **Branch:** `fix/toast-z-index`
 
@@ -985,7 +558,7 @@ Error toasts aparecem atrás dos bottom sheets, impossibilitando identificar o p
 
 ---
 
-### [ ] F18-T5: Correção - Habilitar/Desabilitar Débito/Crédito Baseado no Tipo de Conta
+### [ ] F19-T5: Correção - Habilitar/Desabilitar Débito/Crédito Baseado no Tipo de Conta
 
 **Branch:** `fix/expense-payment-type-toggle`
 
@@ -1008,7 +581,7 @@ No bottom sheet de criação de despesas, os campos de débito/crédito devem se
 
 ---
 
-## 📦 Fase 19: Correções no Sistema de Backup/Restore
+## 📦 Fase 20: Correções no Sistema de Backup/Restore
 
 **Objetivo:** Corrigir problemas críticos no sistema de backup e restore de dados, garantindo persistência completa de todas as informações.
 
@@ -1016,7 +589,7 @@ No bottom sheet de criação de despesas, os campos de débito/crédito devem se
 
 ---
 
-### [ ] F19-T1: Adicionar Botão "Importar Backup" no Tour Inicial
+### [ ] F20-T1: Adicionar Botão "Importar Backup" no Tour Inicial
 
 **Branch:** `feature/import-backup-onboarding`
 
@@ -1041,7 +614,7 @@ Adicionar botão de "Importar Backup" no tour de início do aplicativo, permitin
 
 ---
 
-### [ ] F19-T2: Correção - Persistir Data de Pagamento no Backup
+### [ ] F20-T2: Correção - Persistir Data de Pagamento no Backup
 
 **Branch:** `fix/backup-payment-day`
 
@@ -1062,17 +635,17 @@ O sistema de backup não está salvando a data de pagamento dos cartões de cré
 
 ---
 
-### [ ] F19-T3: Correção - Persistir Data de Fechamento no Backup
+### [ ] F20-T3: Correção - Persistir Data de Fechamento no Backup
 
 **Branch:** `fix/backup-closing-day`
 
 **Descrição:**
 O sistema de backup não está salvando a data de fechamento dos cartões de crédito (campo calculado baseado em `creditPaymentDay`). Garantir que o ciclo de faturamento completo é restaurado corretamente.
 
-**Observação:** Este problema pode estar relacionado ao F19-T2, já que a data de fechamento é calculada como `creditPaymentDay - 7`. Se `creditPaymentDay` for restaurado corretamente, o fechamento será calculado automaticamente.
+**Observação:** Este problema pode estar relacionado ao F20-T2, já que a data de fechamento é calculada como `creditPaymentDay - 7`. Se `creditPaymentDay` for restaurado corretamente, o fechamento será calculado automaticamente.
 
 **Definition of Done:**
-- [ ] Verificar se correção do F19-T2 resolve o problema
+- [ ] Verificar se correção do F20-T2 resolve o problema
 - [ ] Se necessário, adicionar campo explícito de `creditClosingDay` ao backup
 - [ ] Testar export: verificar que ciclo de faturamento está completo
 - [ ] Testar import: verificar que `creditPaymentDay` e fechamento são restaurados
@@ -1083,7 +656,7 @@ O sistema de backup não está salvando a data de fechamento dos cartões de cr�
 
 ---
 
-### [ ] F19-T4: Correção - Persistir Tipo de Pagamento (Débito/Crédito) no Backup
+### [ ] F20-T4: Correção - Persistir Tipo de Pagamento (Débito/Crédito) no Backup
 
 **Branch:** `fix/backup-payment-type`
 
@@ -1107,7 +680,7 @@ O sistema de backup não está salvando o tipo de pagamento das transações (se
 
 ## 🎊 Conclusão
 
-Este plano mapeia todas as **88 tarefas** (79 originais + 9 novas) necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
+Este plano mapeia todas as **91 tarefas** necessárias para completar o MVP do Previsor Financeiro. Ao seguir este roadmap, você terá um aplicativo funcional, testado e preparado para uso pessoal, com uma arquitetura sólida que permitirá expansões futuras.
 
 A **Fase 5** representa a primeira iteração de melhorias baseada em uso real, demonstrando a importância de testar o aplicativo e iterar sobre o design inicial.
 
@@ -1121,8 +694,10 @@ A **Fase 9** traz correções de UX e padronização visual: correção do bug d
 
 A **Fase 10** garante a estabilidade e saúde do código: atualização de dependências, migração de APIs deprecated, implementação de logging adequado, e remoção de código morto.
 
-A **Fase 18** aborda correções críticas de UX/UI identificadas durante uso real: comportamento de salvamento de descrição, botões de navegação em edição de contas, auto-refresh do dashboard, z-index de toasts, e controle de tipo de pagamento baseado em tipo de conta.
+A **Fase 18** corrige problemas críticos no formulário de despesas recorrentes: exibição de valores (bug do multiplicador *100), refatoração para usar InlineCalendar em uma segunda página do bottom sheet, e implementação de auto-criação de transações baseada em billing periods para contas de crédito e calendar days para contas de débito.
 
-A **Fase 19** corrige problemas no sistema de backup/restore: adicionar opção de importação no onboarding, e garantir persistência completa de dados críticos (data de pagamento, data de fechamento, e tipo de pagamento).
+A **Fase 19** aborda correções críticas de UX/UI identificadas durante uso real: comportamento de salvamento de descrição, botões de navegação em edição de contas, auto-refresh do dashboard, z-index de toasts, e controle de tipo de pagamento baseado em tipo de conta.
+
+A **Fase 20** corrige problemas no sistema de backup/restore: adicionar opção de importação no onboarding, e garantir persistência completa de dados críticos (data de pagamento, data de fechamento, e tipo de pagamento).
 
 **Bom desenvolvimento! 🚀**

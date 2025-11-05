@@ -340,9 +340,8 @@ class _RecurringExpenseFormBottomSheetState
     _sheetController = DraggableScrollableController();
     _descriptionController =
         TextEditingController(text: widget.expense?.description ?? '');
-    _valueController = TextEditingController(
-      text: widget.expense?.value.toString() ?? '',
-    );
+    // Initialize empty controller - NubankStyleCurrencyField handles initialValue internally
+    _valueController = TextEditingController();
     _chargeDayController = TextEditingController(
       text: widget.expense?.chargeDay.toString() ?? '',
     );
@@ -388,6 +387,17 @@ class _RecurringExpenseFormBottomSheetState
     }
   }
 
+  /// Parse cents value (stored as digits in controller) to double
+  double _parseCentsToDouble(String centsText) {
+    if (centsText.isEmpty) return 0.0;
+    try {
+      final cents = int.parse(centsText);
+      return cents / 100.0;
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -399,7 +409,7 @@ class _RecurringExpenseFormBottomSheetState
       final recurringExpenseRepository =
           ref.read(recurringExpenseRepositoryProvider);
       final description = _descriptionController.text;
-      final value = double.parse(_valueController.text);
+      final value = _parseCentsToDouble(_valueController.text);
       final chargeDay = int.parse(_chargeDayController.text);
       final accountId = _selectedAccountId;
       final categoryId = _selectedCategoryId;
