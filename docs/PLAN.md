@@ -324,7 +324,7 @@ Substituir o campo de texto para "Dia de Cobrança" por um `InlineCalendar` em u
 
 ---
 
-### [ ] F18-T3: Auto-Criação de Transações Baseada em Billing Period
+### [x] F18-T3: Auto-Criação de Transações Baseada em Billing Period
 
 **Branch:** `feature/recurring-auto-transaction`
 
@@ -445,23 +445,23 @@ Implementar lógica para criar automaticamente uma transação quando uma despes
 - Transaction type determined by account type
 
 **Definition of Done:**
-- [ ] Import de `billing_cycle_utils.dart` adicionado
-- [ ] Método `_createImmediateTransactionIfNeeded()` implementado
-- [ ] Lógica de billing cycle para contas de crédito implementada
-- [ ] Lógica de calendar day para contas de débito implementada
-- [ ] Método chamado após criar despesa recorrente
-- [ ] Método chamado após editar despesa recorrente
-- [ ] Edge cases de dias do mês tratados (28-31)
-- [ ] Transaction type determinado corretamente
-- [ ] Erro não bloqueia salvamento (apenas log)
-- [ ] Testar com conta crédito: charge day no ciclo atual e já passou → cria transação
-- [ ] Testar com conta crédito: charge day no ciclo atual mas não passou → não cria
-- [ ] Testar com conta crédito: charge day fora do ciclo atual → não cria
-- [ ] Testar com conta débito: charge day <= hoje → cria transação
-- [ ] Testar com conta débito: charge day > hoje → não cria
-- [ ] Testar transação criada com descrição "[Recorrente] X"
-- [ ] Testar transação criada com notes "[Processada automaticamente]"
-- [ ] Code generation executado (se necessário)
+- [x] Import de `billing_cycle_utils.dart` adicionado
+- [x] Método `_createImmediateTransactionIfNeeded()` implementado
+- [x] Lógica de billing cycle para contas de crédito implementada
+- [x] Lógica de calendar day para contas de débito implementada
+- [x] Método chamado após criar despesa recorrente
+- [x] Método chamado após editar despesa recorrente
+- [x] Edge cases de dias do mês tratados (28-31)
+- [x] Transaction type determinado corretamente
+- [x] Erro não bloqueia salvamento (apenas log)
+- [x] Testar com conta crédito: charge day no ciclo atual e já passou → cria transação
+- [x] Testar com conta crédito: charge day no ciclo atual mas não passou → não cria
+- [x] Testar com conta crédito: charge day fora do ciclo atual → não cria
+- [x] Testar com conta débito: charge day <= hoje → cria transação
+- [x] Testar com conta débito: charge day > hoje → não cria
+- [x] Testar transação criada com descrição "[Recorrente] X"
+- [x] Testar transação criada com notes "[Processada automaticamente]"
+- [x] Code generation executado (se necessário)
 - [ ] Merge realizado para `develop`
 
 ---

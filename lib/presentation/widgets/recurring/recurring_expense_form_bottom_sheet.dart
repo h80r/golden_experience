@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/utils/billing_cycle_utils.dart';
 import '../../../data/datasources/local_database.dart';
 import '../../../data/providers/repository_providers.dart';
 import '../../theme/app_colors.dart';
@@ -527,6 +528,18 @@ class _RecurringExpenseFormBottomSheetState
 
         final success = await recurringExpenseRepository.update(updated);
 
+        if (success) {
+          // Auto-create transaction if charge day has passed
+          await _createImmediateTransactionIfNeeded(
+            recurringExpenseId: widget.expense!.id,
+            description: description,
+            value: value,
+            chargeDay: chargeDay,
+            accountId: accountId,
+            categoryId: categoryId,
+          );
+        }
+
         if (mounted) {
           if (success) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -566,6 +579,18 @@ class _RecurringExpenseFormBottomSheetState
         );
 
         final id = await recurringExpenseRepository.create(newExpense);
+
+        if (id > 0) {
+          // Auto-create transaction if charge day has passed
+          await _createImmediateTransactionIfNeeded(
+            recurringExpenseId: id,
+            description: description,
+            value: value,
+            chargeDay: chargeDay,
+            accountId: accountId,
+            categoryId: categoryId,
+          );
+        }
 
         if (mounted) {
           if (id > 0) {
@@ -651,6 +676,94 @@ class _RecurringExpenseFormBottomSheetState
       return cents / 100.0;
     } catch (e) {
       return 0.0;
+    }
+  }
+
+  /// Creates an immediate transaction if the charge day has already passed
+  /// in the current billing cycle
+  ///
+  /// For credit accounts: Uses billing cycle logic based on payment day
+  /// For debit accounts: Uses simple calendar day comparison
+  /// For dual-type accounts: Prioritizes credit logic if isCredit is true
+  Future<void> _createImmediateTransactionIfNeeded({
+    required int recurringExpenseId,
+    required String description,
+    required double value,
+    required int chargeDay,
+    required int accountId,
+    required int categoryId,
+  }) async {
+    try {
+      // Get the account to determine type
+      final accountRepository = ref.read(accountRepositoryProvider);
+      final account = await accountRepository.getById(accountId);
+
+      if (account == null) {
+        return; // Account not found, skip auto-creation
+      }
+
+      final now = DateTime.now();
+      final normalizedNow = DateTime(now.year, now.month, now.day);
+      bool shouldCreateTransaction = false;
+
+      // Determine if we need to create a transaction based on account type
+      if (account.isCredit && account.creditPaymentDay != null) {
+        // Credit account logic: Check if charge day has passed in current billing cycle
+        final currentCycle = calculateCurrentBillingCycleFromPaymentDay(
+          account.creditPaymentDay!,
+          normalizedNow,
+        );
+
+        // Calculate the charge date in the current month
+        final currentMonthChargeDate = DateTime(
+          now.year,
+          now.month,
+          chargeDay > DateTime(now.year, now.month + 1, 0).day
+              ? DateTime(now.year, now.month + 1, 0).day
+              : chargeDay,
+        );
+
+        // Check if the charge date is within the current billing cycle and has already passed
+        if (currentCycle.contains(currentMonthChargeDate) &&
+            (normalizedNow.isAfter(currentMonthChargeDate) ||
+                normalizedNow.isAtSameMomentAs(currentMonthChargeDate))) {
+          shouldCreateTransaction = true;
+        }
+      } else if (account.isDebit) {
+        // Debit account logic: Simple calendar day comparison
+        // If charge day has passed or is today, create the transaction
+        if (chargeDay <= now.day) {
+          shouldCreateTransaction = true;
+        }
+      }
+
+      if (shouldCreateTransaction) {
+        // Create the transaction
+        final transactionRepository = ref.read(transactionRepositoryProvider);
+
+        // Determine transaction type based on account type
+        // For dual-type accounts, prioritize credit if available
+        final transactionType =
+            (account.isCredit && account.creditPaymentDay != null)
+                ? 'credit'
+                : 'debit';
+
+        final transaction = TransactionModelCompanion(
+          value: drift.Value(value),
+          description: drift.Value(description),
+          date: drift.Value(DateTime(now.year, now.month, chargeDay)),
+          notes: drift.Value(
+              'Criado automaticamente da recorrência ID: $recurringExpenseId'),
+          accountId: drift.Value(accountId),
+          categoryId: drift.Value(categoryId),
+          transactionType: drift.Value(transactionType),
+        );
+
+        await transactionRepository.create(transaction);
+      }
+    } catch (e) {
+      // Log error but don't show to user to avoid disrupting the save flow
+      debugPrint('Error creating immediate transaction: $e');
     }
   }
 }
