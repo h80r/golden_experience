@@ -100,12 +100,16 @@ class CategoryRepositoryImpl implements ICategoryRepository {
     if (existingCategories.isNotEmpty) return;
 
     final defaultCategories = [
-      CategoryModelCompanion.insert(name: 'Alimentação'),
+      CategoryModelCompanion.insert(name: 'Assinaturas'),
+      CategoryModelCompanion.insert(name: 'Compras'),
+      CategoryModelCompanion.insert(name: 'Contas'),
+      CategoryModelCompanion.insert(name: 'Entretenimento'),
+      CategoryModelCompanion.insert(name: 'Mercado'),
+      CategoryModelCompanion.insert(name: 'Restaurante'),
+      CategoryModelCompanion.insert(name: 'Roupas'),
+      CategoryModelCompanion.insert(name: 'Saúde e Beleza'),
       CategoryModelCompanion.insert(name: 'Transporte'),
-      CategoryModelCompanion.insert(name: 'Moradia'),
-      CategoryModelCompanion.insert(name: 'Saúde'),
-      CategoryModelCompanion.insert(name: 'Lazer'),
-      CategoryModelCompanion.insert(name: 'Educação'),
+      CategoryModelCompanion.insert(name: 'Viagem'),
       CategoryModelCompanion.insert(name: 'Outros'),
     ];
 

@@ -20,6 +20,7 @@ import '../widgets/inputs/reserve_percentage_slider.dart';
 import '../widgets/inputs/segmented_toggle.dart';
 import '../widgets/settings/category_management_section.dart';
 import '../widgets/settings/notification_settings_section.dart';
+import 'invoice_import_screen.dart';
 
 /// SettingsScreen - Configuration screen for app-wide financial settings
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -394,6 +395,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.md),
+
+          // Invoice CSV import
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const InvoiceImportScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.receipt_long),
+              label: const Text('Importar Fatura CSV'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.surfaceVariant,
+                foregroundColor: AppColors.textPrimary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.md,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          // Delete all transactions
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _deleteAllTransactions,
+              icon: const Icon(Icons.delete_forever),
+              label: const Text('Excluir Todas as Transações'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.errorWithOpacity,
+                foregroundColor: AppColors.error,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.md,
+                ),
+              ),
+            ),
+          ),
 
           // Backup status messages
           if (backupState.successMessage != null)
@@ -595,6 +638,67 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       );
     } finally {
       backupNotifier.setLoading(false);
+    }
+  }
+
+  Future<void> _deleteAllTransactions() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Excluir Todas as Transações'),
+        content: const Text(
+          'Isso excluirá permanentemente todas as transações e zerará o '
+          'valor usado das contas de crédito. Esta ação não pode ser '
+          'desfeita. Deseja continuar?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Excluir',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final transactionRepository = ref.read(transactionRepositoryProvider);
+      final accountRepository = ref.read(accountRepositoryProvider);
+
+      await transactionRepository.deleteAll();
+
+      final accounts = await accountRepository.getAll();
+      for (final account in accounts) {
+        if (account.isCredit) {
+          await accountRepository.updateCreditUsed(account.id, 0);
+        }
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Todas as transações foram excluídas'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao excluir transações: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
     }
   }
 

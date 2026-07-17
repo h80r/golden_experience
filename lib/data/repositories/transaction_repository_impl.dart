@@ -57,6 +57,11 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   }
 
   @override
+  Future<int> deleteAll() async {
+    return await _db.delete(_db.transactions).go();
+  }
+
+  @override
   Stream<List<TransactionModel>> watchAll() {
     return _db.select(_db.transactions).watch();
   }

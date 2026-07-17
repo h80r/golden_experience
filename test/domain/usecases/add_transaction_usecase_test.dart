@@ -684,6 +684,13 @@ class MockTransactionRepository implements ITransactionRepository {
   }
 
   @override
+  Future<int> deleteAll() async {
+    final count = _transactions.length;
+    _transactions.clear();
+    return count;
+  }
+
+  @override
   Future<List<TransactionModel>> getAll() async => _transactions;
 
   @override

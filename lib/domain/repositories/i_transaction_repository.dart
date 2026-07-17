@@ -27,6 +27,10 @@ abstract class ITransactionRepository {
   /// Returns true if successful, false otherwise
   Future<bool> delete(int id);
 
+  /// Deletes every transaction in the database
+  /// Returns the number of transactions deleted
+  Future<int> deleteAll();
+
   /// Returns a stream of all transactions
   /// Updates automatically when data changes
   Stream<List<TransactionModel>> watchAll();
