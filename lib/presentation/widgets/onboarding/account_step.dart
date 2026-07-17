@@ -10,6 +10,7 @@ import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
 import '../inputs/custom_text_field.dart';
+import '../inputs/inline_calendar.dart';
 import '../inputs/nubank_style_currency_field.dart';
 
 /// Account creation step of the onboarding flow
@@ -36,6 +37,7 @@ class _AccountStepState extends ConsumerState<AccountStep> {
   bool _isCredit = false;
   bool _isLoading = false;
   String? _errorMessage;
+  int? _creditPaymentDay;
 
   @override
   Widget build(BuildContext context) {
@@ -184,6 +186,25 @@ class _AccountStepState extends ConsumerState<AccountStep> {
                     isEnabled: !_isLoading,
                   ),
                   SizedBox(height: AppSpacing.xl),
+                  Text(
+                    'Dia do Pagamento da Fatura',
+                    style: AppTypography.labelLarge.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.sm),
+                  InlineCalendar(
+                    selectedDay: _creditPaymentDay ?? 1,
+                    onDaySelected: _isLoading
+                        ? (_) {}
+                        : (day) {
+                            setState(() {
+                              _creditPaymentDay = day;
+                            });
+                          },
+                    compactMode: true,
+                  ),
+                  SizedBox(height: AppSpacing.xl),
                 ],
               ],
             ),
@@ -228,6 +249,7 @@ class _AccountStepState extends ConsumerState<AccountStep> {
     _nameController = TextEditingController();
     _balanceController = TextEditingController();
     _creditLimitController = TextEditingController();
+    _creditPaymentDay = 1;
   }
 
   Future<void> _createAccount() async {
@@ -271,6 +293,8 @@ class _AccountStepState extends ConsumerState<AccountStep> {
         balance: Value(balance),
         creditLimit: Value(creditLimit),
         creditUsed: Value(0.0),
+        isDefault: Value(true),
+        creditPaymentDay: Value(_isCredit ? _creditPaymentDay : null),
       );
 
       await repository.create(newAccount);

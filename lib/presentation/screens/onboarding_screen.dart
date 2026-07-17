@@ -6,7 +6,6 @@ import '../theme/app_spacing.dart';
 import '../widgets/onboarding/welcome_step.dart';
 import '../widgets/onboarding/settings_step.dart';
 import '../widgets/onboarding/account_step.dart';
-import '../widgets/onboarding/categories_step.dart';
 import '../widgets/onboarding/completion_step.dart';
 import '../../data/repositories/app_settings_repository_impl.dart';
 
@@ -58,7 +57,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _goToNextStep() {
-    if (_currentStep < 4) {
+    if (_currentStep < 3) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -132,13 +131,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               onBack: _goToPreviousStep,
             ),
 
-            // Step 3: Categories Review
-            CategoriesStep(
-              onContinue: _goToNextStep,
-              onBack: _goToPreviousStep,
-            ),
-
-            // Step 4: Completion
+            // Step 3: Completion
             CompletionStep(
               onComplete: _completeOnboarding,
               onBack: _goToPreviousStep,
@@ -157,7 +150,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
-                5,
+                4,
                 (index) => Container(
                   margin: EdgeInsets.symmetric(
                     horizontal: AppSpacing.sm / 2,
@@ -175,7 +168,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             SizedBox(height: AppSpacing.md),
             Text(
-              'Passo ${_currentStep + 1} de 5',
+              'Passo ${_currentStep + 1} de 4',
               style: AppTypography.bodySmall.copyWith(
                 color: AppColors.textSecondary,
               ),

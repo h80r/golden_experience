@@ -119,12 +119,6 @@ class _CompletionStepState extends State<CompletionStep>
                     title: 'Sua Primeira Conta',
                     description: 'Pronta para registrar gastos',
                   ),
-                  SizedBox(height: AppSpacing.md),
-                  _SummaryItem(
-                    icon: Icons.category,
-                    title: 'Categorias',
-                    description: 'Organize seus gastos',
-                  ),
                 ],
               ),
             ),

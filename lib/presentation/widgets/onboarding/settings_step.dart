@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/repositories/app_settings_repository_impl.dart';
+import '../../../utils/brazilian_holidays.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
 import '../buttons/primary_button.dart';
 import '../buttons/secondary_button.dart';
+import '../inputs/custom_dropdown.dart';
+import '../inputs/inline_calendar.dart';
 import '../inputs/nubank_style_currency_field.dart';
 import '../inputs/reserve_percentage_slider.dart';
+import '../inputs/segmented_toggle.dart';
 
 /// Settings step - Configure salary and reserve percentage
 class SettingsStep extends ConsumerStatefulWidget {
@@ -30,6 +34,13 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
   double _reservePercentage = 50.0;
   bool _isLoading = false;
   String? _errorMessage;
+
+  // Salary payment configuration
+  String _salaryPaymentMode = 'calendar';
+  int _calendarDay = 1;
+  String _workdayOption = '1';
+  int _customWorkday = 1;
+  final Map<String, String> _workdayDates = {};
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +113,9 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
                     });
                   },
                 ),
+                SizedBox(height: AppSpacing.xl),
+                // Salary payment date section
+                _buildSalaryPaymentSection(),
               ],
             ),
           ),
@@ -131,6 +145,134 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
     );
   }
 
+  Widget _buildSalaryPaymentSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Data de Recebimento do Salário',
+          style: AppTypography.labelLarge.copyWith(
+            color: AppColors.textPrimary,
+          ),
+        ),
+        SizedBox(height: AppSpacing.md),
+        // Mode toggle
+        SegmentedToggle(
+          leftLabel: 'Dia Específico',
+          rightLabel: 'Dia Útil',
+          isLeftSelected: _salaryPaymentMode == 'calendar',
+          onLeftTap: () {
+            setState(() {
+              _salaryPaymentMode = 'calendar';
+            });
+          },
+          onRightTap: () {
+            setState(() {
+              _salaryPaymentMode = 'workday';
+              // Reset to a valid work-day option when switching modes
+              if (!['1', '5', '10', '15', '20', 'last', 'custom']
+                  .contains(_workdayOption)) {
+                _workdayOption = '1';
+              }
+            });
+          },
+        ),
+        SizedBox(height: AppSpacing.lg),
+        // Calendar or workday selector
+        if (_salaryPaymentMode == 'calendar')
+          InlineCalendar(
+            selectedDay: _calendarDay,
+            onDaySelected: (day) {
+              setState(() {
+                _calendarDay = day;
+              });
+            },
+          )
+        else
+          Column(
+            children: [
+              CustomDropdown<String>(
+                label: 'Dia Útil do Mês',
+                value: _workdayDates.containsKey(_workdayOption) ||
+                        _workdayOption == 'custom'
+                    ? _workdayOption
+                    : '1',
+                items: [
+                  ..._workdayDates.entries.map(
+                    (e) => DropdownMenuItem(
+                      value: e.key,
+                      child: Text(e.value),
+                    ),
+                  ),
+                  const DropdownMenuItem(
+                    value: 'custom',
+                    child: Text('Outro...'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() {
+                    _workdayOption = value;
+                    if (value != 'custom') {
+                      _customWorkday = 1;
+                    }
+                  });
+                },
+              ),
+              if (_workdayOption == 'custom') ...[
+                SizedBox(height: AppSpacing.md),
+                TextFormField(
+                  initialValue: _customWorkday.toString(),
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Dia Útil (1-23)',
+                    hintText: 'Digite um número entre 1 e 23',
+                    border: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusMedium),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    final customValue = int.tryParse(value);
+                    if (customValue == null ||
+                        customValue < 1 ||
+                        customValue > 23) {
+                      return;
+                    }
+                    setState(() {
+                      _customWorkday = customValue;
+                    });
+                  },
+                ),
+              ],
+            ],
+          ),
+      ],
+    );
+  }
+
+  void _calculateWorkdayDates() {
+    _workdayDates.clear();
+
+    final options = ['1', '5', '10', '15', '20', 'last'];
+    final labels = [
+      '1º dia útil',
+      '5º dia útil',
+      '10º dia útil',
+      '15º dia útil',
+      '20º dia útil',
+      'Último dia útil'
+    ];
+
+    for (int i = 0; i < options.length; i++) {
+      final date = BrazilianHolidays.calculateSalaryPaymentDate(options[i]);
+      if (date != null) {
+        _workdayDates[options[i]] =
+            '${labels[i]} (${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')})';
+      }
+    }
+  }
+
   @override
   void dispose() {
     _salaryController.dispose();
@@ -148,6 +290,7 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
     try {
       final repository = AppSettingsRepositoryImpl();
       final settings = await repository.get();
+      _calculateWorkdayDates();
       if (settings != null && mounted) {
         setState(() {
           // NubankStyleCurrencyField uses internal representation (cents)
@@ -156,6 +299,14 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
             _salaryController.text = cents.toString();
           }
           _reservePercentage = settings.maxReserveUsagePercentage;
+          _salaryPaymentMode = settings.salaryPaymentMode;
+          _calendarDay = settings.salaryPaymentValue;
+          // Map -1 back to 'last' for UI
+          _workdayOption = settings.salaryPaymentMode == 'workday'
+              ? (settings.salaryPaymentValue == -1
+                  ? 'last'
+                  : settings.salaryPaymentValue.toString())
+              : '1';
         });
       }
     } catch (e) {
@@ -196,6 +347,16 @@ class _SettingsStepState extends ConsumerState<SettingsStep> {
       // Update each field
       await repository.updateMonthlySalary(salary);
       await repository.updateMaxReserveUsagePercentage(_reservePercentage);
+
+      final salaryPaymentValue = _salaryPaymentMode == 'calendar'
+          ? _calendarDay
+          : (_workdayOption == 'custom'
+              ? _customWorkday
+              : (_workdayOption == 'last'
+                  ? -1
+                  : int.tryParse(_workdayOption) ?? 1));
+      await repository.updateSalaryPaymentConfig(
+          _salaryPaymentMode, salaryPaymentValue);
 
       if (mounted) {
         setState(() {

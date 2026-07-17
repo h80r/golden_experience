@@ -1,9 +1,9 @@
-# Onboarding Specification
+# Delta for Onboarding
 
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Five-Step Guided Tour
-The system SHALL present a 4-step, non-swipeable `PageView` tour (Welcome → Settings → Account → Completion) on the user's initial setup.
+The system SHALL present a 4-step, non-swipeable `PageView` tour (Welcome → Settings → Account → Completion) on the user's initial setup. (Previously: 5 steps including a Categories step between Account and Completion.)
 
 #### Scenario: Progressing through the tour
 - GIVEN the user is on the Welcome step
@@ -30,24 +30,3 @@ The system SHALL mark the account created during onboarding as the default accou
 - GIVEN the user checks "Crédito" on the Account step
 - WHEN they select a payment day via the inline calendar
 - THEN the account is created with `creditPaymentDay` set to that value
-
-### Requirement: Gated by hasCompletedOnboarding
-The system SHALL show the onboarding screen unless `AppSettings.hasCompletedOnboarding = true`, in which case the main screen is shown instead.
-
-#### Scenario: First launch
-- GIVEN `hasCompletedOnboarding = false`
-- WHEN the app starts
-- THEN the onboarding screen is displayed
-
-#### Scenario: Returning user
-- GIVEN `hasCompletedOnboarding = true`
-- WHEN the app starts
-- THEN the main screen is displayed directly, skipping onboarding
-
-### Requirement: Reactive Screen Swap on Completion
-The system SHALL flip `hasCompletedOnboarding` to true on completion and rely on the reactive settings stream to swap to the main screen, without an explicit navigation call.
-
-#### Scenario: Completing the tour
-- GIVEN the user reaches the Completion step and confirms
-- WHEN `hasCompletedOnboarding` is persisted as true
-- THEN the app automatically transitions to the main screen via the settings stream, with no explicit `Navigator` push/replace call
